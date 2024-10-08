@@ -19,3 +19,11 @@ cs = ["safer-ffi/headers"]
 name = "cs"
 required-features = ["cs"]
 path = "bin/cs.rs"
+
+[[example]]
+name = "suzanne"
+path = "examples/suzanne/src/main.rs"
+
+[dev-dependencies]
+macroquad = "0.4.13"
+obj-rs = "0.7.4"
