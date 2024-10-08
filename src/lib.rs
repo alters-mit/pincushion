@@ -29,16 +29,24 @@
 //!     let points = sample_points_from_ppcm(&vertices, &triangles, points_per_cm);
 //! }
 //! ```
-//!
-//! # Build
+//! 
+//! # Usage (Unity)
+//! 
+//! Add the C# scripts in this repo into your project. Then, add: `using Pincushion;`
+//! 
+//! To generate points, call `Vector3[] points = mesh.GetSampledPoints(pointsPerCm);` or `Vector3[] points = mesh.GetSampledPoints(pointsPerCm, numPoints);`.
+//! 
+//! The expected number of points is the product of the mesh volume and `pointsPerCm`.
+//! If you don't include `numPoints`, the output will match the expected number.
+//! If you do include `numPoints`, then `points.Length == numPoints`. This is the faster option.
 //!
 //! To build a library that can be used in Unity/C#: `cargo build --release --features ffi`
 //!
-//! To generate C# bindings: `cargo run --bin cs --features cs`
+//! To generate C# native bindings: `cargo run --bin cs --features cs`
 //!
 //! # Example
 //!
-//! To run the xample: `cargo run --example suzanne`
+//! To run the example: `cargo run --example suzanne`
 
 #[cfg(feature = "cs")]
 pub mod cs;
