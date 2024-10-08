@@ -1,6 +1,3 @@
-#[cfg(feature="glam")]
-use glam::{Vec3, Vec3A};
-
 /// A Vector3 trait.
 pub trait Vector3 {
     fn x(&self) -> f32;
@@ -37,7 +34,7 @@ impl Vector3 for &[f32] {
 }
 
 #[cfg(feature = "glam")]
-impl Vector3 for Vec3 {
+impl Vector3 for glam::Vec3 {
     fn x(&self) -> f32 {
         self.x
     }
@@ -52,7 +49,7 @@ impl Vector3 for Vec3 {
 }
 
 #[cfg(feature = "glam")]
-impl Vector3 for Vec3A {
+impl Vector3 for glam::Vec3A {
     fn x(&self) -> f32 {
         self.x
     }
