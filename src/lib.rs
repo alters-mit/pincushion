@@ -34,11 +34,11 @@
 //! 
 //! Add the C# scripts in this repo into your project. Then, add: `using Pincushion;`
 //! 
-//! To generate points, call `Vector3[] points = mesh.GetSampledPoints(pointsPerCm);` or `Vector3[] points = mesh.GetSampledPoints(pointsPerCm, numPoints);`.
+//! To generate points, call `Vector3[] points = mesh.GetSampledPoints(pointsPerCm);` or `int size = mesh.GetSampledPoints(pointsPerCm, ref points);`.
 //! 
 //! The expected number of points is the product of the mesh volume and `pointsPerCm`.
 //! If you don't include `numPoints`, the output will match the expected number.
-//! If you do include `numPoints`, then `points.Length == numPoints`. This is the faster option.
+//! If you do include `numPoints`, then `points.Length == numPoints`. This is the (slightly) faster option.
 //!
 //! To build a library that can be used in Unity/C#: `cargo build --release --features ffi`
 //!
