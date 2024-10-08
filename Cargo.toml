@@ -2,6 +2,8 @@
 name = "pincushion"
 version = "0.1.0"
 edition = "2021"
+authors = ["Esther Alter <alters@mit.edu>"]
+description = "Given a target density, generate randomly sampled points on a mesh"
 
 [dependencies]
 mesh-rand = "0.1.0"
@@ -26,4 +28,4 @@ path = "examples/suzanne/src/main.rs"
 
 [dev-dependencies]
 macroquad = "0.4.13"
-obj-rs = "0.7.4"
+tobj = "4.0.0"

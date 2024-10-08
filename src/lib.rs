@@ -1,3 +1,5 @@
+///
+
 #[cfg(feature = "cs")]
 pub mod cs;
 
@@ -80,9 +82,7 @@ pub fn get_num_points(volume: f32, points_per_cm: f32) -> usize {
 
 #[cfg(test)]
 mod tests {
-    use std::{fs::File, io::BufReader};
-
-    use obj::raw::{object::Polygon, parse_obj};
+    use tobj::{load_obj, GPU_LOAD_OPTIONS};
 
     use crate::{get_volume, sample_points_from_ppcm};
 
@@ -90,25 +90,22 @@ mod tests {
     fn test_volume() {
         let (vertices, triangles) = get_obj();
         let volume = get_volume(&vertices, &triangles);
-        assert_eq!(volume as usize, 1);
+        assert_eq!(volume as usize, 2);
     }
 
     #[test]
     fn test_sample_points() {
         let (vertices, triangles) = get_obj();
         let points = sample_points_from_ppcm(&vertices, &triangles, 1.0); 
-        assert_eq!(points.len(), 146);
+        assert_eq!(points.len(), 259);
     }
 
     fn get_obj() -> (Vec<[f32; 3]>, Vec<[usize; 3]>) {
-        let input = BufReader::new(File::open("tests/suzanne.obj").unwrap());
-        let obj = parse_obj(input).unwrap();
-        let vertices = obj.positions.iter().map(|v| [v.0, v.1, v.2]).collect();
-        let triangles = obj.polygons.iter().map(|p| match p {
-            Polygon::P(triangle) => [triangle[0], triangle[1], triangle[2]],
-            Polygon::PN(pn) => [pn[0].0, pn[1].0, pn[2].0],
-            _ => panic!("huh")
-        }).collect();
+        let obj = &load_obj("tests/suzanne.obj", &GPU_LOAD_OPTIONS).unwrap().0[0].mesh;
+        let vertices = obj.positions.chunks_exact(3).map(|v| [v[0], v[1], v[2]]).collect::<Vec<[f32; 3]>>();
+        let triangles = obj.indices.chunks_exact(3).map(|triangle|
+            [triangle[0] as usize, triangle[1] as usize, triangle[2] as usize]
+        ).collect::<Vec<[usize; 3]>>();
         (vertices, triangles)
     }
 }

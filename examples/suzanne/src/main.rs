@@ -1,21 +1,17 @@
-use std::{fs::File, io::BufReader};
+//! This example uses Macroquad, which is easy to use but not suitable for real-world 3D rendering.
 
 use macroquad::prelude::*;
 
-use obj::raw::{object::Polygon, parse_obj};
+use tobj::{load_obj, GPU_LOAD_OPTIONS};
 
 use pincushion::sample_points_from_ppcm;
 
 #[macroquad::main("3D")]
 async fn main() {
     // Load the obj.
-    let input = BufReader::new(File::open("tests/suzanne.obj").unwrap());
-    let obj = parse_obj(input).unwrap();
-    let vertices = obj.positions.iter().map(|v| Vertex::new(v.0, v.1, v.2, 0.0, 0.0, PURPLE)).collect();
-    let indices = obj.polygons.iter().map(|p| match p {
-        Polygon::PN(pn) => [pn[0].0 as u16, pn[1].0 as u16, pn[2].0 as u16],
-        _ => unreachable!()
-    }).flatten().collect();
+    let obj = &load_obj("tests/suzanne.obj", &GPU_LOAD_OPTIONS).unwrap().0[0].mesh;
+    let vertices = obj.positions.chunks_exact(3).map(|v| Vertex::new(v[0], v[1], v[2], 0.0, 0.0, PURPLE)).collect();
+    let indices = obj.indices.iter().map(|p| *p as u16).collect();
     // Create the mesh.
     let mesh = Mesh {
         vertices,
@@ -23,19 +19,17 @@ async fn main() {
         texture: None
     };
     // Get pincushion data.
-    let vertices = obj.positions.iter().map(|v| [v.0, v.1, v.2]).collect::<Vec<[f32; 3]>>();
-    let triangles = obj.polygons.iter().map(|p| match p {
-        Polygon::P(triangle) => [triangle[0], triangle[1], triangle[2]],
-        Polygon::PN(pn) => [pn[0].0, pn[1].0, pn[2].0],
-        _ => unreachable!()
-    }).collect::<Vec<[usize; 3]>>();
+    let vertices = obj.positions.chunks_exact(3).map(|v| [v[0], v[1], v[2]]).collect::<Vec<[f32; 3]>>();
+    let triangles = obj.indices.chunks_exact(3).map(|triangle|
+        [triangle[0] as usize, triangle[1] as usize, triangle[2] as usize]
+    ).collect::<Vec<[usize; 3]>>();
     // Sample the points and convert to macroquad Vec3's.
     let points = sample_points_from_ppcm(&vertices, &triangles, 1.5).iter().map(|point| vec3(point[0], point[1], point[2])).collect::<Vec<Vec3>>();
 
     loop {
         clear_background(LIGHTGRAY);
         set_camera(&Camera3D {
-            position: vec3(1., -1., -2.),
+            position: vec3(0.5, -0.25, -1.),
             up: vec3(0., 1., 0.),
             target: vec3(0., 0., 0.),
             ..Default::default()
