@@ -1,9 +1,49 @@
-///
+//! Given a target density, generate randomly sampled points on a mesh.
+//!
+//! This crate was built with Unity/C# bindings in mind. It's useful for sampling points for *static* meshes (i.e. not SkinnedMeshRenders).
+//!
+//! # Usage (native Rust)
+//!
+//! ```
+//! use tobj::{load_obj, GPU_LOAD_OPTIONS};
+//! 
+//! use pincushion::sample_points_from_ppcm;
+//!
+//! fn get_obj(path: &str) -> (Vec<[f32; 3]>, Vec<[usize; 3]>) {
+//!     let obj = &load_obj(path, &GPU_LOAD_OPTIONS).unwrap().0[0].mesh;
+//!     let vertices = obj.positions.chunks_exact(3).map(|v| [v[0], v[1], v[2]]).collect::<Vec<[f32; 3]>>();
+//!     let triangles = obj.indices.chunks_exact(3).map(|triangle|
+//!         [triangle[0] as usize, triangle[1] as usize, triangle[2] as usize]
+//!     ).collect::<Vec<[usize; 3]>>();
+//!     (vertices, triangles)
+//! }
+//!
+//! fn main() {
+//!     let (vertices, triangles) = get_obj("tests/suzanne.obj");
+//!
+//!     // This, plus the volume, controls the number of points per centimeter.
+//!     // The volume of the mesh is assumed to be in meters squared.
+//!     let points_per_cm = 1.5;
+//!
+//!     // Sample the points.
+//!     let points = sample_points_from_ppcm(&vertices, &triangles, points_per_cm);
+//! }
+//! ```
+//!
+//! # Build
+//!
+//! To build a library that can be used in Unity/C#: `cargo build --release --features ffi`
+//!
+//! To generate C# bindings: `cargo run --bin cs --features cs`
+//!
+//! # Example
+//!
+//! To run the xample: `cargo run --example suzanne`
 
 #[cfg(feature = "cs")]
 pub mod cs;
 
-#[cfg(feature = "safer-ffi")]
+#[cfg(feature = "ffi")]
 pub mod ffi;
 
 use mesh_rand::MeshSurface;
@@ -35,8 +75,9 @@ pub fn get_volume(vertices: &[[f32; 3]], triangles: &[[usize; 3]]) -> f32 {
                 &vertices[triangle[2]],
             )
         })
-        .sum::<f32>().abs()
-    }
+        .sum::<f32>()
+        .abs()
+}
 
 /// Sample points on a mesh, given a density of points.
 ///
@@ -79,7 +120,6 @@ pub fn get_num_points(volume: f32, points_per_cm: f32) -> usize {
     (volume * 100.0 * points_per_cm) as usize
 }
 
-
 #[cfg(test)]
 mod tests {
     use tobj::{load_obj, GPU_LOAD_OPTIONS};
@@ -96,16 +136,28 @@ mod tests {
     #[test]
     fn test_sample_points() {
         let (vertices, triangles) = get_obj();
-        let points = sample_points_from_ppcm(&vertices, &triangles, 1.0); 
+        let points = sample_points_from_ppcm(&vertices, &triangles, 1.0);
         assert_eq!(points.len(), 259);
     }
 
     fn get_obj() -> (Vec<[f32; 3]>, Vec<[usize; 3]>) {
         let obj = &load_obj("tests/suzanne.obj", &GPU_LOAD_OPTIONS).unwrap().0[0].mesh;
-        let vertices = obj.positions.chunks_exact(3).map(|v| [v[0], v[1], v[2]]).collect::<Vec<[f32; 3]>>();
-        let triangles = obj.indices.chunks_exact(3).map(|triangle|
-            [triangle[0] as usize, triangle[1] as usize, triangle[2] as usize]
-        ).collect::<Vec<[usize; 3]>>();
+        let vertices = obj
+            .positions
+            .chunks_exact(3)
+            .map(|v| [v[0], v[1], v[2]])
+            .collect::<Vec<[f32; 3]>>();
+        let triangles = obj
+            .indices
+            .chunks_exact(3)
+            .map(|triangle| {
+                [
+                    triangle[0] as usize,
+                    triangle[1] as usize,
+                    triangle[2] as usize,
+                ]
+            })
+            .collect::<Vec<[usize; 3]>>();
         (vertices, triangles)
     }
 }

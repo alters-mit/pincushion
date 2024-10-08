@@ -10,21 +10,40 @@ use pincushion::sample_points_from_ppcm;
 async fn main() {
     // Load the obj.
     let obj = &load_obj("tests/suzanne.obj", &GPU_LOAD_OPTIONS).unwrap().0[0].mesh;
-    let vertices = obj.positions.chunks_exact(3).map(|v| Vertex::new(v[0], v[1], v[2], 0.0, 0.0, PURPLE)).collect();
+    let vertices = obj
+        .positions
+        .chunks_exact(3)
+        .map(|v| Vertex::new(v[0], v[1], v[2], 0.0, 0.0, PURPLE))
+        .collect();
     let indices = obj.indices.iter().map(|p| *p as u16).collect();
     // Create the mesh.
     let mesh = Mesh {
         vertices,
         indices,
-        texture: None
+        texture: None,
     };
     // Get pincushion data.
-    let vertices = obj.positions.chunks_exact(3).map(|v| [v[0], v[1], v[2]]).collect::<Vec<[f32; 3]>>();
-    let triangles = obj.indices.chunks_exact(3).map(|triangle|
-        [triangle[0] as usize, triangle[1] as usize, triangle[2] as usize]
-    ).collect::<Vec<[usize; 3]>>();
+    let vertices = obj
+        .positions
+        .chunks_exact(3)
+        .map(|v| [v[0], v[1], v[2]])
+        .collect::<Vec<[f32; 3]>>();
+    let triangles = obj
+        .indices
+        .chunks_exact(3)
+        .map(|triangle| {
+            [
+                triangle[0] as usize,
+                triangle[1] as usize,
+                triangle[2] as usize,
+            ]
+        })
+        .collect::<Vec<[usize; 3]>>();
     // Sample the points and convert to macroquad Vec3's.
-    let points = sample_points_from_ppcm(&vertices, &triangles, 1.5).iter().map(|point| vec3(point[0], point[1], point[2])).collect::<Vec<Vec3>>();
+    let points = sample_points_from_ppcm(&vertices, &triangles, 1.5)
+        .iter()
+        .map(|point| vec3(point[0], point[1], point[2]))
+        .collect::<Vec<Vec3>>();
 
     loop {
         clear_background(LIGHTGRAY);

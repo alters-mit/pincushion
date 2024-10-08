@@ -14,7 +14,7 @@ safer-ffi = { version = "0.1.13", optional = true }
 crate-type = ["lib", "cdylib"]
 
 [features]
-safer-ffi = ["dep:safer-ffi"]
+ffi = ["dep:safer-ffi"]
 cs = ["safer-ffi/headers"]
 
 [[bin]]
