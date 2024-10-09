@@ -59,29 +59,28 @@ use rand::{thread_rng, Rng};
 pub type Vertex = [f32; 3];
 pub type Triangle = [usize; 3];
 
-pub fn get_accumulated_areas(vertices: &[Vertex], triangles: &[Triangle]) -> (Vec<f32>, f32) {
+pub fn get_areas(vertices: &[Vertex], triangles: &[Triangle]) -> (Vec<f32>, f32) {
     let mut areas = vec![0.0; triangles.len()];
-    let total_area = get_accumulated_areas_in_place(vertices, triangles, &mut areas);
+    let total_area = get_areas_in_place(vertices, triangles, &mut areas);
     (areas, total_area)
 }
 
-pub fn get_accumulated_areas_in_place(
+pub fn get_areas_in_place(
     vertices: &[Vertex],
     triangles: &[Triangle],
-    accumulated_areas: &mut [f32],
+    areas: &mut [f32],
 ) -> f32 {
     let mut total_area = 0.;
     triangles
         .iter()
-        .zip(accumulated_areas.iter_mut())
-        .for_each(|(triangle, accumulated_area)| {
-            let area = get_triangle_area(
+        .zip(areas.iter_mut())
+        .for_each(|(triangle, area)| {
+            *area = get_triangle_area(
                 &vertices[triangle[0]],
                 &vertices[triangle[1]],
                 &vertices[triangle[2]],
             );
-            total_area += area;
-            *accumulated_area = total_area;
+            total_area += *area;
         });
     total_area
 }
@@ -107,21 +106,20 @@ pub fn sample_points_from_ppcm(
     triangles: &[Triangle],
     points_per_cm: f32,
 ) -> Vec<Vertex> {
-    let (accumulated_areas, total_area) = get_accumulated_areas(vertices, triangles);
+    let (areas, total_area) = get_areas(vertices, triangles);
     let num_points = get_num_points(total_area, points_per_cm);
     let mut points = vec![[0.0; 3]; num_points];
     sample_points(
         vertices,
         triangles,
-        &accumulated_areas,
+        &areas,
         total_area,
-        points_per_cm,
         &mut points,
     );
     points
 }
 
-/// Sample random points on the mesh.
+/// Sample random points on the mesh.triangle_end_index
 ///
 /// - `vertices`: The vertices.
 /// - `triangles`: The triangle indices.
@@ -129,23 +127,34 @@ pub fn sample_points_from_ppcm(
 pub fn sample_points(
     vertices: &[Vertex],
     triangles: &[Triangle],
-    accumulated_areas: &[f32],
+    areas: &[f32],
     total_area: f32,
-    points_per_cm: f32,
     points: &mut [Vertex],
 ) {
     // The area per point is used to uniformly sample the points.
-    let area_per_point = points_per_cm / (total_area * 100.0);
+    let area_per_point = total_area / points.len() as f32;
     let mut rng = thread_rng();
-    let mut total_accumulated_area = accumulated_areas[0];
+    let mut area_index = 0;
     for point in points.iter_mut() {
-        let triangle_indices = accumulated_areas
-            .iter()
-            .enumerate()
-            .filter(|(_, accumulated_area)| **accumulated_area <= total_accumulated_area)
-            .collect::<Vec<(usize, &f32)>>();
+        let mut triangle_end_index = area_index;
+        let mut total_accumulated_area = 0.0;
+        for area in areas[area_index..areas.len()].iter() {
+            total_accumulated_area += *area;
+            triangle_end_index += 1;
+            if total_accumulated_area >= area_per_point {
+                break;
+            }
+        }
+        let triangle_index = if triangle_end_index == area_index {
+            triangle_end_index
+        }
+        else {
+            rng.gen_range(area_index..triangle_end_index)
+        };
+        // Increment the area index for next time.
+        area_index = triangle_end_index;
         // Having found enough area, pick a random triangle.
-        let triangle = triangles[triangle_indices[rng.gen_range(0..triangle_indices.len())].0];
+        let triangle = triangles[triangle_index];
         // Get a random point on that triangle.
         // Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
         let mut u = rng.gen_range(0.0..1.0);
@@ -161,7 +170,6 @@ pub fn sample_points(
             ),
             &mul(&vertices[triangle[2]], w),
         );
-        total_accumulated_area += triangle_indices.iter().map(|(_, area)| **area).sum::<f32>();
     }
 }
 
