@@ -48,9 +48,10 @@ async fn main() {
     loop {
         clear_background(LIGHTGRAY);
         set_camera(&Camera3D {
-            position: vec3(0.5, -0.25, -1.),
+            position: vec3(-2.5, 2.5, 7.),
             up: vec3(0., 1., 0.),
             target: vec3(0., 0., 0.),
+            fovy: 1.5,
             ..Default::default()
         });
 

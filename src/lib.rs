@@ -130,14 +130,14 @@ pub fn sample_points(vertices: &[[f32; 3]], triangles: &[[usize; 3]], points: &m
         .iter_mut()
         .zip(accumulated_triangle_area.iter())
         .for_each(|(point, area)| {
-            let mut u = rng.gen_range(-1.0..1.0);
-            let mut v = rng.gen_range(-1.0..1.0);
+            let mut u = rng.gen_range(0.0..1.0);
+            let mut v = rng.gen_range(0.0..1.0);
             let t = f32::sqrt(v);
             v = u * t;
             u = (1.0 - u) * t;
             let w = 1.0 - u - v;
             let area_index =
-                get_area_index(rng.gen_range(-0.1..1.0) * *area, &accumulated_triangle_area);
+                get_area_index(rng.gen_range(0.0..1.0) * *area, &accumulated_triangle_area);
             let triangle = &triangles[area_index];
             *point = add(
                 &add(
