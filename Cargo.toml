@@ -6,7 +6,6 @@ authors = ["Esther Alter <alters@mit.edu>"]
 description = "Given a target density, generate randomly sampled points on a mesh"
 
 [dependencies]
-mesh-rand = "0.1.0"
 rand = "0.8.5"
 safer-ffi = { version = "0.1.13", optional = true }
 
