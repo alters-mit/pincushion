@@ -2,18 +2,18 @@ use core::slice;
 
 use safer_ffi::ffi_export;
 
-use crate::{get_accumulated_area_in_place, sample_points as sample_points_native};
+use crate::{get_triangle_areas_in_place, sample_points as sample_points_native};
 
 #[ffi_export]
-pub fn get_accumulated_area(
+pub fn get_areas(
     vertices: &safer_ffi::Vec<f32>,
     triangles: &safer_ffi::Vec<usize>,
-    accumulated_triangle_area: &mut safer_ffi::Vec<f32>,
+    areas: &mut safer_ffi::Vec<f32>,
 ) -> f32 {
     unsafe {
         let vertices = ffi_vertices(vertices);
         let triangles = ffi_triangles(triangles);
-        get_accumulated_area_in_place(vertices, triangles, accumulated_triangle_area)
+        get_triangle_areas_in_place(vertices, triangles, areas)
     }
 }
 
@@ -29,14 +29,15 @@ pub fn get_accumulated_area(
 pub fn sample_points(
     vertices: &safer_ffi::Vec<f32>,
     triangles: &safer_ffi::Vec<usize>,
-    accumulated_triangle_area: &safer_ffi::Vec<f32>,
+    areas: &safer_ffi::Vec<f32>,
+    total_area: f32,
     points: &mut safer_ffi::Vec<f32>,
 ) {
     unsafe {
         let vertices = ffi_vertices(vertices);
         let triangles = ffi_triangles(triangles);
         let points = ffi_vertices_mut(points);
-        sample_points_native(vertices, triangles, accumulated_triangle_area, points);
+        sample_points_native(vertices, triangles, areas, total_area, points);
     }
 }
 

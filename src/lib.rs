@@ -59,37 +59,28 @@ use rand::{thread_rng, Rng};
 pub type Vertex = [f32; 3];
 pub type Triangle = [usize; 3];
 
-pub fn get_accumulated_area(vertices: &[Vertex], triangles: &[Triangle]) -> (Vec<f32>, f32) {
-    let mut accumulated_triangle_area = vec![0.0; triangles.len()];
-    let total_area =
-        get_accumulated_area_in_place(vertices, triangles, &mut accumulated_triangle_area);
-    (accumulated_triangle_area, total_area)
+pub fn get_triangle_areas(vertices: &[Vertex], triangles: &[Triangle]) -> (Vec<f32>, f32) {
+    let mut areas = vec![0.0; triangles.len()];
+    let total_area = get_triangle_areas_in_place(vertices, triangles, &mut areas);
+    (areas, total_area)
 }
 
-pub fn get_accumulated_area_in_place(
+pub fn get_triangle_areas_in_place(
     vertices: &[Vertex],
     triangles: &[Triangle],
-    accumulated_triangle_area: &mut [f32],
+    areas: &mut [f32],
 ) -> f32 {
-    // Get the area of the first triangle.
-    accumulated_triangle_area[0] = get_triangle_area(
-        &vertices[triangles[0][0]],
-        &vertices[triangles[0][1]],
-        &vertices[triangles[0][2]],
-    );
-    let mut total_area = accumulated_triangle_area[0];
-    // Accumulate area.
-    triangles[1..triangles.len()]
+    let mut total_area = 0.;
+    triangles
         .iter()
-        .enumerate()
-        .for_each(|(i, triangle)| {
-            let area = get_triangle_area(
+        .zip(areas.iter_mut())
+        .for_each(|(triangle, area)| {
+            *area = get_triangle_area(
                 &vertices[triangle[0]],
                 &vertices[triangle[1]],
                 &vertices[triangle[2]],
             );
-            total_area += area;
-            accumulated_triangle_area[i + 1] = accumulated_triangle_area[i] + area;
+            total_area += *area;
         });
     total_area
 }
@@ -111,52 +102,75 @@ pub fn get_num_points(total_area: f32, points_per_cm: f32) -> usize {
 ///
 /// Returns: An vec of sampled points.
 pub fn sample_points_from_ppcm(
-    vertices: &[[f32; 3]],
-    triangles: &[[usize; 3]],
+    vertices: &[Vertex],
+    triangles: &[Triangle],
     points_per_cm: f32,
-) -> Vec<[f32; 3]> {
-    let (accumulated_triangle_area, total_area) = get_accumulated_area(vertices, triangles);
+) -> Vec<Vertex> {
+    let (areas, total_area) = get_triangle_areas(vertices, triangles);
     let num_points = get_num_points(total_area, points_per_cm);
     let mut points = vec![[0.0; 3]; num_points];
-    sample_points(vertices, triangles, &accumulated_triangle_area, &mut points);
+    sample_points(vertices, triangles, &areas, total_area, &mut points);
     points
 }
 
 /// Sample random points on the mesh.
 ///
-/// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
-///
 /// - `vertices`: The vertices.
 /// - `triangles`: The triangle indices.
 /// - `points`: A pre-defined slice of vertices that will be filled with points.
 pub fn sample_points(
-    vertices: &[[f32; 3]],
-    triangles: &[[usize; 3]],
-    accumulated_triangle_area: &[f32],
-    points: &mut [[f32; 3]],
+    vertices: &[Vertex],
+    triangles: &[Triangle],
+    areas: &[f32],
+    total_area: f32,
+    points: &mut [Vertex],
 ) {
+    // The area per point is used to uniformly sample the points.
+    let area_per_point = total_area / (points.len() as f32);
     let mut rng = thread_rng();
-    points
-        .iter_mut()
-        .zip(accumulated_triangle_area.iter())
-        .for_each(|(point, area)| {
-            let mut u = rng.gen_range(0.0..1.0);
-            let mut v = rng.gen_range(0.0..1.0);
-            let t = f32::sqrt(v);
-            v = u * t;
-            u = (1.0 - u) * t;
-            let w = 1.0 - u - v;
-            let area_index =
-                get_area_index(rng.gen_range(0.0..1.0) * *area, accumulated_triangle_area);
-            let triangle = &triangles[area_index];
-            *point = add(
-                &add(
-                    &mul(&vertices[triangle[0]], u),
-                    &mul(&vertices[triangle[1]], v),
-                ),
-                &mul(&vertices[triangle[2]], w),
-            );
-        });
+    let mut accumulated_area = 0.0;
+    let mut triangle_indices = vec![0; points.len()];
+    let mut num_indices = 0;
+    let mut area_index = 0;
+    points.iter_mut().for_each(|point| {
+        // Accumulate triangle areas.
+        let needs_reset = if accumulated_area < area_per_point && area_index < areas.len() {
+            // Add another triangle area.
+            accumulated_area += areas[area_index];
+            // Remember the triangle that was just added.
+            triangle_indices[num_indices] = area_index;
+            // Remember how many triangles there are.
+            num_indices += 1;
+            // Increment the area index.
+            area_index += 1;
+            false
+        }
+        else {
+            true
+        };
+        // Having found enough area, pick a random triangle.
+        let triangle = triangles[triangle_indices[rng.gen_range(0..num_indices)]];
+        // Get a random point on that triangle.
+        // Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
+        let mut u = rng.gen_range(0.0..1.0);
+        let mut v = rng.gen_range(0.0..1.0);
+        let t = f32::sqrt(v);
+        v = u * t;
+        u = (1.0 - u) * t;
+        let w = 1.0 - u - v;
+        *point = add(
+            &add(
+                &mul(&vertices[triangle[0]], u),
+                &mul(&vertices[triangle[1]], v),
+            ),
+            &mul(&vertices[triangle[2]], w),
+        );
+        // Reset the count.
+        if needs_reset {
+            num_indices = 0;
+            accumulated_area = 0.0;
+        }
+    });
 }
 
 /// Returns the area of a triangle.
@@ -193,26 +207,6 @@ fn dot(a: &Vertex, b: &Vertex) -> f32 {
 
 fn magnitude(v: &Vertex) -> f32 {
     f32::sqrt(dot(v, v))
-}
-
-/// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/90714a3b61dbc731d9e8dc4c4ca93c2ba1da5156/Assets/Script/VFXMeshBakingHelper.cs#L211
-fn get_area_index(area: f32, accumulated_triangle_area: &[f32]) -> usize {
-    let mut min = 0;
-    let mut max = accumulated_triangle_area.len() - 1;
-    let mut mid = max >> 1;
-    while max >= min {
-        if accumulated_triangle_area[mid] >= area
-            && (mid == 0 || accumulated_triangle_area[mid - 1] < area)
-        {
-            return mid;
-        } else if area < accumulated_triangle_area[mid] {
-            max = mid - 1;
-        } else {
-            min = mid + 1;
-        }
-        mid = (min + max) >> 1;
-    }
-    unreachable!()
 }
 
 #[cfg(test)]
