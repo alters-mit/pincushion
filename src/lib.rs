@@ -57,28 +57,50 @@ pub mod ffi;
 use rand::{thread_rng, Rng};
 
 pub type Vertex = [f32; 3];
+pub type Triangle = [usize; 3];
+
+pub fn get_accumulated_area(vertices: &[Vertex], triangles: &[Triangle]) -> (Vec<f32>, f32) {
+    let mut accumulated_triangle_area = vec![0.0; triangles.len()];
+    let total_area =
+        get_accumulated_area_in_place(vertices, triangles, &mut accumulated_triangle_area);
+    (accumulated_triangle_area, total_area)
+}
+
+pub fn get_accumulated_area_in_place(
+    vertices: &[Vertex],
+    triangles: &[Triangle],
+    accumulated_triangle_area: &mut [f32],
+) -> f32 {
+    // Get the area of the first triangle.
+    accumulated_triangle_area[0] = get_triangle_area(
+        &vertices[triangles[0][0]],
+        &vertices[triangles[0][1]],
+        &vertices[triangles[0][2]],
+    );
+    let mut total_area = accumulated_triangle_area[0];
+    // Accumulate area.
+    triangles[1..triangles.len()]
+        .iter()
+        .enumerate()
+        .for_each(|(i, triangle)| {
+            let area = get_triangle_area(
+                &vertices[triangle[0]],
+                &vertices[triangle[1]],
+                &vertices[triangle[2]],
+            );
+            total_area += area;
+            accumulated_triangle_area[i + 1] = accumulated_triangle_area[i] + area;
+        });
+    total_area
+}
 
 /// - `vertices`: The vertices as a flat slice of coordinates.
 /// - `triangles`: The triangles as a flat slice of indices.
 ///
 /// Returns: The volume of the mesh.
-pub fn get_num_points(
-    vertices: &[[f32; 3]],
-    triangles: &[[usize; 3]],
-    points_per_cm: f32,
-) -> usize {
-    let volume = triangles
-        .iter()
-        .map(|triangle| {
-            signed_volume_of_triangle(
-                &vertices[triangle[0]],
-                &vertices[triangle[1]],
-                &vertices[triangle[2]],
-            )
-        })
-        .sum::<f32>()
-        .abs();
-    (volume * 100.0 * points_per_cm) as usize
+#[cfg_attr(feature = "ffi", safer_ffi::ffi_export)]
+pub fn get_num_points(total_area: f32, points_per_cm: f32) -> usize {
+    (total_area * 100.0 * points_per_cm) as usize
 }
 
 /// Sample points on a mesh, given a density of points.
@@ -93,8 +115,10 @@ pub fn sample_points_from_ppcm(
     triangles: &[[usize; 3]],
     points_per_cm: f32,
 ) -> Vec<[f32; 3]> {
-    let mut points = vec![[0.0; 3]; get_num_points(vertices, triangles, points_per_cm)];
-    sample_points(vertices, triangles, &mut points);
+    let (accumulated_triangle_area, total_area) = get_accumulated_area(vertices, triangles);
+    let num_points = get_num_points(total_area, points_per_cm);
+    let mut points = vec![[0.0; 3]; num_points];
+    sample_points(vertices, triangles, &accumulated_triangle_area, &mut points);
     points
 }
 
@@ -105,26 +129,12 @@ pub fn sample_points_from_ppcm(
 /// - `vertices`: The vertices.
 /// - `triangles`: The triangle indices.
 /// - `points`: A pre-defined slice of vertices that will be filled with points.
-pub fn sample_points(vertices: &[[f32; 3]], triangles: &[[usize; 3]], points: &mut [[f32; 3]]) {
-    let mut accumulated_triangle_area = vec![0.0; triangles.len()];
-    // Get the area of the first triangle.
-    accumulated_triangle_area[0] = get_triangle_area(
-        &vertices[triangles[0][0]],
-        &vertices[triangles[0][1]],
-        &vertices[triangles[0][2]],
-    );
-    // Accumulate area.
-    triangles[1..triangles.len()]
-        .iter()
-        .enumerate()
-        .for_each(|(i, triangle)| {
-            accumulated_triangle_area[i + 1] = accumulated_triangle_area[i]
-                + get_triangle_area(
-                    &vertices[triangle[0]],
-                    &vertices[triangle[1]],
-                    &vertices[triangle[2]],
-                );
-        });
+pub fn sample_points(
+    vertices: &[[f32; 3]],
+    triangles: &[[usize; 3]],
+    accumulated_triangle_area: &[f32],
+    points: &mut [[f32; 3]],
+) {
     let mut rng = thread_rng();
     points
         .iter_mut()
@@ -137,7 +147,7 @@ pub fn sample_points(vertices: &[[f32; 3]], triangles: &[[usize; 3]], points: &m
             u = (1.0 - u) * t;
             let w = 1.0 - u - v;
             let area_index =
-                get_area_index(rng.gen_range(0.0..1.0) * *area, &accumulated_triangle_area);
+                get_area_index(rng.gen_range(0.0..1.0) * *area, accumulated_triangle_area);
             let triangle = &triangles[area_index];
             *point = add(
                 &add(
@@ -147,18 +157,6 @@ pub fn sample_points(vertices: &[[f32; 3]], triangles: &[[usize; 3]], points: &m
                 &mul(&vertices[triangle[2]], w),
             );
         });
-}
-
-/// Returns the signed volume of a triangle.
-/// Source: https://stackoverflow.com/a/1568551
-fn signed_volume_of_triangle(p0: &[f32; 3], p1: &[f32; 3], p2: &[f32; 3]) -> f32 {
-    let v321 = p2[0] * p1[1] * p0[2];
-    let v231 = p1[0] * p2[1] * p0[2];
-    let v312 = p2[0] * p0[1] * p1[2];
-    let v132 = p0[0] * p2[1] * p1[2];
-    let v213 = p1[0] * p0[1] * p2[2];
-    let v123 = p0[0] * p1[1] * p2[2];
-    (1.0 / 6.0) * (-v321 + v231 + v312 - v132 - v213 + v123)
 }
 
 /// Returns the area of a triangle.
