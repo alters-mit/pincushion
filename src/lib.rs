@@ -59,51 +59,63 @@ use rand::{thread_rng, Rng};
 pub type Vertex = [f32; 3];
 pub type Triangle = [usize; 3];
 
+/// - `vertices`: A slice of (x, y, z) vertices.
+/// - `triangles`: A vec of three indices of vertices.
+/// 
+/// Returns: The area of each triangle and the total area.
 pub fn get_areas(vertices: &[Vertex], triangles: &[Triangle]) -> (Vec<f32>, f32) {
     let mut areas = vec![0.0; triangles.len()];
     let total_area = get_areas_in_place(vertices, triangles, &mut areas);
     (areas, total_area)
 }
 
+/// - `vertices`: A slice of (x, y, z) vertices.
+/// - `triangles`: A vec of three indices of vertices.
+/// - `areas`: A vec that will be filled with the areas of each triangle in `triangles`.
+///   This must be the same length as `triangles`.
+/// 
+/// Returns: The total area.
 pub fn get_areas_in_place(vertices: &[Vertex], triangles: &[Triangle], areas: &mut [f32]) -> f32 {
     let mut total_area = 0.;
     triangles
         .iter()
         .zip(areas.iter_mut())
         .for_each(|(triangle, area)| {
+            // Get this triangle's area.
             *area = get_triangle_area(
                 &vertices[triangle[0]],
                 &vertices[triangle[1]],
                 &vertices[triangle[2]],
             );
+            // Add to the total.
             total_area += *area;
         });
     total_area
 }
 
-/// - `vertices`: The vertices as a flat slice of coordinates.
-/// - `triangles`: The triangles as a flat slice of indices.
+/// - `total_area`: The total area of the triangles. See: [`get_areas(vertices, triangles)`] and [`get_areas_in_place(vertices, triangles, areas)`].
+/// - `points_per_m`: The number of points per square meter. This function assumed that `total_area` is in square meters.
 ///
 /// Returns: The volume of the mesh.
 #[cfg_attr(feature = "ffi", safer_ffi::ffi_export)]
-pub fn get_num_points(total_area: f32, points_per_cm: f32) -> usize {
-    (total_area * 100.0 * points_per_cm) as usize
+pub fn get_num_points(total_area: f32, points_per_m: f32) -> usize {
+    (total_area * points_per_m) as usize
 }
 
 /// Sample points on a mesh, given a density of points.
 ///
-/// - `vertices`: The vertices.
-/// - `triangles`: The triangle indices.
-/// - `points_per_cm`: The number of points per centimeter.
+/// - `vertices`: A slice of (x, y, z) vertices.
+/// - `triangles`: A vec of three indices of vertices.
+/// - `points_per_m`: The number of points per square meter.
 ///
 /// Returns: An vec of sampled points.
-pub fn sample_points_from_ppcm(
+pub fn sample_points_from_ppm(
     vertices: &[Vertex],
     triangles: &[Triangle],
-    points_per_cm: f32,
+    points_per_m: f32,
 ) -> Vec<Vertex> {
     let (areas, total_area) = get_areas(vertices, triangles);
-    let num_points = get_num_points(total_area, points_per_cm);
+    let num_points = get_num_points(total_area, points_per_m);
     let mut points = vec![[0.0; 3]; num_points];
     sample_points(vertices, triangles, &areas, total_area, &mut points);
     points
@@ -111,9 +123,11 @@ pub fn sample_points_from_ppcm(
 
 /// Sample random points on the mesh.triangle_end_index
 ///
-/// - `vertices`: The vertices.
-/// - `triangles`: The triangle indices.
-/// - `points`: A pre-defined slice of vertices that will be filled with points.
+/// - `vertices`: A slice of (x, y, z) vertices.
+/// - `triangles`: A vec of three indices of vertices.
+/// - `areas`: The area of each triangle. See: [`get_areas(vertices, triangles)`] and [`get_areas_in_place(vertices, triangles, areas)`].
+/// - `total_area`: The total area.
+/// - `points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
 pub fn sample_points(
     vertices: &[Vertex],
     triangles: &[Triangle],
@@ -124,18 +138,23 @@ pub fn sample_points(
     // The area per point is used to uniformly sample the points.
     let area_per_point = total_area / points.len() as f32;
     let mut rng = thread_rng();
-
+    // When sampling points, start at this index.
     let mut start_index_point = 0;
-    let mut start_triangle_index = 0;
+    // When choosing trandom triangles, start at this index.
+    let mut start_index_triangle = 0;
+    // The accumulated triangle area. This is used to set the end indices.
     let mut total_accumulated_area = 0.0;
     for (index, area) in areas.iter().enumerate() {
+        // Add area.
         total_accumulated_area += *area;
+        // We have enough area.
         if total_accumulated_area >= area_per_point {
+            // Derive how many points we can fit in the accumulated area.
             let num_points = (total_accumulated_area / area_per_point) as usize;
+            // Sample some points.
             for i in 0..num_points {
-                // Get a random triangle.
-                let triangle_index = rng.gen_range(start_triangle_index..=index);
-                let triangle = triangles[triangle_index];
+                // Get a random triangle, bounded by the start index and the current index in `areas`.
+                let triangle = triangles[rng.gen_range(start_index_triangle..=index)];
                 // Get a random point on that triangle.
                 // Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
                 let mut u = rng.gen_range(0.0..1.0);
@@ -144,6 +163,7 @@ pub fn sample_points(
                 v = u * t;
                 u = (1.0 - u) * t;
                 let w = 1.0 - u - v;
+                // Set the point at `start_index_pooint` offset by 0..num_points.
                 points[start_index_point + i] = add(
                     &add(
                         &mul(&vertices[triangle[0]], u),
@@ -152,9 +172,12 @@ pub fn sample_points(
                     &mul(&vertices[triangle[2]], w),
                 );
             }
+            // Start adding points at the offset.
             start_index_point += num_points;
+            // Reset the accumulated area.
             total_accumulated_area = 0.0;
-            start_triangle_index = index + 1;
+            // Increment to the next starting triangle.
+            start_index_triangle = index + 1;
         }
     }
 }
@@ -199,12 +222,12 @@ fn magnitude(v: &Vertex) -> f32 {
 mod tests {
     use tobj::{load_obj, GPU_LOAD_OPTIONS};
 
-    use crate::sample_points_from_ppcm;
+    use crate::sample_points_from_ppm;
 
     #[test]
     fn test_sample_points() {
         let (vertices, triangles) = get_obj();
-        let points = sample_points_from_ppcm(&vertices, &triangles, 1.0);
+        let points = sample_points_from_ppm(&vertices, &triangles, 0.01);
         assert_eq!(points.len(), 259);
     }
 

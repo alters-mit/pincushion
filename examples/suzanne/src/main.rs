@@ -40,7 +40,7 @@ async fn main() {
         })
         .collect::<Vec<[usize; 3]>>();
     // Sample the points and convert to macroquad Vec3's.
-    let points = sample_points_from_ppcm(&vertices, &triangles, 1.5)
+    let points = sample_points_from_ppcm(&vertices, &triangles, 0.015)
         .iter()
         .map(|point| vec3(point[0], point[1], point[2]))
         .collect::<Vec<Vec3>>();
