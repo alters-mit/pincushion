@@ -60,7 +60,7 @@ async fn main() {
 
         // Draw the points.
         points.iter().for_each(|point| {
-            draw_sphere(*point, 0.05, None, YELLOW);
+            draw_sphere(*point, 0.02, None, YELLOW);
         });
         next_frame().await
     }
