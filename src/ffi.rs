@@ -1,3 +1,5 @@
+//! FFI-safe functions for pincushion.
+
 use core::slice;
 
 use safer_ffi::ffi_export;
@@ -27,7 +29,7 @@ pub fn get_areas(
 ///
 /// - `vertices`: A flat vec of (x, y, z) vertices.
 /// - `triangles`: A flat vec of three indices of vertices.
-/// - `areas`: The area of each triangle. See: [`get_areas(vertices, triangles)`] and [`get_areas_in_place(vertices, triangles, areas)`].
+/// - `areas`: The area of each triangle. See: `get_areas(vertices, triangles, areas)`
 /// - `total_area`: The total area.
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
 ///   This will be filled with the sampled pointsc.

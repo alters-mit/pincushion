@@ -102,7 +102,7 @@ pub fn get_areas_in_place(vertices: &[Vertex], triangles: &[Triangle], areas: &m
     total_area
 }
 
-/// - `total_area`: The total area of the triangles. See: [`get_areas(vertices, triangles)`] and [`get_areas_in_place(vertices, triangles, areas)`].
+/// - `total_area`: The total area of the triangles. See: `get_areas(vertices, triangles)` and `get_areas_in_place(vertices, triangles, areas)`
 /// - `points_per_m`: The number of points per square meter. This function assumed that `total_area` is in square meters.
 ///
 /// Returns: The volume of the mesh.
