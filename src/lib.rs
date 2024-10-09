@@ -1,48 +1,57 @@
 //! Given a target density, generate randomly sampled points on a mesh.
 //!
-//! This crate was built with Unity/C# bindings in mind. It's useful for sampling points for *static* meshes (i.e. not SkinnedMeshRenders).
+//! This crate was built with Unity/C# bindings in mind.
+//!
+//! Imagine, if you will, an animated human that is visually rendered with uniformly sampled points.
+//! This mesh needs to move dynamically, so that number and positions of the points need to change.
+//! The best way to do that is in a shader.
+//! This crate *doesn't* cover this use-case.
+//!
+//! *However,* suppose you want the animated human to walk in a room that is also rendered in uniformly sampled points.
+//! In that case, the room geometry is static.
+//! The sampled points never need to change.
+//! So, you could sample the points exactly once and use them later.
+//! That's what this crate is for.
 //!
 //! # Usage (native Rust)
 //!
 //! ```
 //! use tobj::{load_obj, GPU_LOAD_OPTIONS};
 //!
-//! use pincushion::sample_points_from_ppcm;
+//! use pincushion::{sample_points_from_ppm, Vertex, Triangle};
 //!
-//! fn get_obj(path: &str) -> (Vec<[f32; 3]>, Vec<[usize; 3]>) {
+//! fn get_obj(path: &str) -> (Vec<Vertex>, Vec<Triangle>) {
 //!     let obj = &load_obj(path, &GPU_LOAD_OPTIONS).unwrap().0[0].mesh;
-//!     let vertices = obj.positions.chunks_exact(3).map(|v| [v[0], v[1], v[2]]).collect::<Vec<[f32; 3]>>();
+//!     let vertices = obj.positions.chunks_exact(3).map(|v| [v[0], v[1], v[2]]).collect::<Vec<Vertex>>();
 //!     let triangles = obj.indices.chunks_exact(3).map(|triangle|
 //!         [triangle[0] as usize, triangle[1] as usize, triangle[2] as usize]
-//!     ).collect::<Vec<[usize; 3]>>();
+//!     ).collect::<Vec<Triangle>>();
 //!     (vertices, triangles)
 //! }
 //!
 //! fn main() {
 //!     let (vertices, triangles) = get_obj("tests/suzanne.obj");
 //!
-//!     // This, plus the volume, controls the number of points per centimeter.
-//!     // The volume of the mesh is assumed to be in meters squared.
-//!     let points_per_cm = 1.5;
+//!     // This, plus the volume, controls the number of points per square meter.
+//!     // The volume of the mesh is also assumed to be in square meters.
+//!     let points_per_m = 0.015;
 //!
 //!     // Sample the points.
-//!     let points = sample_points_from_ppcm(&vertices, &triangles, points_per_cm);
+//!     let points = sample_points_from_ppm(&vertices, &triangles, points_per_m);
 //! }
 //! ```
 //!
 //! # Usage (Unity)
 //!
-//! Add the C# scripts in this repo into your project. Then, add: `using Pincushion;`
+//! To add the codebase to your Unity project:
 //!
-//! To generate points, call `Vector3[] points = mesh.GetSampledPoints(pointsPerCm);` or `int size = mesh.GetSampledPoints(pointsPerCm, ref points);`.
+//! 1. Run: `cargo build --release --features ffi`
+//! 2. Copy into your project all .cs scripts in `cs/` plus the native library: `target/release/pincushion.so` (In Windows, it's `pincushion.dll`)
+//! 3. In your code, add: `using Pincushion;`
 //!
-//! The expected number of points is the product of the mesh volume and `pointsPerCm`.
-//! If you don't include `numPoints`, the output will match the expected number.
-//! If you do include `numPoints`, then `points.Length == numPoints`. This is the (slightly) faster option.
+//! To generate points, call `Vector3[] points = mesh.GetSampledPoints(pointsPerM);`
 //!
-//! To build a library that can be used in Unity/C#: `cargo build --release --features ffi`
-//!
-//! To generate C# native bindings: `cargo run --bin cs --features cs`
+//! Whenever the Rust codebase changes, the C# bindings must change as well. To do this: `cargo run --bin cs --features cs`
 //!
 //! # Example
 //!
@@ -60,8 +69,8 @@ pub type Vertex = [f32; 3];
 pub type Triangle = [usize; 3];
 
 /// - `vertices`: A slice of (x, y, z) vertices.
-/// - `triangles`: A vec of three indices of vertices.
-/// 
+/// - `triangles`: A slice of three indices of vertices.
+///
 /// Returns: The area of each triangle and the total area.
 pub fn get_areas(vertices: &[Vertex], triangles: &[Triangle]) -> (Vec<f32>, f32) {
     let mut areas = vec![0.0; triangles.len()];
@@ -70,10 +79,10 @@ pub fn get_areas(vertices: &[Vertex], triangles: &[Triangle]) -> (Vec<f32>, f32)
 }
 
 /// - `vertices`: A slice of (x, y, z) vertices.
-/// - `triangles`: A vec of three indices of vertices.
-/// - `areas`: A vec that will be filled with the areas of each triangle in `triangles`.
+/// - `triangles`: A slice of three indices of vertices.
+/// - `areas`: A slice that will be filled with the areas of each triangle in `triangles`.
 ///   This must be the same length as `triangles`.
-/// 
+///
 /// Returns: The total area.
 pub fn get_areas_in_place(vertices: &[Vertex], triangles: &[Triangle], areas: &mut [f32]) -> f32 {
     let mut total_area = 0.;
@@ -99,13 +108,13 @@ pub fn get_areas_in_place(vertices: &[Vertex], triangles: &[Triangle], areas: &m
 /// Returns: The volume of the mesh.
 #[cfg_attr(feature = "ffi", safer_ffi::ffi_export)]
 pub fn get_num_points(total_area: f32, points_per_m: f32) -> usize {
-    (total_area * points_per_m) as usize
+    (total_area / points_per_m) as usize
 }
 
 /// Sample points on a mesh, given a density of points.
 ///
 /// - `vertices`: A slice of (x, y, z) vertices.
-/// - `triangles`: A vec of three indices of vertices.
+/// - `triangles`: A slice of three indices of vertices.
 /// - `points_per_m`: The number of points per square meter.
 ///
 /// Returns: An vec of sampled points.
@@ -124,7 +133,7 @@ pub fn sample_points_from_ppm(
 /// Sample random points on the mesh.triangle_end_index
 ///
 /// - `vertices`: A slice of (x, y, z) vertices.
-/// - `triangles`: A vec of three indices of vertices.
+/// - `triangles`: A slice of three indices of vertices.
 /// - `areas`: The area of each triangle. See: [`get_areas(vertices, triangles)`] and [`get_areas_in_place(vertices, triangles, areas)`].
 /// - `total_area`: The total area.
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
@@ -222,22 +231,22 @@ fn magnitude(v: &Vertex) -> f32 {
 mod tests {
     use tobj::{load_obj, GPU_LOAD_OPTIONS};
 
-    use crate::sample_points_from_ppm;
+    use crate::{sample_points_from_ppm, Triangle, Vertex};
 
     #[test]
     fn test_sample_points() {
         let (vertices, triangles) = get_obj();
-        let points = sample_points_from_ppm(&vertices, &triangles, 0.01);
-        assert_eq!(points.len(), 259);
+        let points = sample_points_from_ppm(&vertices, &triangles, 0.015);
+        assert_eq!(points.len(), 831);
     }
 
-    fn get_obj() -> (Vec<[f32; 3]>, Vec<[usize; 3]>) {
+    fn get_obj() -> (Vec<Vertex>, Vec<Triangle>) {
         let obj = &load_obj("tests/suzanne.obj", &GPU_LOAD_OPTIONS).unwrap().0[0].mesh;
         let vertices = obj
             .positions
             .chunks_exact(3)
             .map(|v| [v[0], v[1], v[2]])
-            .collect::<Vec<[f32; 3]>>();
+            .collect::<Vec<Vertex>>();
         let triangles = obj
             .indices
             .chunks_exact(3)
@@ -248,7 +257,7 @@ mod tests {
                     triangle[2] as usize,
                 ]
             })
-            .collect::<Vec<[usize; 3]>>();
+            .collect::<Vec<Triangle>>();
         (vertices, triangles)
     }
 }

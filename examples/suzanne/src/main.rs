@@ -4,7 +4,7 @@ use macroquad::prelude::*;
 
 use tobj::{load_obj, GPU_LOAD_OPTIONS};
 
-use pincushion::sample_points_from_ppcm;
+use pincushion::{sample_points_from_ppm, Triangle, Vertex as PincushionVertex};
 
 #[macroquad::main("3D")]
 async fn main() {
@@ -27,7 +27,7 @@ async fn main() {
         .positions
         .chunks_exact(3)
         .map(|v| [v[0], v[1], v[2]])
-        .collect::<Vec<[f32; 3]>>();
+        .collect::<Vec<PincushionVertex>>();
     let triangles = obj
         .indices
         .chunks_exact(3)
@@ -38,9 +38,9 @@ async fn main() {
                 triangle[2] as usize,
             ]
         })
-        .collect::<Vec<[usize; 3]>>();
+        .collect::<Vec<Triangle>>();
     // Sample the points and convert to macroquad Vec3's.
-    let points = sample_points_from_ppcm(&vertices, &triangles, 0.015)
+    let points = sample_points_from_ppm(&vertices, &triangles, 0.015)
         .iter()
         .map(|point| vec3(point[0], point[1], point[2]))
         .collect::<Vec<Vec3>>();
