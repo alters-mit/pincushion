@@ -105,7 +105,7 @@ pub fn get_areas_in_place(vertices: &[Vertex], triangles: &[Triangle], areas: &m
 /// - `total_area`: The total area of the triangles in square meters. See: `get_areas(vertices, triangles)` and `get_areas_in_place(vertices, triangles, areas)`
 /// - `points_per_m`: The number of points per square meter.
 ///
-/// Returns: The volume of the mesh.
+/// Returns: The number of points to be sampled.
 #[cfg_attr(feature = "ffi", safer_ffi::ffi_export)]
 pub fn get_num_points(total_area: f32, points_per_m: f32) -> usize {
     (total_area / points_per_m) as usize
