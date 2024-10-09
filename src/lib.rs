@@ -65,11 +65,7 @@ pub fn get_areas(vertices: &[Vertex], triangles: &[Triangle]) -> (Vec<f32>, f32)
     (areas, total_area)
 }
 
-pub fn get_areas_in_place(
-    vertices: &[Vertex],
-    triangles: &[Triangle],
-    areas: &mut [f32],
-) -> f32 {
+pub fn get_areas_in_place(vertices: &[Vertex], triangles: &[Triangle], areas: &mut [f32]) -> f32 {
     let mut total_area = 0.;
     triangles
         .iter()
@@ -109,13 +105,7 @@ pub fn sample_points_from_ppcm(
     let (areas, total_area) = get_areas(vertices, triangles);
     let num_points = get_num_points(total_area, points_per_cm);
     let mut points = vec![[0.0; 3]; num_points];
-    sample_points(
-        vertices,
-        triangles,
-        &areas,
-        total_area,
-        &mut points,
-    );
+    sample_points(vertices, triangles, &areas, total_area, &mut points);
     points
 }
 
@@ -134,42 +124,38 @@ pub fn sample_points(
     // The area per point is used to uniformly sample the points.
     let area_per_point = total_area / points.len() as f32;
     let mut rng = thread_rng();
-    let mut area_index = 0;
-    for point in points.iter_mut() {
-        let mut triangle_end_index = area_index;
-        let mut total_accumulated_area = 0.0;
-        for area in areas[area_index..areas.len()].iter() {
-            total_accumulated_area += *area;
-            triangle_end_index += 1;
-            if total_accumulated_area >= area_per_point {
-                break;
+
+    let mut start_index_point = 0;
+    let mut start_triangle_index = 0;
+    let mut total_accumulated_area = 0.0;
+    for (index, area) in areas.iter().enumerate() {
+        total_accumulated_area += *area;
+        if total_accumulated_area >= area_per_point {
+            let num_points = (total_accumulated_area / area_per_point) as usize;
+            for i in 0..num_points {
+                // Get a random triangle.
+                let triangle_index = rng.gen_range(start_triangle_index..=index);
+                let triangle = triangles[triangle_index];
+                // Get a random point on that triangle.
+                // Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
+                let mut u = rng.gen_range(0.0..1.0);
+                let mut v = rng.gen_range(0.0..1.0);
+                let t = f32::sqrt(v);
+                v = u * t;
+                u = (1.0 - u) * t;
+                let w = 1.0 - u - v;
+                points[start_index_point + i] = add(
+                    &add(
+                        &mul(&vertices[triangle[0]], u),
+                        &mul(&vertices[triangle[1]], v),
+                    ),
+                    &mul(&vertices[triangle[2]], w),
+                );
             }
+            start_index_point += num_points;
+            total_accumulated_area = 0.0;
+            start_triangle_index = index + 1;
         }
-        let triangle_index = if triangle_end_index == area_index {
-            triangle_end_index
-        }
-        else {
-            rng.gen_range(area_index..triangle_end_index)
-        };
-        // Increment the area index for next time.
-        area_index = triangle_end_index;
-        // Having found enough area, pick a random triangle.
-        let triangle = triangles[triangle_index];
-        // Get a random point on that triangle.
-        // Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
-        let mut u = rng.gen_range(0.0..1.0);
-        let mut v = rng.gen_range(0.0..1.0);
-        let t = f32::sqrt(v);
-        v = u * t;
-        u = (1.0 - u) * t;
-        let w = 1.0 - u - v;
-        *point = add(
-            &add(
-                &mul(&vertices[triangle[0]], u),
-                &mul(&vertices[triangle[1]], v),
-            ),
-            &mul(&vertices[triangle[2]], w),
-        );
     }
 }
 
