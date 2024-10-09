@@ -3,7 +3,7 @@ name = "pincushion"
 version = "0.1.0"
 edition = "2021"
 authors = ["Esther Alter <alters@mit.edu>"]
-description = "Given a target density, generate randomly sampled points on a mesh"
+description = "Given a mesh and a target density, generate uniformly sampled points on the mesh"
 
 [dependencies]
 rand = "0.8.5"
