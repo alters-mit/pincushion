@@ -53,7 +53,8 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="MonoBehaviour1.cs" />
+        <Compile Include="PointsShaderStatic.shader" />
+        <Compile Include="SampledPointsRenderer.cs" />
         <Compile Include="MeshExtensions.cs" />
         <Compile Include="PincushionNativeBindings.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
