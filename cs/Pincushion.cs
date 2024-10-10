@@ -9,7 +9,7 @@ namespace Pincushion
         public Vector3[] GetSampledPoints(this Mesh mesh, float pointsPerM) 
         {
             // Get the casted indices.
-            UIntPtr[] indices = Array.ConvertAll(mesh.triangles, new Converter<int, UIntPtr>(intToUint64));
+            UIntPtr[] indices = Array.ConvertAll(mesh.triangles, new Converter<int, UIntPtr>(intToUIntPtr));
             // Allocate an array of areas.
             float[] areas = new float[indices.Length];
             unsafe 
@@ -29,7 +29,7 @@ namespace Pincushion
                         len = length,
                         cap = length
                     };
-                    fixed (Uint64* indicesPointer = indices)
+                    fixed (UIntPtr* indicesPointer = indices)
                     {
                         Vec_size_t triangles = new Vec_float_t()
                         {
@@ -63,7 +63,7 @@ namespace Pincushion
         }
 
 
-        private static UIntPtr intToUint64(int i)
+        private static UIntPtr intToUIntPtr(int i)
         {
             return i as UIntPtr;
         }
