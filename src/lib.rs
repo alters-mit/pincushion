@@ -1,6 +1,6 @@
-//! Given a target density, generate randomly sampled points on a mesh.
-//!
-//! This crate was built with Unity/C# bindings in mind.
+//! Uniformly sample points on a mesh. 
+//! 
+//! Includes FFI-safe functions for Unity/C# bindings.
 //!
 //! Imagine, if you will, an animated human that is visually rendered with uniformly sampled points.
 //! This mesh needs to move dynamically, so that number and positions of the points need to change.
@@ -31,12 +31,7 @@
 //!
 //! fn main() {
 //!     let (vertices, triangles) = get_obj("tests/suzanne.obj");
-//!
-//!     // This, plus the volume, controls the number of points per square meter.
-//!     // The volume of the mesh is also assumed to be in square meters.
 //!     let points_per_m = 0.015;
-//!
-//!     // Sample the points.
 //!     let points = sample_points_from_ppm(&vertices, &triangles, points_per_m);
 //! }
 //! ```
