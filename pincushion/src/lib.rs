@@ -1,5 +1,5 @@
-//! Uniformly sample points on a mesh. 
-//! 
+//! Uniformly sample points on a mesh.
+//!
 //! Includes FFI-safe functions for Unity/C# bindings.
 //!
 //! Imagine, if you will, an animated human that is visually rendered with uniformly sampled points.
@@ -58,10 +58,14 @@ pub mod cs;
 #[cfg(feature = "ffi")]
 pub mod ffi;
 
+pub mod quads;
+
+use quads::Quads;
 use rand::{thread_rng, Rng};
 
 pub type Vertex = [f32; 3];
 pub type Triangle = [usize; 3];
+pub type Uv = [f32; 2];
 
 /// - `vertices`: A slice of (x, y, z) vertices.
 /// - `triangles`: A slice of three indices of vertices.
@@ -184,6 +188,58 @@ pub fn sample_points(
             start_index_triangle = index + 1;
         }
     }
+}
+
+pub fn get_quads(points: &[Vertex], size: f32) -> Quads {
+    let length = points.len();
+    let mut quad_vertices = vec![[[0.0; 3]; 4]; length];
+    let mut quad_triangles = vec![[[0; 3]; 2]; length];
+    let mut quad_normals = vec![[[0.0; 3]; 4]; length];
+    let mut quad_uvs = vec![[[0.0; 2]; 4]; length];
+    set_quads(
+        points,
+        &mut quad_vertices,
+        &mut quad_triangles,
+        &mut quad_normals,
+        &mut quad_uvs,
+        size,
+    );
+    Quads {
+        vertices: quad_vertices,
+        triangles: quad_triangles,
+        normals: quad_normals,
+        uvs: quad_uvs,
+    }
+}
+
+pub fn set_quads(
+    points: &[Vertex],
+    quad_vertices: &mut [[Vertex; 4]],
+    quad_triangles: &mut [[Triangle; 2]],
+    quad_normals: &mut [[Vertex; 4]],
+    quad_uvs: &mut [[Uv; 4]],
+    size: f32,
+) {
+    // Set the triangles.
+    quad_triangles.fill([[0, 2, 1], [2, 3, 1]]);
+
+    // Set the normals.
+    quad_normals.fill([[0.0, 0.0, -1.0]; 4]);
+
+    // Set the UVs.
+    quad_uvs.fill([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]]);
+
+    let half_size = size / 2.0;
+    points
+        .iter()
+        .zip(quad_vertices)
+        .for_each(|(point, quad_vertices)| {
+            // Set the vertices.
+            quad_vertices[0] = [point[0] - half_size, point[1] - half_size, point[2]];
+            quad_vertices[1] = [point[0] + half_size, point[1] - half_size, point[2]];
+            quad_vertices[2] = [point[0] - half_size, point[1] + half_size, point[2]];
+            quad_vertices[3] = [point[0] + half_size, point[1] + half_size, point[2]];
+        });
 }
 
 /// Returns the area of a triangle.

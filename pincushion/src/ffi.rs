@@ -4,7 +4,10 @@ use core::slice;
 
 use safer_ffi::ffi_export;
 
-use crate::{get_areas_in_place, sample_points as sample_points_native, Triangle, Vertex};
+use crate::{
+    get_areas_in_place, sample_points as sample_points_native, set_quads as set_quads_native,
+    Triangle, Uv, Vertex,
+};
 
 /// - `vertices`: A flat vec of (x, y, z) vertices.
 /// - `triangles`: A flat vec of three indices of vertices.
@@ -49,6 +52,25 @@ pub fn sample_points(
         let points = ffi_vertices_mut(points);
         sample_points_native(vertices, triangles, areas, total_area, points);
     }
+}
+
+#[ffi_export]
+pub fn set_quads(
+    points: &safer_ffi::Vec<Vertex>,
+    quad_vertices: &mut safer_ffi::Vec<[Vertex; 4]>,
+    quad_triangles: &mut safer_ffi::Vec<[Triangle; 2]>,
+    quad_normals: &mut safer_ffi::Vec<[Vertex; 4]>,
+    quad_uvs: &mut safer_ffi::Vec<[Uv; 4]>,
+    size: f32,
+) {
+    set_quads_native(
+        points,
+        quad_vertices,
+        quad_triangles,
+        quad_normals,
+        quad_uvs,
+        size,
+    );
 }
 
 /// Converts a flat array of vertex coordinates from a safer-ffi vec into a shaped slice of vertices.
