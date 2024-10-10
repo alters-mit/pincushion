@@ -27,19 +27,6 @@ public unsafe partial class Ffi {
 #endif
 }
 
-public unsafe partial class Ffi {
-    /// <summary>
-    /// - <c>volume</c>: The volume of the mesh, assumed to be in meters squared.
-    /// - <c>points_per_cm</c>: The number of points per centimeter.
-    ///
-    /// Returns: The number of points that should be sampled.
-    /// </summary>
-    [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
-    UIntPtr get_num_points_ffi (
-        float volume,
-        float points_per_cm);
-}
-
 /// <summary>
 /// Same as [<c>Vec<T></c>][<c>rust::Vec</c>], but with guaranteed <c>#[repr(C)]</c> layout
 /// </summary>
@@ -66,56 +53,52 @@ public unsafe struct Vec_size_t {
 
 public unsafe partial class Ffi {
     /// <summary>
-    /// - <c>vertices</c>: The vertices as a flat slice of coordinates.
-    /// - <c>triangles</c>: The triangles as a flat slice of indices.
+    /// - <c>vertices</c>: A flat vec of (x, y, z) vertices.
+    /// - <c>triangles</c>: A flat vec of three indices of vertices.
+    /// - <c>areas</c>: A vec that will be filled with the areas of each triangle in <c>triangles</c>.
+    /// This must be the same length as <c>triangles.len() / 3</c>.
     ///
-    /// Returns: The volume of the mesh.
+    /// Returns: The total area.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
-    float get_volume_ffi (
+    float get_areas (
         Vec_float_t /*const*/ * vertices,
-        Vec_size_t /*const*/ * triangles);
+        Vec_size_t /*const*/ * triangles,
+        Vec_float_t * areas);
+}
+
+public unsafe partial class Ffi {
+    /// <summary>
+    /// - <c>total_area</c>: The total area of the triangles in square meters. See: <c>get_areas(vertices, triangles)</c> and <c>get_areas_in_place(vertices, triangles, areas)</c>
+    /// - <c>points_per_m</c>: The number of points per square meter.
+    ///
+    /// Returns: The number of points to be sampled.
+    /// </summary>
+    [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
+    UIntPtr get_num_points (
+        float total_area,
+        float points_per_m);
 }
 
 public unsafe partial class Ffi {
     /// <summary>
     /// Sample random points on the mesh.
     ///
-    /// - <c>vertices</c>: The vertices as a flat slice of coordinates.
-    /// - <c>triangles</c>: The triangles as a flat slice of indices.
-    /// - <c>points</c>: A pre-defined flat slice of coordinates.
-    /// This will be filled with the sampled points.
+    /// - <c>vertices</c>: A flat vec of (x, y, z) vertices.
+    /// - <c>triangles</c>: A flat vec of three indices of vertices.
+    /// - <c>areas</c>: The area of each triangle. See: <c>get_areas(vertices, triangles, areas)</c>
+    /// - <c>total_area</c>: The total area.
+    /// - <c>points</c>: A pre-defined slice of vertices that will be filled with points. The size can differ from <c>triangles</c> and <c>areas</c>.
+    /// This will be filled with the sampled pointsc.
     /// This must be defined on the other side of the FFI boundary.
-    /// To get the expected size of <c>points</c>, call <c>get_volume_ffi(vertices, triangles)</c> followed by <c>get_num_points_ffi(volume, points_per_cm)</c>
+    /// To get the expected size of <c>points</c>, call <c>get_areas(vertices, triangles, areas)</c> followed by <c>get_num_points(total_area, points_per_m)</c>
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
-    void sample_points_ffi (
+    void sample_points (
         Vec_float_t /*const*/ * vertices,
         Vec_size_t /*const*/ * triangles,
-        Vec_float_t * points);
-}
-
-public unsafe partial class Ffi {
-    /// <summary>
-    /// Sample points on a mesh, given a density of points and a pre-defined slice to fill.
-    ///
-    /// - <c>vertices</c>: The vertices as a flat slice of coordinates.
-    /// - <c>triangles</c>: The triangles as a flat slice of indices.
-    /// - <c>points_per_cm</c>: The number of points per centimeter.
-    /// - <c>points</c> A predefined flat slice of coordinates.
-    /// This will be filled with the sampled points.
-    /// The number of points, as derived from <c>points_per_cm</c>, can be more than <c>points.len()</c>.
-    /// If this happens, the entirety of <c>points</c> will be filled, resulting in no error.
-    /// The number of points can also be less than <c>points.len()</c>.
-    /// If this happens, a slice of <c>points</c> is filled.
-    ///
-    /// Returns: The number of sampled points (the size of the <c>points</c> sub-slice).
-    /// </summary>
-    [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
-    UIntPtr sample_points_ffi_from_ppcm (
-        Vec_float_t /*const*/ * vertices,
-        Vec_size_t /*const*/ * triangles,
-        float points_per_cm,
+        Vec_float_t /*const*/ * areas,
+        float total_area,
         Vec_float_t * points);
 }
 

@@ -6,18 +6,26 @@ namespace Pincushion
 {
     public static class PincushionMeshExtensions
     {
-        public Vector3[] GetSampledPoints(this Mesh mesh, float pointsPerCm) 
+        public Vector3[] GetSampledPoints(this Mesh mesh, float pointsPerM) 
         {
             // Get the casted indices.
             UIntPtr[] indices = Array.ConvertAll(mesh.triangles, new Converter<int, UIntPtr>(intToUint64));
+            // Allocate an array of areas.
+            float[] areas = new float[indices.Length];
             unsafe 
             {
-                fixed (float* verticesPointer = (float*)mesh.vertices)
+                fixed (float* verticesPointer = (float*)mesh.vertices, areasPointer = areas)
                 {
-                    UIntPtr length = mesh.vertices.length * 3;
+                    UIntPtr length = mesh.vertices.Length * 3;
                     Vec_float_t vertices = new Vec_float_t()
                     {
                         ptr = verticesPointer,
+                        len = length,
+                        cap = length
+                    };
+                    Vec_float_t areasVec = new Vec_float_t()
+                    {
+                        ptr = areasPointer,
                         len = length,
                         cap = length
                     };
@@ -30,10 +38,10 @@ namespace Pincushion
                             cap = length
                         };
 
-                        // Get the volume.
-                        float volume = Ffi.get_volume_ffi(&vertices, &triangles);
+                        // Get the areas and the total area.
+                        float totalArea = Ffi.get_areas(&vertices, &triangles, &areasVec);
                         // Get the number of points.
-                        UIntPtr numPoints = Ffi.get_num_points_ffi(volume, pointsPerCm);
+                        UIntPtr numPoints = Ffi.get_num_points(total_area, pointsPerM);
                         // Allocate the array.
                         Vector3[] points = new Vector3[numPoints];
                         int pointsLength = numPoints * 3;
@@ -46,56 +54,12 @@ namespace Pincushion
                                 len = pointsLength,
                                 cap = pointsLength
                             };
-                            sample_points_ffi(&vertices, &triangles, &pointsVec);
+                            sample_points(&vertices, &triangles, &areasVec, totalArea, &pointsVec);
                         }
                         return points;
                     }
                 }
             }
-        }
-
-
-        public UIntPtr GetSampledPoints(this Mesh mesh, float pointsPerCm, ref Vector3[] points) 
-        {
-            // Get the casted indices.
-            UIntPtr[] indices = Array.ConvertAll(mesh.triangles, new Converter<int, UIntPtr>(intToUint64));
-            unsafe 
-            {
-                fixed (float* verticesPointer = (float*)mesh.vertices, (float*)points)
-                {
-                    UIntPtr length = mesh.vertices.length * 3;
-                    Vec_float_t vertices = new Vec_float_t()
-                    {
-                        ptr = verticesPointer,
-                        len = length,
-                        cap = length
-                    };
-                    UIntPtr pointsLength = points.length * 3;
-                    Vec_float_t pointsVec = new Vec_float_t()
-                    {
-                        ptr = pointsPointer,
-                        len = pointsLength,
-                        cap = pointsLength
-                    };
-                    fixed (Uint64* indicesPointer = indices)
-                    {
-                        Vec_size_t triangles = new Vec_float_t()
-                        {
-                            ptr = indicesPointer,
-                            len = length,
-                            cap = length
-                        };
-                        // Sample the points.
-                        return sample_points_ffi_from_ppcm(&vertices, &triangles, &points);
-                    }
-                }
-            }
-        }
-
-
-        public int GetSampledPoints(this Mesh mesh, float pointsPerCm, ref Vector3[] points)
-        {
-            return (int)GetSampledPoints(mesh, pointsPerCm, numPoints, ref points);
         }
 
 
