@@ -4,10 +4,7 @@ use core::slice;
 
 use safer_ffi::ffi_export;
 
-use crate::{
-    get_areas_in_place, sample_points as sample_points_native, set_quads as set_quads_native,
-    Triangle, Uv, Vertex,
-};
+use crate::{get_areas_in_place, sample_points as sample_points_native, Triangle, Vertex};
 
 /// - `vertices`: A flat vec of (x, y, z) vertices.
 /// - `triangles`: A flat vec of three indices of vertices.
@@ -54,48 +51,10 @@ pub fn sample_points(
     }
 }
 
-#[ffi_export]
-pub fn set_quads(
-    points: &safer_ffi::Vec<f32>,
-    quad_vertices: &mut safer_ffi::Vec<f32>,
-    quad_triangles: &mut safer_ffi::Vec<usize>,
-    quad_normals: &mut safer_ffi::Vec<f32>,
-    quad_uvs: &mut safer_ffi::Vec<f32>,
-    size: f32,
-) {
-    unsafe {
-        let points = ffi_vertices(points);
-        let quad_vertices = ffi_quad_vertices(quad_vertices);
-        let quad_triangles = slice::from_raw_parts_mut(
-            quad_triangles.as_mut_ptr() as *mut [Triangle; 2],
-            quad_triangles.len() / 6,
-        );
-        let quad_normals = ffi_quad_vertices(quad_normals);
-        let quad_uvs =
-            slice::from_raw_parts_mut(quad_uvs.as_mut_ptr() as *mut [Uv; 4], quad_uvs.len() / 8);
-        set_quads_native(
-            points,
-            quad_vertices,
-            quad_triangles,
-            quad_normals,
-            quad_uvs,
-            size,
-        );
-    }
-}
-
 /// Converts a flat array of vertex coordinates from a safer-ffi vec into a shaped slice of vertices.
 /// e.g.: `[x0, y0, z0, x1, y1, z1, ...]` into `[[x0, y0, z0], [x1, y1, z1], ...]`
 unsafe fn ffi_vertices(vertices: &safer_ffi::Vec<f32>) -> &[Vertex] {
     slice::from_raw_parts(vertices.as_ptr() as *const Vertex, vertices.len() / 3)
-}
-
-/// Converts a flat array of vertex coordinates from a safer-ffi vec of 4 quad vertices.
-unsafe fn ffi_quad_vertices(vertices: &mut safer_ffi::Vec<f32>) -> &mut [[Vertex; 4]] {
-    slice::from_raw_parts_mut(
-        vertices.as_mut_ptr() as *mut [Vertex; 4],
-        vertices.len() / 12,
-    )
 }
 
 /// Converts a flat array of triangle indices from a safer-ffi vec into a shaped slice of triangles.

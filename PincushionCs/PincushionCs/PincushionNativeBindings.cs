@@ -102,16 +102,5 @@ public unsafe partial class Ffi {
         Vec_float_t * points);
 }
 
-public unsafe partial class Ffi {
-    [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
-    void set_quads (
-        Vec_float_t /*const*/ * points,
-        Vec_float_t * quad_vertices,
-        Vec_size_t * quad_triangles,
-        Vec_float_t * quad_normals,
-        Vec_float_t * quad_uvs,
-        float size);
-}
-
 
 } /* Pincushion */
