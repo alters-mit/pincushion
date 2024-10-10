@@ -3,7 +3,7 @@ name = "pincushion"
 version = "0.1.0"
 edition = "2021"
 authors = ["Esther Alter <alters@mit.edu>"]
-description = "Given a mesh and a target density, generate uniformly sampled points on the mesh"
+description = "Uniformly sample points on a mesh. Includes FFI-safe functions for Unity/C# bindings."
 
 [dependencies]
 rand = "0.8.5"
@@ -13,6 +13,7 @@ safer-ffi = { version = "0.1.13", optional = true }
 crate-type = ["lib", "cdylib"]
 
 [features]
+default = ["ffi"]
 ffi = ["dep:safer-ffi"]
 cs = ["safer-ffi/headers"]
 

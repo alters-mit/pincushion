@@ -45,7 +45,7 @@
 //!
 //! To add the codebase to your Unity project:
 //!
-//! 1. Run: `cargo build --release --features ffi`
+//! 1. Run: `cargo build --release`
 //! 2. Copy into your project all .cs scripts in `cs/` plus the native library: `target/release/pincushion.so` (In Windows, it's `pincushion.dll`)
 //! 3. In your code, add: `using Pincushion;`
 //!
