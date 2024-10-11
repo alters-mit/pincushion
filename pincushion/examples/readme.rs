@@ -26,5 +26,5 @@ fn get_obj(path: &str) -> (Vec<Vertex>, Vec<Triangle>) {
 fn main() {
     let (vertices, triangles) = get_obj("tests/suzanne.obj");
     let points_per_m = 0.015;
-    let points = sample_points_from_ppm(&vertices, &triangles, points_per_m);
+    let _ = sample_points_from_ppm(&vertices, &triangles, points_per_m);
 }
