@@ -1,5 +1,4 @@
-﻿// Source: https://github.com/keijiro/Pcx/blob/master/Packages/jp.keijiro.pcx/Runtime/Shaders/Disk.cginc
-Shader "Pincushion/StaticPoints" {
+﻿Shader "Pincushion/StaticPoints" {
 	Properties {
 		_Color ("Color", Color) = (0.9, 0.9, 0.9, 1)
 		_PointSize("Point Size", Float) = 0.02
@@ -32,6 +31,7 @@ Shader "Pincushion/StaticPoints" {
                 return o;
             }
 
+			// Source: https://github.com/keijiro/Pcx/blob/master/Packages/jp.keijiro.pcx/Runtime/Shaders/Disk.cginc
 			[maxvertexcount(36)]
 			void geom(point Point input[1], inout TriangleStream<Point> outStream)
 			{
