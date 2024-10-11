@@ -11,7 +11,7 @@ namespace Pincushion
     /// </summary>
     [RequireComponent(typeof(MeshFilter))]
     [RequireComponent(typeof(MeshRenderer))]
-    public class StaticSampledPointsGenerator : MonoBehaviour
+    public class PincushionGenerator : MonoBehaviour
     {
         /// <summary>
         /// The number of points per square meter.
@@ -28,7 +28,7 @@ namespace Pincushion
         /// <summary>
         /// What to do with the points once they've been sampled.
         /// </summary>
-        public StaticPointsCreationMode mode = StaticPointsCreationMode.replace;
+        public CreationMode mode = CreationMode.replace;
 
 
         private void Awake()
@@ -44,17 +44,17 @@ namespace Pincushion
             material.SetColor("_Color", color);
             
             // Decide what to do with the material and points.
-            if (mode == StaticPointsCreationMode.create)
+            if (mode == CreationMode.create)
             {
                 Create(points, material);
             }
-            else if (mode == StaticPointsCreationMode.replace)
+            else if (mode == CreationMode.replace)
             {
                 meshFilter.mesh.vertices = points;
                 meshFilter.mesh.SetTopology();
                 GetComponent<MeshRenderer>().material = material;
             }
-            else if (mode == StaticPointsCreationMode.createAndHideOriginal)
+            else if (mode == CreationMode.createAndHideOriginal)
             {
                 Create(points, material).SetOriginalVisibility(false);
             }
@@ -70,7 +70,7 @@ namespace Pincushion
         /// </summary>
         /// <param name="points">The sampled points.</param>
         /// <param name="material">A material that will be used with the points.</param>
-        private StaticPointsRenderer Create(Vector3[] points, Material material)
+        private PincushionRenderer Create(Vector3[] points, Material material)
         {
             // Create a new object.
             GameObject go = new GameObject();
@@ -91,7 +91,7 @@ namespace Pincushion
             // Set the material.
             mr.material = material;
             // Render.
-            StaticPointsRenderer staticPointsRenderer = go.AddComponent<StaticPointsRenderer>();
+            PincushionRenderer staticPointsRenderer = go.AddComponent<PincushionRenderer>();
             staticPointsRenderer.originalGameObject = gameObject;
             staticPointsRenderer.meshRenderer = mr;
             // Parent myself.

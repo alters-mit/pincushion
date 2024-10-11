@@ -53,12 +53,12 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="StaticSampledPointsGenerator.cs" />
+        <Compile Include="PincushionGenerator.cs" />
         <Compile Include="MeshExtensions.cs" />
         <Compile Include="PincushionNativeBindings.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
-        <Compile Include="StaticPointsCreationMode.cs" />
-        <Compile Include="StaticPointsRenderer.cs" />
+        <Compile Include="CreationMode.cs" />
+        <Compile Include="PincushionRenderer.cs" />
     </ItemGroup>
     <ItemGroup>
       <None Include="packages.config" />

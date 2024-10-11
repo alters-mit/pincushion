@@ -13,44 +13,15 @@
 //! So, you could sample the points exactly once and use them later.
 //! That's what this crate is for.
 //!
-//! # Usage (native Rust)
-//!
+//! ### Usage
+//! 
 //! ```
-//! use tobj::{load_obj, GPU_LOAD_OPTIONS};
-//!
-//! use pincushion::{sample_points_from_ppm, Vertex, Triangle};
-//!
-//! fn get_obj(path: &str) -> (Vec<Vertex>, Vec<Triangle>) {
-//!     let obj = &load_obj(path, &GPU_LOAD_OPTIONS).unwrap().0[0].mesh;
-//!     let vertices = obj.positions.chunks_exact(3).map(|v| [v[0], v[1], v[2]]).collect::<Vec<Vertex>>();
-//!     let triangles = obj.indices.chunks_exact(3).map(|triangle|
-//!         [triangle[0] as usize, triangle[1] as usize, triangle[2] as usize]
-//!     ).collect::<Vec<Triangle>>();
-//!     (vertices, triangles)
-//! }
-//!
-//! fn main() {
-//!     let (vertices, triangles) = get_obj("tests/suzanne.obj");
-//!     let points_per_m = 0.015;
-//!     let points = sample_points_from_ppm(&vertices, &triangles, points_per_m);
-//! }
+#![doc = include_str!("../examples/readme.rs")]
 //! ```
 //!
-//! # Usage (Unity)
+//! Documentation for Unity/C# can be found [here](https://github.com/alters-mit/pincushion).
 //!
-//! To add the codebase to your Unity project:
-//!
-//! 1. Run: `cargo build --release`
-//! 2. Copy into your project all .cs scripts in `cs/` plus the native library: `target/release/pincushion.so` (In Windows, it's `pincushion.dll`)
-//! 3. In your code, add: `using Pincushion;`
-//!
-//! To generate points, call `Vector3[] points = mesh.GetSampledPoints(pointsPerM);`
-//!
-//! Whenever the Rust codebase changes, the C# bindings must change as well. To do this: `cargo run --bin cs --features cs`
-//!
-//! # Example
-//!
-//! To run the example: `cargo run --example suzanne`
+#![doc = include_str!("../../readme_rs.md")]
 
 #[cfg(feature = "cs")]
 pub mod cs;
