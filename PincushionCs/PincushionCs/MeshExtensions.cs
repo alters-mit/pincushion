@@ -5,14 +5,23 @@ using UnityEngine;
 
 namespace Pincushion
 {
+    /// <summary>
+    /// Mesh extensions that enabled the usage of points sampled by Pincushion.
+    /// </summary>
     public static class MeshExtensions
     {
+        /// <summary>
+        /// Uniformly sample points on a mesh.
+        /// </summary>
+        /// <param name="mesh">(this)</param>
+        /// <param name="pointsPerM">The number of points per square meter.</param>
         public static Vector3[] GetSampledPoints(this Mesh mesh, float pointsPerM) 
         {
             // Get the casted indices.
             UIntPtr[] indices = Array.ConvertAll(mesh.triangles, intToUIntPtr);
             unsafe
             {
+                // All `fixed` statements are boilerplate C#-to-Rust declarations.
                 fixed (Vector3* verticesPointerVec3 = mesh.vertices)
                 {
                     UIntPtr verticesLength = (UIntPtr)(mesh.vertices.Length * 3);
@@ -22,8 +31,8 @@ namespace Pincushion
                         len = verticesLength,
                         cap = verticesLength
                     };
-                    // Allocate an array of areas.
                     int numTriangles = mesh.triangles.Length / 3;
+                    // Allocate an array of areas.
                     float[] areas = new float[numTriangles];
                     UIntPtr areasLength = (UIntPtr)numTriangles;
                     fixed (float* areasPointer = areas)
@@ -70,6 +79,10 @@ namespace Pincushion
         }
         
         
+        /// <summary>
+        /// Set the mesh topology of the sampled points.
+        /// </summary>
+        /// <param name="mesh">(this)</param>
         public static void SetTopology(this Mesh mesh)
         {
             int length = mesh.vertices.Length;

@@ -5,13 +5,29 @@ using UnityEngine;
 
 namespace Pincushion
 {
+    /// <summary>
+    /// Generate sampled points.
+    /// Either set this mesh's vertices and rendering parameters to show the mesh or create a new mesh + parameters.
+    /// </summary>
     [RequireComponent(typeof(MeshFilter))]
     [RequireComponent(typeof(MeshRenderer))]
     public class StaticSampledPointsGenerator : MonoBehaviour
     {
+        /// <summary>
+        /// The number of points per square meter.
+        /// </summary>
         public float pointsPerM = 0.015f;
+        /// <summary>
+        /// The size of each point in meters.
+        /// </summary>
         public float pointSize = 0.02f;
+        /// <summary>
+        /// The color of each point.
+        /// </summary>
         public Color color = new Color(0.9f, 0.9f, 0.9f);
+        /// <summary>
+        /// What to do with the points once they've been sampled.
+        /// </summary>
         public StaticPointsCreationMode mode = StaticPointsCreationMode.replace;
 
 
@@ -49,6 +65,11 @@ namespace Pincushion
         }
 
 
+        /// <summary>
+        /// Create a new object to render the sampled points.
+        /// </summary>
+        /// <param name="points">The sampled points.</param>
+        /// <param name="material">A material that will be used with the points.</param>
         private StaticPointsRenderer Create(Vector3[] points, Material material)
         {
             // Create a new object.
@@ -71,13 +92,11 @@ namespace Pincushion
             mr.material = material;
             // Render.
             StaticPointsRenderer staticPointsRenderer = go.AddComponent<StaticPointsRenderer>();
-            staticPointsRenderer.o = gameObject;
-            staticPointsRenderer.r = mr;
+            staticPointsRenderer.originalGameObject = gameObject;
+            staticPointsRenderer.meshRenderer = mr;
             // Parent myself.
             t.parent = go.transform;
             return staticPointsRenderer;
         }
-
-
     }
 }
