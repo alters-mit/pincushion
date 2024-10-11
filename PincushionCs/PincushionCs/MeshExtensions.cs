@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UnityEngine;
 
 
@@ -66,6 +67,13 @@ namespace Pincushion
                     }
                 }
             }
+        }
+        
+        
+        public static void SetTopology(this Mesh mesh)
+        {
+            int length = mesh.vertices.Length;
+            mesh.SetIndices(Enumerable.Range(0, length).ToArray(), 0, length, MeshTopology.Points, 0);
         }
 
 

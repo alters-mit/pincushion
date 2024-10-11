@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UnityEngine;
 
 
@@ -34,6 +35,7 @@ namespace Pincushion
             else if (mode == StaticPointsCreationMode.replace)
             {
                 meshFilter.mesh.vertices = points;
+                meshFilter.mesh.SetTopology();
                 GetComponent<MeshRenderer>().material = material;
             }
             else if (mode == StaticPointsCreationMode.createAndHideOriginal)
@@ -59,6 +61,9 @@ namespace Pincushion
             // Add the mesh and the renderer.
             Mesh sampledMesh = new Mesh();
             sampledMesh.vertices = points;
+            sampledMesh.SetTopology();
+            int[] indices = Enumerable.Range(0, points.Length).ToArray();
+            sampledMesh.SetIndices(indices, 0, indices.Length, MeshTopology.Points, 0);
             MeshFilter meshFilter = go.AddComponent<MeshFilter>();
             meshFilter.mesh = sampledMesh;
             MeshRenderer mr = go.AddComponent<MeshRenderer>();
@@ -72,5 +77,7 @@ namespace Pincushion
             t.parent = go.transform;
             return staticPointsRenderer;
         }
+
+
     }
 }
