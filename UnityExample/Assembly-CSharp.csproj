@@ -55,6 +55,7 @@
      <Compile Include="Assets\Pincushion\PincushionNativeBindings.cs" />
      <Compile Include="Assets\Pincushion\MeshExtensions.cs" />
      <Compile Include="Assets\Pincushion\SampledPointsRenderer.cs" />
+     <None Include="Assets\Pincushion\StaticPoints.shader" />
  <Reference Include="UnityEngine">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2020.3.24f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
  </Reference>
