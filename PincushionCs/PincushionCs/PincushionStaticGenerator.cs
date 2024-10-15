@@ -22,7 +22,7 @@ namespace Pincushion
         {
             // Get the underlying mesh.
             MeshFilter meshFilter = GetComponent<MeshFilter>();
-            Mesh mesh = meshFilter.mesh.GetIcosahedra(pointsPerM, pointRadius);
+            Mesh mesh = meshFilter.mesh.GetIcosahedrons(pointsPerM, pointRadius);
 
             // Decide what to do with the material and points.
             if (mode == PincushionStaticCreationMode.create)

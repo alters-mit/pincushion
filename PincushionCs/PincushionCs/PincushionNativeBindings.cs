@@ -81,8 +81,20 @@ public unsafe partial class Ffi {
 }
 
 public unsafe partial class Ffi {
+    /// <summary>
+    /// Sample random points in a mesh and generate a single mesh compose of icosahedrons.
+    ///
+    /// - <c>vertices</c>: A flat vec of (x, y, z) vertices.
+    /// - <c>triangles</c>: A flat vec of three indices of vertices.
+    /// - <c>areas</c>: The area of each triangle. See: <c>get_areas(vertices, triangles, areas)</c>
+    /// - <c>total_area</c>: The total area.
+    /// - <c>radius</c>: The radius of each icosahedron.
+    /// - <c>points</c>: A pre-defined slice of vertices that will be filled with points. The size can differ from <c>triangles</c> and <c>areas</c>.
+    /// - <c>ico_vertices</c> The vertices of *all* icosahedrons in the mesh. Expected size: <c>points.len() * 12</c>.
+    /// - <c>ico_triangles</c> The triangle indices of *all* icosahedrons in the mesh. Expected size: <c>points.len() * 20</c>.
+    /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
-    void points_to_icosahedra (
+    void points_to_icosahedrons (
         Vec_float_t /*const*/ * vertices,
         Vec_size_t /*const*/ * triangles,
         Vec_float_t /*const*/ * areas,

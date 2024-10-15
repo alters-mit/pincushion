@@ -20,7 +20,6 @@ namespace Pincushion
             mesh.triangles = new int[points.Length * 3];
             mesh.vertices = points;
             mesh.SetPointTopology();
-            skinnedMeshRenderer.sharedMesh = mesh;
             // Set the material.
             Material material = new Material(Shader.Find("Pincushion/DynamicPoints"));
             material.SetColor("_Color", color); ;
@@ -28,15 +27,16 @@ namespace Pincushion
             // Decide what to do with the material.
             if (mode == PincushionStaticCreationMode.create)
             {
-                Create(material, skinnedMeshRenderer);
+                Create(mesh, material, skinnedMeshRenderer);
             }
             else if (mode == PincushionStaticCreationMode.replace)
             {
+                skinnedMeshRenderer.sharedMesh = mesh;
                 skinnedMeshRenderer.material = material;
             }
             else if (mode == PincushionStaticCreationMode.createAndHideOriginal)
             {
-                Create(material, skinnedMeshRenderer).SetOriginalVisibility(false);
+                Create(mesh, material, skinnedMeshRenderer).SetOriginalVisibility(false);
             }
             else
             {
@@ -48,9 +48,10 @@ namespace Pincushion
         /// <summary>
         /// Create a new object to render the sampled points.
         /// </summary>
+        /// <param name="mesh">The point cloud mesh.</param>
         /// <param name="material">The point cloud material.</param>
         /// <param name="skinnedMeshRenderer">The original renderer.</param>
-        private PincushionRenderer Create(Material material, SkinnedMeshRenderer skinnedMeshRenderer)
+        private PincushionRenderer Create(Mesh mesh, Material material, SkinnedMeshRenderer skinnedMeshRenderer)
         {
             // Instantiate.
             GameObject go = new GameObject();
@@ -69,7 +70,7 @@ namespace Pincushion
             smr.skinnedMotionVectors = skinnedMeshRenderer.skinnedMotionVectors;
             smr.forceMatrixRecalculationPerRender = skinnedMeshRenderer.forceMatrixRecalculationPerRender;
             smr.material = material;
-            smr.sharedMesh = skinnedMeshRenderer.sharedMesh;
+            smr.sharedMesh = mesh;
 
             // Render.
             PincushionRenderer pincushionRenderer = go.AddComponent<PincushionRenderer>();

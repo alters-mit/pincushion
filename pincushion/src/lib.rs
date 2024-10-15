@@ -2,17 +2,6 @@
 //!
 //! Includes FFI-safe functions for Unity/C# bindings.
 //!
-//! Imagine, if you will, an animated human that is visually rendered with uniformly sampled points.
-//! This mesh needs to move dynamically, so that number and positions of the points need to change.
-//! The best way to do that is in a shader.
-//! This crate *doesn't* cover this use-case.
-//!
-//! *However,* suppose you want the animated human to walk in a room that is also rendered in uniformly sampled points.
-//! In that case, the room geometry is static.
-//! The sampled points never need to change.
-//! So, you could sample the points exactly once and use them later.
-//! That's what this crate is for.
-//!
 //! ### Usage
 //!
 //! ```
@@ -160,11 +149,17 @@ pub fn sample_points(
     }
 }
 
-pub fn points_to_icosahedra_in_place(
+/// Convert a slice of (x, y, z) points into a single mesh composed of multiple icosahedrons (12-sided die).
+///
+/// - `points` The sampled points.
+/// - `radius` The radius of each icosahedron.
+/// - `vertices` The vertices of *all* icosahedrons in the mesh. Expected size: `points.len() * 12`.
+/// - `triangles` The triangle indices of *all* icosahedrons in the mesh. Expected size: `points.len() * 20`.
+pub fn points_to_icosahedrons_in_place(
     points: &[Vertex],
     radius: f32,
-    ico_vertices: &mut [Vertex],
-    ico_triangles: &mut [Triangle],
+    vertices: &mut [Vertex],
+    triangles: &mut [Triangle],
 ) {
     const TRIANGLES: [Triangle; NUM_ICOSAHEDRON_TRIANGLES] = [
         [0, 11, 5],
@@ -191,7 +186,7 @@ pub fn points_to_icosahedra_in_place(
 
     // Source: https://superhedralcom.wordpress.com/2020/05/17/building-the-unit-icosahedron/
     let t = radius * ((1.0 + f32::sqrt(5.0)) / 2.0);
-    let vertices = [
+    let ico_vertices = [
         [-radius, t, 0.],
         [radius, t, 0.],
         [-radius, -t, 0.],
@@ -210,13 +205,13 @@ pub fn points_to_icosahedra_in_place(
         .iter()
         .enumerate()
         .zip(
-            ico_vertices
+            vertices
                 .chunks_exact_mut(NUM_ICOSAHEDRON_VERTICES)
-                .zip(ico_triangles.chunks_exact_mut(NUM_ICOSAHEDRON_TRIANGLES)),
+                .zip(triangles.chunks_exact_mut(NUM_ICOSAHEDRON_TRIANGLES)),
         )
         .for_each(|((i, point), (verts, tris))| {
             // Copy the vertex.
-            verts.copy_from_slice(&vertices);
+            verts.copy_from_slice(&ico_vertices);
             // Set the positions of the vertices.
             verts.iter_mut().for_each(|v| add_mut(v, point));
             // Copy the indices.
@@ -227,11 +222,15 @@ pub fn points_to_icosahedra_in_place(
         });
 }
 
-pub fn points_to_icosahedra(points: &[Vertex], radius: f32) -> (Vec<Vertex>, Vec<Triangle>) {
+/// Convert a slice of (x, y, z) points into a single mesh composed of multiple icosahedrons (12-sided die).
+///
+/// - `points` The sampled points.
+/// - `radius` The radius of each icosahedron.
+pub fn points_to_icosahedrons(points: &[Vertex], radius: f32) -> (Vec<Vertex>, Vec<Triangle>) {
     let length = points.len();
     let mut ico_vertices = vec![[0.; 3]; NUM_ICOSAHEDRON_VERTICES * length];
     let mut ico_triangles = vec![[0; 3]; NUM_ICOSAHEDRON_TRIANGLES * length];
-    points_to_icosahedra_in_place(points, radius, &mut ico_vertices, &mut ico_triangles);
+    points_to_icosahedrons_in_place(points, radius, &mut ico_vertices, &mut ico_triangles);
     (ico_vertices, ico_triangles)
 }
 
@@ -279,7 +278,10 @@ fn magnitude(v: &Vertex) -> f32 {
 mod tests {
     use tobj::{load_obj, GPU_LOAD_OPTIONS};
 
-    use crate::{points_to_icosahedra, sample_points_from_ppm, Triangle, Vertex, NUM_ICOSAHEDRON_TRIANGLES, NUM_ICOSAHEDRON_VERTICES};
+    use crate::{
+        points_to_icosahedrons, sample_points_from_ppm, Triangle, Vertex,
+        NUM_ICOSAHEDRON_TRIANGLES, NUM_ICOSAHEDRON_VERTICES,
+    };
 
     #[test]
     fn test_sample_points() {
@@ -292,11 +294,17 @@ mod tests {
     fn test_icosahedra() {
         let (vertices, triangles) = get_obj();
         let points = sample_points_from_ppm(&vertices, &triangles, 0.015);
-        let (ico_vertices, ico_triangles) = points_to_icosahedra(&points, 0.02);
+        let (ico_vertices, ico_triangles) = points_to_icosahedrons(&points, 0.02);
         let num_ico_vertices = ico_vertices.iter().flatten().count();
         assert_eq!(ico_vertices.len(), points.len() * NUM_ICOSAHEDRON_VERTICES);
-        assert_eq!(ico_triangles.len(), points.len() * NUM_ICOSAHEDRON_TRIANGLES);
-        ico_triangles.iter().flatten().for_each(|i| assert!(*i < num_ico_vertices, "{} {}", i, num_ico_vertices));
+        assert_eq!(
+            ico_triangles.len(),
+            points.len() * NUM_ICOSAHEDRON_TRIANGLES
+        );
+        ico_triangles
+            .iter()
+            .flatten()
+            .for_each(|i| assert!(*i < num_ico_vertices, "{} {}", i, num_ico_vertices));
     }
 
     fn get_obj() -> (Vec<Vertex>, Vec<Triangle>) {

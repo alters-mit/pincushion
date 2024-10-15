@@ -82,12 +82,12 @@ namespace Pincushion
         /// <summary>
         /// Uniformly sample points on a mesh.
         /// Convert the points to icosahedra.
-        /// Combine the icosahedra into a single mesh.
+        /// Combine the icosahedrons into a single mesh.
         /// </summary>
         /// <param name="mesh">(this)</param>
         /// <param name="pointsPerM">The number of points per square meter.</param>
         /// <param name="radius">The radius of each icosahedron.</param>
-        public static Mesh GetIcosahedra(this Mesh mesh, float pointsPerM, float radius) 
+        public static Mesh GetIcosahedrons(this Mesh mesh, float pointsPerM, float radius) 
         {
             // Get the casted indices.
             UIntPtr[] indices = Array.ConvertAll(mesh.triangles, intToUIntPtr);
@@ -162,7 +162,7 @@ namespace Pincushion
                                     };
                                     
                                     // Sample the points and get spheres.
-                                    Ffi.points_to_icosahedra(&vertices, &triangles, &areasVec,
+                                    Ffi.points_to_icosahedrons(&vertices, &triangles, &areasVec,
                                         totalArea, radius, &pointsVec, 
                                         &icosahedraVerticesVec, &icosahedraIndicesVec);
                                     

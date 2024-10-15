@@ -5,7 +5,7 @@ use core::slice;
 use safer_ffi::ffi_export;
 
 use crate::{
-    get_areas_in_place, points_to_icosahedra_in_place, sample_points as sample_points_native,
+    get_areas_in_place, points_to_icosahedrons_in_place, sample_points as sample_points_native,
     Triangle, Vertex,
 };
 
@@ -54,8 +54,18 @@ pub fn sample_points(
     }
 }
 
+/// Sample random points in a mesh and generate a single mesh compose of icosahedrons.
+///
+/// - `vertices`: A flat vec of (x, y, z) vertices.
+/// - `triangles`: A flat vec of three indices of vertices.
+/// - `areas`: The area of each triangle. See: `get_areas(vertices, triangles, areas)`
+/// - `total_area`: The total area.
+/// - `radius`: The radius of each icosahedron.
+/// - `points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
+/// - `ico_vertices` The vertices of *all* icosahedrons in the mesh. Expected size: `points.len() * 12`.
+/// - `ico_triangles` The triangle indices of *all* icosahedrons in the mesh. Expected size: `points.len() * 20`.
 #[ffi_export]
-pub fn points_to_icosahedra(
+pub fn points_to_icosahedrons(
     vertices: &safer_ffi::Vec<f32>,
     triangles: &safer_ffi::Vec<usize>,
     areas: &safer_ffi::Vec<f32>,
@@ -74,7 +84,7 @@ pub fn points_to_icosahedra(
         // Get icosahedra.
         let ico_vertices = ffi_vertices_mut(ico_vertices);
         let ico_triangles = ffi_triangles_mut(ico_triangles);
-        points_to_icosahedra_in_place(points, radius, ico_vertices, ico_triangles);
+        points_to_icosahedrons_in_place(points, radius, ico_vertices, ico_triangles);
     }
 }
 
