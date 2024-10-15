@@ -4,15 +4,15 @@
 namespace Pincushion
 {
     /// <summary>
-    /// This script manages the MeshRenderer that renders the sampled points mesh as well as the original object.
+    /// This script manages the Renderer that renders the sampled points mesh as well as the original object.
     /// </summary>
     public class PincushionRenderer : MonoBehaviour
     {
         /// <summary>
-        /// My MeshRenderer.
+        /// My Renderer.
         /// </summary>
         [HideInInspector]
-        public MeshRenderer meshRenderer;
+        public Renderer myRenderer;
         /// <summary>
         /// The original GameObject. This is assumed to be parented to me.
         /// </summary>
@@ -21,12 +21,12 @@ namespace Pincushion
 
         
         /// <summary>
-        /// Show/hide my MeshRenderer.
+        /// Show/hide my Renderer.
         /// </summary>
         /// <param name="show">If true, show.</param>
         public void SetMyVisibility(bool show)
         {
-            meshRenderer.enabled = show;
+            myRenderer.enabled = show;
         }
         
         

@@ -9,7 +9,7 @@ namespace Pincushion
     /// Either set this mesh's vertices and rendering parameters to show the mesh or create a new mesh + parameters.
     /// </summary>
     [RequireComponent(typeof(MeshFilter))]
-    [RequireComponent(typeof(MeshRenderer))]
+    [RequireComponent(typeof(Renderer))]
     public class PincushionGenerator : MonoBehaviour
     {
         /// <summary>
@@ -21,35 +21,56 @@ namespace Pincushion
         /// </summary>
         public float pointRadius = 0.02f;
         /// <summary>
-        /// The color of each point.
-        /// </summary>
-        public Color color = new Color(0.9f, 0.9f, 0.9f);
-        /// <summary>
         /// What to do with the points once they've been sampled.
         /// </summary>
         public CreationMode mode = CreationMode.replace;
-
+        /// <summary>
+        /// The points will be rendered with this material.
+        /// </summary>
         public Material material;
 
 
-        private void Awake()
+        private void Start()
         {
+            // Get the underlying mesh.
             MeshFilter meshFilter = GetComponent<MeshFilter>();
-            Mesh pointsMesh = meshFilter.mesh.GetIcosahedra(pointsPerM, pointRadius);
+            SkinnedMeshRenderer skinnedMeshRenderer;
+            Mesh pointsMesh;
+            bool isStatic;
+            if (meshFilter == null)
+            {
+                skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
+                pointsMesh = skinnedMeshRenderer.sharedMesh.GetIcosahedra(pointsPerM, pointRadius);
+                isStatic = true;
+            }
+            else
+            {
+                skinnedMeshRenderer = null;
+                pointsMesh = meshFilter.mesh.GetIcosahedra(pointsPerM, pointRadius);
+                isStatic = false;
+            }
 
             // Decide what to do with the material and points.
             if (mode == CreationMode.create)
             {
-                Create(pointsMesh);
+                Create(pointsMesh, isStatic);
             }
             else if (mode == CreationMode.replace)
             {
-                meshFilter.mesh = pointsMesh;
-                GetComponent<MeshRenderer>().material = material;
+                if (meshFilter != null)
+                {
+                    meshFilter.mesh = pointsMesh;
+                    GetComponent<Renderer>().material = material;
+                }
+                else if (skinnedMeshRenderer != null)
+                {
+                    skinnedMeshRenderer.sharedMesh = pointsMesh;
+                    skinnedMeshRenderer.material = material;
+                }
             }
             else if (mode == CreationMode.createAndHideOriginal)
             {
-                Create(pointsMesh).SetOriginalVisibility(false);
+                Create(pointsMesh, isStatic).SetOriginalVisibility(false);
             }
             else
             {
@@ -62,27 +83,41 @@ namespace Pincushion
         /// Create a new object to render the sampled points.
         /// </summary>
         /// <param name="mesh">The sampled mesh.</param>
-        private PincushionRenderer Create(Mesh mesh)
+        /// <param name="isStaticMesh">If true, this is a static mesh (MeshRenderer). If false, this is a dynamic mesh (SkinnedMeshRenderer).</param>
+        private PincushionRenderer Create(Mesh mesh, bool isStaticMesh)
         {
-            // Create a new object.
-            GameObject go = new GameObject();
+            // Create a copy of this object.
+            GameObject go = Instantiate(gameObject);
+            // Prevent an infinite loop.
+            Destroy(go.GetComponent<PincushionGenerator>());
             // Match my transform.
             Transform t = transform;
             go.transform.position = t.position;
             go.transform.rotation = t.rotation;
             go.transform.localScale = t.localScale;
-            
-            go.AddComponent<MeshFilter>().mesh = mesh;
-            MeshRenderer mr = go.AddComponent<MeshRenderer>();
+
+            Renderer r;
+            if (isStaticMesh)
+            {
+                go.GetComponent<MeshFilter>().mesh = mesh;
+                r = go.GetComponent<MeshRenderer>();      
+            }
+            else
+            {
+                r = go.GetComponent<SkinnedMeshRenderer>();
+                ((SkinnedMeshRenderer)r).sharedMesh = mesh;
+            }
+
             // Set the material.
-            mr.material = material;
+            r.material = material;
+            
             // Render.
-            PincushionRenderer staticPointsRenderer = go.AddComponent<PincushionRenderer>();
-            staticPointsRenderer.originalGameObject = gameObject;
-            staticPointsRenderer.meshRenderer = mr;
+            PincushionRenderer pincushionRenderer = go.AddComponent<PincushionRenderer>();
+            pincushionRenderer.originalGameObject = gameObject;
+            pincushionRenderer.myRenderer = r;
             // Parent myself.
             t.parent = go.transform;
-            return staticPointsRenderer;
+            return pincushionRenderer;
         }
     }
 }
