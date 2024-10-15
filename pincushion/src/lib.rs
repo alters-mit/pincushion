@@ -29,14 +29,14 @@ pub mod cs;
 #[cfg(feature = "ffi")]
 pub mod ffi;
 
-use hexasphere::shapes::IcoSphere;
 use rand::{thread_rng, Rng};
 
 pub type Vertex = [f32; 3];
 pub type Triangle = [usize; 3];
 
 const NUM_ICOSAHEDRON_VERTICES: usize = 12;
-const NUM_ICOSAHEDRON_TRIANGLE_INDICES: usize = 60;
+const NUM_ICOSAHEDRON_TRIANGLES: usize = 20;
+const NUM_ICOSAHEDRON_TRIANGLE_INDICES: usize = NUM_ICOSAHEDRON_TRIANGLES * 3;
 
 /// - `vertices`: A slice of (x, y, z) vertices.
 /// - `triangles`: A slice of three indices of vertices.
@@ -161,18 +161,52 @@ pub fn sample_points(
     }
 }
 
-pub fn points_to_icosahedra_in_place(points: &[Vertex], ico_vertices: &mut [Vertex], ico_triangles: &mut [Triangle]) {
-    let sphere = IcoSphere::new(20, |_| ());
-    let sphere_vertices = sphere
-        .raw_points()
-        .iter()
-        .map(|point| [point.x, point.y, point.z])
-        .collect::<Vec<Vertex>>();
-    let sphere_indices = sphere
-        .get_all_indices()
-        .chunks_exact(3)
-        .map(|chunk| [chunk[0] as usize, chunk[1] as usize, chunk[2] as usize])
-        .collect::<Vec<Triangle>>();
+pub fn points_to_icosahedra_in_place(
+    points: &[Vertex],
+    radius: f32,
+    ico_vertices: &mut [Vertex],
+    ico_triangles: &mut [Triangle],
+) {
+    const TRIANGLES: [Triangle; NUM_ICOSAHEDRON_TRIANGLES] = [
+        [0, 11, 5],
+        [0, 5, 1],
+        [0, 1, 7],
+        [0, 7, 10],
+        [0, 10, 11],
+        [1, 5, 9],
+        [5, 11, 4],
+        [11, 10, 2],
+        [10, 7, 6],
+        [7, 1, 8],
+        [3, 9, 4],
+        [3, 4, 2],
+        [3, 2, 6],
+        [3, 6, 8],
+        [3, 8, 9],
+        [4, 9, 5],
+        [2, 4, 11],
+        [6, 2, 10],
+        [8, 6, 7],
+        [9, 8, 1],
+    ];
+
+    // Source: https://superhedralcom.wordpress.com/2020/05/17/building-the-unit-icosahedron/
+    let t = radius * ((1.0 + f32::sqrt(5.0)) / 2.0);
+    let vertices = [
+        [-radius, t, 0.],
+        [radius, t, 0.],
+        [-radius, -t, 0.],
+        [radius, -t, 0.],
+        [0., -radius, t],
+        [0., radius, t],
+        [0., -radius, -t],
+        [0., radius, -t],
+        [t, 0., -radius],
+        [t, 0., radius],
+        [-t, 0., -radius],
+        [-t, 0., radius],
+    ];
+
     points
         .iter()
         .enumerate()
@@ -183,21 +217,21 @@ pub fn points_to_icosahedra_in_place(points: &[Vertex], ico_vertices: &mut [Vert
         )
         .for_each(|((i, point), (verts, tris))| {
             // Copy the vertex.
-            verts.copy_from_slice(&sphere_vertices);
+            verts.copy_from_slice(&vertices);
             // Set the positions of the vertices.
             verts.iter_mut().for_each(|v| add_mut(v, point));
             // Copy the indices.
-            tris.copy_from_slice(&sphere_indices);
+            tris.copy_from_slice(&TRIANGLES);
             // Increment the indices.
             tris.iter_mut().flatten().for_each(|t| *t *= i);
         });
 }
 
-pub fn points_to_icosahedra(points: &[Vertex]) -> (Vec<Vertex>, Vec<Triangle>) {
+pub fn points_to_icosahedra(points: &[Vertex], radius: f32) -> (Vec<Vertex>, Vec<Triangle>) {
     let length = points.len();
     let mut ico_vertices = Vec::with_capacity(length * NUM_ICOSAHEDRON_VERTICES);
     let mut ico_triangles = Vec::with_capacity(length * NUM_ICOSAHEDRON_TRIANGLE_INDICES);
-    points_to_icosahedra_in_place(points, &mut ico_vertices, &mut ico_triangles);
+    points_to_icosahedra_in_place(points, radius, &mut ico_vertices, &mut ico_triangles);
     (ico_vertices, ico_triangles)
 }
 
