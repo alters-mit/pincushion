@@ -52,12 +52,14 @@
     <ImplicitlyExpandDesignTimeFacades>false</ImplicitlyExpandDesignTimeFacades>
   </PropertyGroup>
   <ItemGroup>
+     <Compile Include="Assets\Pincushion\PincushionStaticCreationMode.cs" />
      <Compile Include="Assets\Pincushion\PincushionRenderer.cs" />
      <Compile Include="Assets\Pincushion\PincushionNativeBindings.cs" />
+     <Compile Include="Assets\Pincushion\PincushionStaticGenerator.cs" />
+     <Compile Include="Assets\Pincushion\PincushionDynamicGenerator.cs" />
      <Compile Include="Assets\Pincushion\MeshExtensions.cs" />
      <Compile Include="Assets\Pincushion\PincushionGenerator.cs" />
-     <Compile Include="Assets\Pincushion\CreationMode.cs" />
-     <None Include="Assets\Pincushion\StaticPoints.shader" />
+     <None Include="Assets\Pincushion\DynamicPoints.shader" />
  <Reference Include="UnityEngine">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2020.3.24f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
  </Reference>
