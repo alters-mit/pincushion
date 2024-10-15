@@ -14,7 +14,7 @@
 //! That's what this crate is for.
 //!
 //! ### Usage
-//! 
+//!
 //! ```
 #![doc = include_str!("../examples/readme.rs")]
 //! ```
@@ -29,6 +29,7 @@ pub mod cs;
 #[cfg(feature = "ffi")]
 pub mod ffi;
 
+use hexasphere::shapes::IcoSphere;
 use rand::{thread_rng, Rng};
 
 pub type Vertex = [f32; 3];
@@ -157,6 +158,44 @@ pub fn sample_points(
     }
 }
 
+pub fn samples_to_icosahedra(points: &[Vertex]) -> (Vec<Vertex>, Vec<Triangle>) {
+    let sphere = IcoSphere::new(20, |_| ());
+    let sphere_vertices = sphere
+        .raw_points()
+        .iter()
+        .map(|point| [point.x, point.y, point.z])
+        .collect::<Vec<Vertex>>();
+    let sphere_indices = sphere
+        .get_all_indices()
+        .chunks_exact(3)
+        .map(|chunk| [chunk[0] as usize, chunk[1] as usize, chunk[2] as usize])
+        .collect::<Vec<Triangle>>();
+    let length = points.len();
+    let num_sphere_vertices = sphere_vertices.len();
+    let num_sphere_indices = sphere_indices.len();
+    let mut vertices = Vec::with_capacity(length * num_sphere_vertices);
+    let mut triangles = Vec::with_capacity(length * sphere_indices.len());
+    points
+        .iter()
+        .enumerate()
+        .zip(
+            vertices
+                .chunks_exact_mut(num_sphere_vertices)
+                .zip(triangles.chunks_exact_mut(num_sphere_indices)),
+        )
+        .for_each(|((i, point), (verts, tris))| {
+            // Copy the vertex.
+            verts.copy_from_slice(&sphere_vertices);
+            // Set the positions of the vertices.
+            verts.iter_mut().for_each(|v| add_mut(v, point));
+            // Copy the indices.
+            tris.copy_from_slice(&sphere_indices);
+            // Increment the indices.
+            tris.iter_mut().flatten().for_each(|t| *t *= i);
+        });
+    (vertices, triangles)
+}
+
 /// Returns the area of a triangle.
 /// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/90714a3b61dbc731d9e8dc4c4ca93c2ba1da5156/Assets/Script/VFXMeshBakingHelper.cs#L202
 fn get_triangle_area(p0: &Vertex, p1: &Vertex, p2: &Vertex) -> f32 {
@@ -167,6 +206,10 @@ fn get_triangle_area(p0: &Vertex, p1: &Vertex, p2: &Vertex) -> f32 {
 
 fn add(a: &Vertex, b: &Vertex) -> Vertex {
     [a[0] + b[0], a[1] + b[1], a[2] + b[2]]
+}
+
+fn add_mut(a: &mut Vertex, b: &Vertex) {
+    a.iter_mut().zip(b).for_each(|(a, b)| *a += *b);
 }
 
 fn sub(a: &Vertex, b: &Vertex) -> Vertex {
