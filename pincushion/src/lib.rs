@@ -18,7 +18,7 @@ pub mod cs;
 #[cfg(feature = "ffi")]
 pub mod ffi;
 
-use rand::{thread_rng, Rng};
+use rand::{distributions::Uniform, thread_rng, Rng};
 
 pub type Vertex = [f32; 3];
 pub type Triangle = [usize; 3];
@@ -112,6 +112,7 @@ pub fn sample_points(
     let mut start_index_triangle = 0;
     // The accumulated triangle area. This is used to set the end indices.
     let mut total_accumulated_area = 0.0;
+    let range = Uniform::new(0., 1.);
     for (index, area) in areas.iter().enumerate() {
         // Add area.
         total_accumulated_area += *area;
@@ -125,8 +126,8 @@ pub fn sample_points(
                 let triangle = triangles[rng.gen_range(start_index_triangle..=index)];
                 // Get a random point on that triangle.
                 // Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
-                let mut u = rng.gen_range(0.0..1.0);
-                let mut v = rng.gen_range(0.0..1.0);
+                let mut u = rng.sample(&range);
+                let mut v = rng.sample(&range);
                 let t = f32::sqrt(v);
                 v = u * t;
                 u = (1.0 - u) * t;
