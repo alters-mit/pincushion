@@ -9,17 +9,18 @@ namespace Pincushion
     public class PincushionDynamicGenerator : PincushionGenerator
     {
         public Color color = Color.gray;
-        public Texture2D texture;
 
 
         protected override void Awake()
         {
             SkinnedMeshRenderer skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
-            // Set the mesh.
-            Mesh mesh = new Mesh();
             // Sample the points.
-            mesh.vertices = skinnedMeshRenderer.sharedMesh.GetSampledPoints(pointsPerM);
+            Mesh mesh = Instantiate(skinnedMeshRenderer.sharedMesh);
+            Vector3[] points = mesh.GetSampledPoints(pointsPerM);
+            mesh.triangles = new int[points.Length * 3];
+            mesh.vertices = points;
             mesh.SetPointTopology();
+            skinnedMeshRenderer.sharedMesh = mesh;
             // Set the material.
             Material material = new Material(Shader.Find("Pincushion/DynamicPoints"));
             material.SetColor("_Color", color); ;
@@ -32,7 +33,6 @@ namespace Pincushion
             else if (mode == PincushionStaticCreationMode.replace)
             {
                 skinnedMeshRenderer.material = material;
-                skinnedMeshRenderer.sharedMesh = mesh;
             }
             else if (mode == PincushionStaticCreationMode.createAndHideOriginal)
             {
