@@ -1,72 +1,87 @@
-﻿// Source: https://bronsonzgeb.com/index.php/2022/01/15/drawing-with-sdfs-in-unity/
-Shader "Pincushion/DynamicPoints" {
+﻿Shader "Pincushion/DynamicPoints" {
 	Properties {
-		_Color ("Color", Color) = (1,1,1,1)
-		_MainTex ("Albedo (RGB)", 2D) = "white" {}
-		_PointSize ("Point Size", Float) = 0.015
-		_NumPoints("Number of Points", Int) = 64
+		_Color ("Color", Color) = (0.9, 0.9, 0.9, 1)
+		_PointSize("Point Size", Float) = 0.02
 	}
 	SubShader {
 		Tags { "RenderType"="Opaque" }
 		Cull Off
 		
-		CGPROGRAM
-		#pragma vertex vert
-		#pragma fragment frag
-		#pragma target 3.5
-		#include "UnityCG.cginc"
-
-		uint _NumPoints;
-		float _PointSize;
-		fixed4 _Color;
-		float4 _Positions[_NumPoints];
-
-		struct appdata
+		Pass 
 		{
-		    float4 vertex : POSITION;
-		    float2 uv : TEXCOORD0;
-		};
+			CGPROGRAM
+		
+			#pragma vertex vert
+            #pragma fragment frag
+			#pragma geometry geom
+            #include "UnityCG.cginc"
 
-		struct v2f
-		{
-		    float4 vertex : SV_POSITION;
-		    float2 uv : TEXCOORD0;
-			uint id;
-		};
+			half4 _Color;
+			half _PointSize;
 
-		v2f vert(appdata v, uint id: SV_VertexID)
-		{
-		    v2f o;
-		    o.vertex = UnityObjectToClipPos(v.vertex);
-		    o.uv = v.uv * 2.0f - 1.0f;
-			o.id = id;
-		    return o;
-		}
+			struct Point
+			{
+			    float4 position : SV_POSITION;
+			};
 
-		// Source: https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm
-		float smin(float a, float b, float k)
-		{
-		    const float h = max(k - abs(a - b), 0.0) / k;
-		    return min(a, b) - h * h * k * (1.0 / 4.0);
-		}
+			Point vert (appdata_base v)
+            {
+                Point o;
+                o.position = UnityObjectToClipPos(v.vertex);
+                return o;
+            }
 
-		// Source: https://iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm
-		float sdCircle(float2 p, float r)
-		{
-		    return length(p) - r;
-		}
+			// Source: https://github.com/keijiro/Pcx/blob/master/Packages/jp.keijiro.pcx/Runtime/Shaders/Disk.cginc
+			[maxvertexcount(36)]
+			void geom(point Point input[1], inout TriangleStream<Point> outStream)
+			{
+				float4 origin = input[0].position;
+				float2 extent = abs(UNITY_MATRIX_P._11_22 * _PointSize);
+				// Copy the basic information.
+			    Point o = input[0];
 
-		fixed4 frag(v2f i) : COLOR
-		{
-		    float d = 10000000;
-			const float3 position = _Positions[i.id].xyz;
-			d = smin(d, sdCircle(i.uv - position, _PointSize), 0.1);
-		    d = smoothstep(0.02, 0.03, d);
-		    d = saturate(1 - d);
-		    return d * _Color;
-		}
+			    // Determine the number of slices based on the radius of the
+			    // point on the screen.
+			    float radius = extent.y / origin.w * _ScreenParams.y;
+			    uint slices = min((radius + 1) / 5, 4) + 2;
+
+			    // Slightly enlarge quad points to compensate area reduction.
+			    // Hopefully this line would be complied without branch.
+			    if (slices == 2) extent *= 1.2;
+
+			    // Top vertex
+			    o.position.y = origin.y + extent.y;
+			    o.position.xzw = origin.xzw;
+			    outStream.Append(o);
+
+				UNITY_LOOP for (uint i = 1; i < slices; i++)
+			    {
+			        float sn, cs;
+			        sincos(UNITY_PI / slices * i, sn, cs);
+
+			        // Right side vertex
+			        o.position.xy = origin.xy + extent * float2(sn, cs);
+			        outStream.Append(o);
+
+			        // Left side vertex
+			        o.position.x = origin.x - extent.x * sn;
+			        outStream.Append(o);
+			    }
+
+			    // Bottom vertex
+			    o.position.x = origin.x;
+			    o.position.y = origin.y - extent.y;
+			    outStream.Append(o);
+
+			    outStream.RestartStrip();
+			}
+
+			half4 frag() : SV_Target
+			{
+				return _Color;
+			}
 		
 		ENDCG
+		}
 	}
-	FallBack "Diffuse"
 }

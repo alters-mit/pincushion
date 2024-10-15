@@ -15,29 +15,28 @@ namespace Pincushion
         protected override void Awake()
         {
             SkinnedMeshRenderer skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
+            // Set the mesh.
+            Mesh mesh = new Mesh();
             // Sample the points.
-            Vector3[] points = skinnedMeshRenderer.sharedMesh.GetSampledPoints(pointsPerM);
+            mesh.vertices = skinnedMeshRenderer.sharedMesh.GetSampledPoints(pointsPerM);
+            mesh.SetPointTopology();
             // Set the material.
             Material material = new Material(Shader.Find("Pincushion/DynamicPoints"));
-            material.SetColor("_Color", color);
-            material.SetTexture("_MainTex", texture);
-            material.SetInt("_NumPoints", points.Length);
+            material.SetColor("_Color", color); ;
             material.SetFloat("_PointSize", pointRadius);
-            material.SetVectorArray("_Positions", points.Select(p => (Vector4)p).ToArray());
             // Decide what to do with the material.
             if (mode == PincushionStaticCreationMode.create)
             {
-                Create(points, material, skinnedMeshRenderer);
+                Create(material, skinnedMeshRenderer);
             }
             else if (mode == PincushionStaticCreationMode.replace)
             {
-                skinnedMeshRenderer.sharedMesh.vertices = points;
-                skinnedMeshRenderer.sharedMesh.SetPointTopology();
                 skinnedMeshRenderer.material = material;
+                skinnedMeshRenderer.sharedMesh = mesh;
             }
             else if (mode == PincushionStaticCreationMode.createAndHideOriginal)
             {
-                Create(points, material, skinnedMeshRenderer).SetOriginalVisibility(false);
+                Create(material, skinnedMeshRenderer).SetOriginalVisibility(false);
             }
             else
             {
@@ -49,10 +48,9 @@ namespace Pincushion
         /// <summary>
         /// Create a new object to render the sampled points.
         /// </summary>
-        /// <param name="points">The sampled points.</param>
         /// <param name="material">The point cloud material.</param>
         /// <param name="skinnedMeshRenderer">The original renderer.</param>
-        private PincushionRenderer Create(Vector3[] points, Material material, SkinnedMeshRenderer skinnedMeshRenderer)
+        private PincushionRenderer Create(Material material, SkinnedMeshRenderer skinnedMeshRenderer)
         {
             // Instantiate.
             GameObject go = new GameObject();
@@ -71,12 +69,7 @@ namespace Pincushion
             smr.skinnedMotionVectors = skinnedMeshRenderer.skinnedMotionVectors;
             smr.forceMatrixRecalculationPerRender = skinnedMeshRenderer.forceMatrixRecalculationPerRender;
             smr.material = material;
-            
-            // Set the mesh.
-            Mesh mesh = new Mesh();
-            mesh.vertices = points;
-            mesh.SetPointTopology();
-            smr.sharedMesh = mesh;
+            smr.sharedMesh = skinnedMeshRenderer.sharedMesh;
 
             // Render.
             PincushionRenderer pincushionRenderer = go.AddComponent<PincushionRenderer>();
