@@ -49,13 +49,14 @@ pub fn get_areas_in_place(vertices: &[Vertex], triangles: &[Triangle], areas: &m
         .zip(areas.iter_mut())
         .for_each(|(triangle, area)| {
             // Get this triangle's area.
-            *area = get_triangle_area(
+            let a = get_triangle_area(
                 &vertices[triangle[0]],
                 &vertices[triangle[1]],
                 &vertices[triangle[2]],
             );
             // Add to the total.
-            total_area += *area;
+            total_area += a;
+            *area = a;
         });
     total_area
 }
@@ -201,6 +202,10 @@ pub fn points_to_icosahedrons_in_place(
         [-t, 0., radius],
     ];
 
+    // Fill with initial values.
+    vertices.copy_from_slice(vec![ico_vertices; points.len()].as_flattened());
+    triangles.copy_from_slice(vec![TRIANGLES; points.len()].as_flattened());
+
     points
         .iter()
         .enumerate()
@@ -210,12 +215,8 @@ pub fn points_to_icosahedrons_in_place(
                 .zip(triangles.chunks_exact_mut(NUM_ICOSAHEDRON_TRIANGLES)),
         )
         .for_each(|((i, point), (verts, tris))| {
-            // Copy the vertex.
-            verts.copy_from_slice(&ico_vertices);
             // Set the positions of the vertices.
             verts.iter_mut().for_each(|v| add_mut(v, point));
-            // Copy the indices.
-            tris.copy_from_slice(&TRIANGLES);
             // Increment the indices.
             let offset = i * NUM_ICOSAHEDRON_VERTICES;
             tris.iter_mut().flatten().for_each(|t| *t += offset);
