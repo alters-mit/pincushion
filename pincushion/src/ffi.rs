@@ -51,6 +51,16 @@ pub fn sample_points(
     }
 }
 
+pub fn get_icosahedra(
+    vertices: &safer_ffi::Vec<f32>,
+    triangles: &safer_ffi::Vec<usize>,
+    areas: &safer_ffi::Vec<f32>,
+    total_area: f32,
+    points: &mut safer_ffi::Vec<f32>,
+) {
+    
+}
+
 /// Converts a flat array of vertex coordinates from a safer-ffi vec into a shaped slice of vertices.
 /// e.g.: `[x0, y0, z0, x1, y1, z1, ...]` into `[[x0, y0, z0], [x1, y1, z1], ...]`
 unsafe fn ffi_vertices(vertices: &safer_ffi::Vec<f32>) -> &[Vertex] {

@@ -35,6 +35,9 @@ use rand::{thread_rng, Rng};
 pub type Vertex = [f32; 3];
 pub type Triangle = [usize; 3];
 
+const NUM_ICOSAHEDRON_VERTICES: usize = 12;
+const NUM_ICOSAHEDRON_TRIANGLE_INDICES: usize = 60;
+
 /// - `vertices`: A slice of (x, y, z) vertices.
 /// - `triangles`: A slice of three indices of vertices.
 ///
@@ -158,7 +161,7 @@ pub fn sample_points(
     }
 }
 
-pub fn samples_to_icosahedra(points: &[Vertex]) -> (Vec<Vertex>, Vec<Triangle>) {
+pub fn points_to_icosahedra_in_place(points: &[Vertex], ico_vertices: &mut [Vertex], ico_triangles: &mut [Triangle]) {
     let sphere = IcoSphere::new(20, |_| ());
     let sphere_vertices = sphere
         .raw_points()
@@ -170,18 +173,13 @@ pub fn samples_to_icosahedra(points: &[Vertex]) -> (Vec<Vertex>, Vec<Triangle>) 
         .chunks_exact(3)
         .map(|chunk| [chunk[0] as usize, chunk[1] as usize, chunk[2] as usize])
         .collect::<Vec<Triangle>>();
-    let length = points.len();
-    let num_sphere_vertices = sphere_vertices.len();
-    let num_sphere_indices = sphere_indices.len();
-    let mut vertices = Vec::with_capacity(length * num_sphere_vertices);
-    let mut triangles = Vec::with_capacity(length * sphere_indices.len());
     points
         .iter()
         .enumerate()
         .zip(
-            vertices
-                .chunks_exact_mut(num_sphere_vertices)
-                .zip(triangles.chunks_exact_mut(num_sphere_indices)),
+            ico_vertices
+                .chunks_exact_mut(NUM_ICOSAHEDRON_VERTICES)
+                .zip(ico_triangles.chunks_exact_mut(NUM_ICOSAHEDRON_TRIANGLE_INDICES)),
         )
         .for_each(|((i, point), (verts, tris))| {
             // Copy the vertex.
@@ -193,7 +191,14 @@ pub fn samples_to_icosahedra(points: &[Vertex]) -> (Vec<Vertex>, Vec<Triangle>) 
             // Increment the indices.
             tris.iter_mut().flatten().for_each(|t| *t *= i);
         });
-    (vertices, triangles)
+}
+
+pub fn points_to_icosahedra(points: &[Vertex]) -> (Vec<Vertex>, Vec<Triangle>) {
+    let length = points.len();
+    let mut ico_vertices = Vec::with_capacity(length * NUM_ICOSAHEDRON_VERTICES);
+    let mut ico_triangles = Vec::with_capacity(length * NUM_ICOSAHEDRON_TRIANGLE_INDICES);
+    points_to_icosahedra_in_place(points, &mut ico_vertices, &mut ico_triangles);
+    (ico_vertices, ico_triangles)
 }
 
 /// Returns the area of a triangle.
