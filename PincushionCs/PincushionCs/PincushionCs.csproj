@@ -53,18 +53,20 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="PincushionDynamicGenerator.cs" />
+        <Compile Include="PincushionGenerator.cs" />
         <Compile Include="PincushionStaticGenerator.cs" />
         <Compile Include="MeshExtensions.cs" />
         <Compile Include="PincushionNativeBindings.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="PincushionStaticCreationMode.cs" />
-        <Compile Include="PincushionStaticRenderer.cs" />
+        <Compile Include="PincushionRenderer.cs" />
     </ItemGroup>
     <ItemGroup>
       <None Include="packages.config" />
     </ItemGroup>
     <ItemGroup>
-      <Content Include="StaticPoints.shader" />
+      <Content Include="DynamicPoints.shader" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

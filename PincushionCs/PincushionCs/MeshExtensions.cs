@@ -182,6 +182,18 @@ namespace Pincushion
             }
         }
         
+        
+        /// <summary>
+        /// Set the mesh topology of the sampled points.
+        /// </summary>
+        /// <param name="mesh">(this)</param>
+        public static void SetPointTopology(this Mesh mesh)
+        {
+            int length = mesh.vertices.Length;
+            mesh.SetIndices(Enumerable.Range(0, length).ToArray(), 0, length, MeshTopology.Points, 0);
+        }
+
+
 
         private static UIntPtr intToUIntPtr(int i)
         {
