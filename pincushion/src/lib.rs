@@ -203,17 +203,13 @@ pub fn points_to_icosahedrons_in_place(
     ];
 
     // Fill with initial values.
-    vertices.copy_from_slice(vec![ico_vertices; points.len()].as_flattened());
-    triangles.copy_from_slice(vec![TRIANGLES; points.len()].as_flattened());
+    let mut vs = vec![ico_vertices; points.len()];
+    let mut ts = vec![TRIANGLES; points.len()];
 
     points
         .iter()
         .enumerate()
-        .zip(
-            vertices
-                .chunks_exact_mut(NUM_ICOSAHEDRON_VERTICES)
-                .zip(triangles.chunks_exact_mut(NUM_ICOSAHEDRON_TRIANGLES)),
-        )
+        .zip(vs.iter_mut().zip(ts.iter_mut()))
         .for_each(|((i, point), (verts, tris))| {
             // Set the positions of the vertices.
             verts.iter_mut().for_each(|v| add_mut(v, point));
@@ -221,6 +217,9 @@ pub fn points_to_icosahedrons_in_place(
             let offset = i * NUM_ICOSAHEDRON_VERTICES;
             tris.iter_mut().flatten().for_each(|t| *t += offset);
         });
+    // Copy into final arrays.
+    vertices.copy_from_slice(vs.as_flattened());
+    triangles.copy_from_slice(ts.as_flattened());
 }
 
 /// Convert a slice of (x, y, z) points into a single mesh composed of multiple icosahedrons (12-sided die).
