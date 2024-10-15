@@ -54,6 +54,7 @@ pub fn sample_points(
     }
 }
 
+#[ffi_export]
 pub fn points_to_icosahedra(
     vertices: &safer_ffi::Vec<f32>,
     triangles: &safer_ffi::Vec<usize>,

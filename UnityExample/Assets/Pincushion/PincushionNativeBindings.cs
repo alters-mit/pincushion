@@ -81,6 +81,19 @@ public unsafe partial class Ffi {
 }
 
 public unsafe partial class Ffi {
+    [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
+    void points_to_icosahedra (
+        Vec_float_t /*const*/ * vertices,
+        Vec_size_t /*const*/ * triangles,
+        Vec_float_t /*const*/ * areas,
+        float total_area,
+        float radius,
+        Vec_float_t * points,
+        Vec_float_t * ico_vertices,
+        Vec_size_t * ico_triangles);
+}
+
+public unsafe partial class Ffi {
     /// <summary>
     /// Sample random points on the mesh.
     ///

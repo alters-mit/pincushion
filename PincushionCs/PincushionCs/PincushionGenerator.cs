@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using UnityEngine;
 
 
@@ -18,9 +17,9 @@ namespace Pincushion
         /// </summary>
         public float pointsPerM = 0.015f;
         /// <summary>
-        /// The size of each point in meters.
+        /// The radius of each point in meters.
         /// </summary>
-        public float pointSize = 0.02f;
+        public float pointRadius = 0.02f;
         /// <summary>
         /// The color of each point.
         /// </summary>
@@ -30,33 +29,27 @@ namespace Pincushion
         /// </summary>
         public CreationMode mode = CreationMode.replace;
 
+        public Material material;
+
 
         private void Awake()
         {
             MeshFilter meshFilter = GetComponent<MeshFilter>();
-            // Sample the points.
-            Vector3[] points = meshFilter.mesh.GetSampledPoints(pointsPerM);
-            
-            // Create the material.
-            Material material = new Material(Shader.Find("Pincushion/StaticPoints"));
-            // Set material values.
-            material.SetFloat("_PointSize", pointSize);
-            material.SetColor("_Color", color);
-            
+            Mesh pointsMesh = meshFilter.mesh.GetIcosahedra(pointsPerM, pointRadius);
+
             // Decide what to do with the material and points.
             if (mode == CreationMode.create)
             {
-                Create(points, material);
+                Create(pointsMesh);
             }
             else if (mode == CreationMode.replace)
             {
-                meshFilter.mesh.vertices = points;
-                meshFilter.mesh.SetTopology();
+                meshFilter.mesh = pointsMesh;
                 GetComponent<MeshRenderer>().material = material;
             }
             else if (mode == CreationMode.createAndHideOriginal)
             {
-                Create(points, material).SetOriginalVisibility(false);
+                Create(pointsMesh).SetOriginalVisibility(false);
             }
             else
             {
@@ -68,9 +61,8 @@ namespace Pincushion
         /// <summary>
         /// Create a new object to render the sampled points.
         /// </summary>
-        /// <param name="points">The sampled points.</param>
-        /// <param name="material">A material that will be used with the points.</param>
-        private PincushionRenderer Create(Vector3[] points, Material material)
+        /// <param name="mesh">The sampled mesh.</param>
+        private PincushionRenderer Create(Mesh mesh)
         {
             // Create a new object.
             GameObject go = new GameObject();
@@ -79,14 +71,8 @@ namespace Pincushion
             go.transform.position = t.position;
             go.transform.rotation = t.rotation;
             go.transform.localScale = t.localScale;
-            // Add the mesh and the renderer.
-            Mesh sampledMesh = new Mesh();
-            sampledMesh.vertices = points;
-            sampledMesh.SetTopology();
-            int[] indices = Enumerable.Range(0, points.Length).ToArray();
-            sampledMesh.SetIndices(indices, 0, indices.Length, MeshTopology.Points, 0);
-            MeshFilter meshFilter = go.AddComponent<MeshFilter>();
-            meshFilter.mesh = sampledMesh;
+            
+            go.AddComponent<MeshFilter>().mesh = mesh;
             MeshRenderer mr = go.AddComponent<MeshRenderer>();
             // Set the material.
             mr.material = material;

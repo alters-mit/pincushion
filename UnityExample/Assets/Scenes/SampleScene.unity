@@ -304,7 +304,7 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 8164078558771037576, guid: db3df8007ce92a34fb183a7ed21e993f, type: 3}
   m_PrefabInstance: {fileID: 1347204012}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1196225408
+--- !u!114 &1196225407
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -313,13 +313,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1196225406}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4fa9be05dba99149a134dea0fcf9489, type: 3}
+  m_Script: {fileID: 11500000, guid: 2b1298b19e2f3ce4e919ea30c28ab274, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   pointsPerM: 0.015
-  pointSize: 0.02
-  color: {r: 1, g: 0, b: 0, a: 1}
+  pointRadius: 0.02
+  color: {r: 0.9, g: 0.9, b: 0.9, a: 1}
   mode: 2
+  material: {fileID: 2100000, guid: a551e9adee3b327468b279813c26fffa, type: 2}
 --- !u!1001 &1347204012
 PrefabInstance:
   m_ObjectHideFlags: 0
