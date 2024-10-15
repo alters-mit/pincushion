@@ -6,7 +6,7 @@ namespace Pincushion
     /// <summary>
     /// This script manages the Renderer that renders the sampled points mesh as well as the original object.
     /// </summary>
-    public class PincushionRenderer : MonoBehaviour
+    public class PincushionStaticRenderer : MonoBehaviour
     {
         /// <summary>
         /// My Renderer.

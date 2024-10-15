@@ -3,7 +3,7 @@
     /// <summary>
     /// How static sample points will be added to the scene.
     /// </summary>
-    public enum CreationMode
+    public enum PincushionStaticCreationMode
     {
         /// <summary>
         /// Create a new GameObject and mesh with sampled points.
