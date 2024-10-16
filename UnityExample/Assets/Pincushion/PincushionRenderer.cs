@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Pincushion
 {
     /// <summary>
-    /// This script creates or replaces a mesh with sampled points.
+    /// Abstract base class that creates or replaces a mesh with sampled points.
     /// </summary>
     public abstract class PincushionRenderer<T> : MonoBehaviour where T: Component
     {
@@ -49,6 +49,11 @@ namespace Pincushion
             }
         }
 
+        
+        /// <summary>
+        /// Create a new GameObject to render the sampled points.
+        /// </summary>
+        /// <param name="mesh">The mesh containing the sampled points/meshes.</param>
         private PincushionVisibilityToggler Create(Mesh mesh)
         {
             // Instantiate.
@@ -73,15 +78,25 @@ namespace Pincushion
         }
 
 
+        /// <summary>
+        /// Sample points and create a mesh.
+        /// </summary>
+        /// <param name="meshContainer">The component containing the original mesh.</param>
         protected abstract Mesh GetMesh(T meshContainer);
 
 
+        /// <summary>
+        /// Replace the existing mesh with the mesh containing the sampled points.
+        /// </summary>
+        /// <param name="meshContainer">The component containing the original mesh.</param>
+        /// <param name="mesh">The new mesh.</param>
         protected abstract void ReplaceMesh(T meshContainer, Mesh mesh);
 
 
-        protected abstract Material GetMaterial();
-
-
+        /// <summary>
+        /// Continue to set a newly-created mesh.
+        /// </summary>
+        /// <param name="meshContainer">The component containing the new mesh.</param>
         protected abstract Renderer SetCreatedMesh(T meshContainer);
     }
 }

@@ -44,11 +44,5 @@ namespace Pincushion
             r.material = material;
             return r;
         }
-
-
-        protected override Material GetMaterial()
-        {
-            return material;
-        }
     }
 }

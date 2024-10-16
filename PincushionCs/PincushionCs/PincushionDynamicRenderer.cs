@@ -3,11 +3,28 @@
 
 namespace Pincushion
 {
+    /// <summary>
+    /// Sample points on a SkinnedMeshRenderer. Use a shader to move the points when the underlying rig moves.
+    ///
+    /// This component samples points exactly once.
+    /// It's therefore not suitable for a mesh that is expected to deform by an extreme degree.
+    /// Points are rendered using a geometry shader.
+    /// This is relatively inefficient, but I haven't found an alternative that is compatible with the built-in render pipeline.
+    /// </summary>
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     public class PincushionDynamicRenderer : PincushionRenderer<SkinnedMeshRenderer>
     {
+        /// <summary>
+        /// The color of each point.
+        /// </summary>
         public Color color = Color.gray;
+        /// <summary>
+        /// The renderer. This is set on Awake().
+        /// </summary>
         private SkinnedMeshRenderer skinnedMeshRenderer;
+        /// <summary>
+        /// The points' material. This is set on Awake().
+        /// </summary>
         private Material material;
 
 
@@ -50,12 +67,6 @@ namespace Pincushion
             meshContainer.material = material;
 
             return meshContainer;
-        }
-
-
-        protected override Material GetMaterial()
-        {
-            return material;
         }
     }
 }
