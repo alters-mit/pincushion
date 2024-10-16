@@ -23,14 +23,27 @@ This repo has three components:
 
 To sample points on a MeshRenderer, add a `PincushionStaticRenderer` component:
 
-![A Pincushion Generator in the Inspector window](inspector.png)
+![A Pincushion Static Generator in the Inspector window](static_renderer.png)
 
 | Parameter | Description |
 | --- | --- |
 | Points Per M | The number of sampled points per square meter on the mesh surface. |
-| Point Size | The size of each point in square meters. |
-| Color | The color of each point. |
+| Point Radius | The radius of each point in meters. |
 | Mode | Controls how the points are handled in the scene (see below). |
+| Material | The material used to render each point. |
+
+To sample points on a SkinnedMeshRenderer, add a `PincushionDynamicRenderer` component:
+
+![A Pincushion Dynamic Generator in the Inspector window](dynamic_renderer.png)
+
+| Parameter | Description |
+| --- | --- |
+| Points Per M | The number of sampled points per square meter on the mesh surface. |
+| Point Radius | The radius of each point in meters. |
+| Mode | Controls how the points are handled in the scene (see below). |
+| Color | The color of each point. |
+
+Creation modes:
 
 | Mode | Description |
 | --- | --- |
@@ -38,7 +51,6 @@ To sample points on a MeshRenderer, add a `PincushionStaticRenderer` component:
 | Create and Hide Original | Create a new GameObject and mesh with sampled points. Keep the original GameObject but hide it. |
 | Replace | Replace the original mesh with the sampled points mesh. No new GameObject is created. |
 
-To sample points on a SkinnedMeshRenderer, add a `PincushionDynamicRenderer` component.
 
 ### 2. Show/hide the original/sampled mesh
 
