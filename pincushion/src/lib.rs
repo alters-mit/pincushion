@@ -124,7 +124,12 @@ pub fn sample_points(
             // Sample some points.
             for i in 0..num_points {
                 // Get a random triangle, bounded by the start index and the current index in `areas`.
-                let triangle = triangles[rng.gen_range(start_index_triangle..=index)];
+                let triangle = if start_index_point == index {
+                    triangles[start_index_point]
+                }
+                else {
+                    triangles[rng.gen_range(start_index_triangle..=index)]
+                };
                 // Get a random point on that triangle.
                 // Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
                 let mut u = rng.sample(range);
