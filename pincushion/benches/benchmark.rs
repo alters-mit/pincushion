@@ -15,7 +15,8 @@ pub fn main() {
         .collect::<Vec<(Duration, Duration)>>();
     // Average the results.
     let dt_sampling = dts.iter().map(|(s, _)| s).sum::<Duration>().as_micros() / dts.len() as u128;
-    let dt_icosahedrons = dts.iter().map(|(_, i)| i).sum::<Duration>().as_micros() / dts.len() as u128;
+    let dt_icosahedrons =
+        dts.iter().map(|(_, i)| i).sum::<Duration>().as_micros() / dts.len() as u128;
     let text = format!(
         "Sampling: {}μs\nIcosahedrons: {}μs",
         dt_sampling, dt_icosahedrons

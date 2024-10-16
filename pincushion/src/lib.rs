@@ -126,8 +126,7 @@ pub fn sample_points(
                 // Get a random triangle, bounded by the start index and the current index in `areas`.
                 let triangle = if start_index_point == index {
                     triangles[start_index_point]
-                }
-                else {
+                } else {
                     triangles[rng.gen_range(start_index_triangle..=index)]
                 };
                 // Get a random point on that triangle.
@@ -233,11 +232,8 @@ pub fn points_to_icosahedrons_in_place(
 
     let t = radius * PHI;
     // Scale the vertices.
-    let mut ico_vertices = [[0.; 3]; NUM_ICOSAHEDRON_VERTICES];
-    ico_vertices
-        .iter_mut()
-        .zip(VERTICES)
-        .for_each(|(v1, v0)| *v1 = mul(&v0, t));
+    let mut ico_vertices = VERTICES;
+    ico_vertices.iter_mut().for_each(|v| mul_mut(v, t));
 
     // Fill with initial values.
     let points_len = points.len();
@@ -304,6 +300,12 @@ fn sub(a: &Vertex, b: &Vertex) -> Vertex {
 
 fn mul(v: &Vertex, m: f32) -> Vertex {
     [v[0] * m, v[1] * m, v[2] * m]
+}
+
+fn mul_mut(v: &mut Vertex, m: f32) {
+    v[0] *= m;
+    v[1] *= m;
+    v[2] *= m;
 }
 
 fn cross(a: &Vertex, b: &Vertex) -> Vertex {
