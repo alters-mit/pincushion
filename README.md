@@ -6,8 +6,8 @@ Uniformly sample points on a mesh.
 
 This repo has three components:
 
-1. `pincushion` is a Rust library that uses a very fast algorithm to sample points on a mesh. This is sufficient for static meshes that only need to be sampled once but, because `pincushion` is CPU-bound, it's not suitable for meshes that will dynamically deform (e.g. `SkinnedMeshRenderer` in Unity).
-2. `PincushionCs` contains native bindings for `pincushion` and Unity methods for sampling points and applying them to meshes.
+1. `pincushion` is a Rust library that uses a very fast algorithm to sample points on a mesh. This can also be used to generate a mesh in which each sampled point is an icosahedron (20-sided die) within a single combined mesh.
+2. `PincushionCs` contains native bindings for `pincushion` and Unity methods for sampling points and applying them to meshes. It also contains a shader for rendering points on a SkinnedMeshRenderer.
 3. `UnityExample` is a small Unity example of Pincushion.
 
 ## How to add `Pincushion` to your Unity project
@@ -19,12 +19,11 @@ This repo has three components:
 
 ## Usage (Unity)
 
-1. Create an object with a `MeshFilter` and `MeshRenderer`.
-2. Add a `StaticPointsGenerator` component:
+### 1. Sample points
+
+To sample points on a MeshRenderer, add a `PincushionStaticRenderer` component:
 
 ![A Pincushion Generator in the Inspector window](inspector.png)
-
-3. Set parameters as desired:
 
 | Parameter | Description |
 | --- | --- |
@@ -39,11 +38,22 @@ This repo has three components:
 | Create and Hide Original | Create a new GameObject and mesh with sampled points. Keep the original GameObject but hide it. |
 | Replace | Replace the original mesh with the sampled points mesh. No new GameObject is created. |
 
-Assuming you haven't chosen Replace (which doesn't create a new object), you can show/hide the original mesh or new mesh:
+To sample points on a SkinnedMeshRenderer, add a `PincushionDynamicRenderer` component.
+
+### 2. Show/hide the original/sampled mesh
+
+Assuming you haven't chosen `Replace` for your creation mode (which doesn't create a new object), you can show/hide the original mesh or new mesh:
 
 1. `PincushionRenderer pr = gameObject.GetComponent<PincushionRenderer>()`
 2. To show/hide the original object: `pr.SetOriginalVisibility(show)` where `show` is a boolean.
 3. To show/hide the the new object: `pr.SetMyVisibility(show)` where `show` is a boolean.
+
+### 3. How it works
+
+There are two methods of rendering sampled points because there is an efficient way to render points if we know that the mesh can't deform (i.e. if it is rendered via a MeshRenderer).
+
+- MeshRenderers are sampled exactly once and then rendered as a mesh composed of multiple icosahedrons, one at each sampled point. See the summary tag in `PincushionStaticRenderer` for why this is reasonable.
+- SkinnedMeshRenderers are sampled exactly once and rendered using a geometry shader.  See the summary tag in `PincushionDynamicRenderer` for why.
 
 ## Usage (Rust)
 

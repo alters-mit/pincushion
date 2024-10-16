@@ -152,7 +152,7 @@ pub fn sample_points(
     }
 }
 
-/// Convert a slice of (x, y, z) points into a single mesh composed of multiple icosahedrons (12-sided die).
+/// Convert a slice of (x, y, z) points into a single mesh composed of multiple icosahedrons (20-sided die).
 ///
 /// - `points` The sampled points.
 /// - `radius` The radius of each icosahedron.
@@ -256,7 +256,7 @@ pub fn points_to_icosahedrons_in_place(
     triangles.copy_from_slice(ts.as_flattened());
 }
 
-/// Convert a slice of (x, y, z) points into a single mesh composed of multiple icosahedrons (12-sided die).
+/// Convert a slice of (x, y, z) points into a single mesh composed of multiple icosahedrons (20-sided die).
 ///
 /// - `points` The sampled points.
 /// - `radius` The radius of each icosahedron.

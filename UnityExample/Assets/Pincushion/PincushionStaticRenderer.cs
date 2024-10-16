@@ -6,7 +6,7 @@ namespace Pincushion
 {
     /// <summary>
     /// Generate sampled points.
-    /// Create a new mesh composed of multiple icosahedrons (12-sided die), one per sampled point.
+    /// Create a new mesh composed of multiple icosahedrons (20-sided die), one per sampled point.
     /// Alternatively, create the mesh and replace the original mesh.
     ///
     /// It is reasonable to render sampled points and icosahedrons because:
@@ -27,7 +27,6 @@ namespace Pincushion
 
         protected override Mesh GetMesh(MeshFilter meshContainer)
         {
-            GetComponent<MeshRenderer>().material = material;
             return meshContainer.mesh.GetIcosahedrons(pointsPerM, pointRadius);
         }
 

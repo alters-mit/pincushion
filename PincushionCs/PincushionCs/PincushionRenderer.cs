@@ -29,7 +29,6 @@ namespace Pincushion
             T meshContainer = GetComponent<T>();
             Mesh mesh = GetMesh(meshContainer);
             
-            
             // Decide what to do with the material and points.
             if (mode == PincushionCreationMode.create)
             {
