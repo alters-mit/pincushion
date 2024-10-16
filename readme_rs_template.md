@@ -31,5 +31,4 @@ To run the benchmark: `cargo bench benchmark`
 
 Results:
 
-Sampling: 27.1µs
-Icosahedrons: 540.119µs
+@ BENCHMARKS @

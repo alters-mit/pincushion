@@ -136,4 +136,13 @@ The library will be located in `target/release/`
 
 To run the example: `cargo run --example suzanne`
 
+### Benchmarks
+
+To run the benchmark: `cargo bench benchmark`
+
+Results:
+
+Sampling: 27.1µs
+Icosahedrons: 540.119µs
+
 Documentation for the Rust codebase can be found on [docs.rs](https://docs.rs/pincushion/latest/pincushion/).

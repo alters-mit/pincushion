@@ -26,6 +26,10 @@ path = "bin/cs.rs"
 name = "suzanne"
 path = "examples/suzanne/src/main.rs"
 
+[[bench]]
+name = "benchmark"
+harness = false
+
 [dev-dependencies]
 macroquad = "0.4.13"
 tobj = "4.0.0"
