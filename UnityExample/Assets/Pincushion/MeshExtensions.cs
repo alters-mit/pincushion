@@ -81,7 +81,7 @@ namespace Pincushion
         
         /// <summary>
         /// Uniformly sample points on a mesh.
-        /// Convert the points to icosahedra.
+        /// Convert the points to icosahedron.
         /// Combine the icosahedrons into a single mesh.
         /// </summary>
         /// <param name="mesh">(this)</param>
@@ -129,16 +129,18 @@ namespace Pincushion
                             float totalArea = Ffi.get_areas(&vertices, &triangles, &areasVec);
                             // Get the number of points.
                             int numPoints = (int)Ffi.get_num_points(totalArea, pointsPerM);
-                            // Allocate the icosahedra arrays.
-                            Vector3[] icosahedraVertices = new Vector3[numPoints * 12];
-                            UIntPtr numIcosahedraVertices = (UIntPtr)(icosahedraVertices.Length * 3);
-                            UIntPtr[] icosahedraIndices = new UIntPtr[numPoints * 60];
-                            UIntPtr numIcosahedraIndices = (UIntPtr)(icosahedraIndices.Length * 3);
+                            // Allocate the icosahedron arrays.
+                            Vector3[] icosahedronVertices = new Vector3[numPoints * 12];
+                            UIntPtr numIcosahedronVertices = (UIntPtr)(icosahedronVertices.Length * 3);
+                            UIntPtr[] icosahedronIndices = new UIntPtr[numPoints * 60];
+                            UIntPtr numIcosahedronIndices = (UIntPtr)(icosahedronIndices.Length);
+                            Vector2[] icosahedronUvs = new Vector2[numPoints * 12];
+                            UIntPtr numIcosahedronUvs = (UIntPtr)(icosahedronUvs.Length * 2);
                             // Allocate the array.
                             Vector3[] points = new Vector3[numPoints];
                             UIntPtr pointsLength = (UIntPtr)(numPoints * 3);
                             // Sample the points.
-                            fixed (Vector3* pointsPointer = points, icosahedraVerticesPointer = icosahedraVertices) 
+                            fixed (Vector3* pointsPointer = points, icosahedronVerticesPointer = icosahedronVertices) 
                             {
                                 Vec_float_t pointsVec = new Vec_float_t
                                 {
@@ -146,34 +148,45 @@ namespace Pincushion
                                     len = pointsLength,
                                     cap = pointsLength
                                 };
-                                Vec_float_t icosahedraVerticesVec = new Vec_float_t
+                                Vec_float_t icosahedronVerticesVec = new Vec_float_t
                                 {
-                                    ptr = (float*)icosahedraVerticesPointer,
-                                    len = numIcosahedraVertices,
-                                    cap = numIcosahedraVertices
+                                    ptr = (float*)icosahedronVerticesPointer,
+                                    len = numIcosahedronVertices,
+                                    cap = numIcosahedronVertices
                                 };
-                                fixed (UIntPtr* icosahedraIndicesPointer = icosahedraIndices)
+                                fixed (UIntPtr* icosahedronIndicesPointer = icosahedronIndices)
                                 {
-                                    Vec_size_t icosahedraIndicesVec = new Vec_size_t
+                                    Vec_size_t icosahedronIndicesVec = new Vec_size_t
                                     {
-                                        ptr = icosahedraIndicesPointer,
-                                        len = numIcosahedraIndices,
-                                        cap = numIcosahedraIndices
+                                        ptr = icosahedronIndicesPointer,
+                                        len = numIcosahedronIndices,
+                                        cap = numIcosahedronIndices
                                     };
+
+                                    fixed (Vector2* icosahedronUvsPointer = icosahedronUvs)
+                                    {
+                                        Vec_float_t icosahedronUvsVec = new Vec_float_t
+                                        {
+                                            ptr = (float*)icosahedronUvsPointer,
+                                            len = numIcosahedronUvs,
+                                            cap = numIcosahedronUvs
+                                        };
+                                        
+                                        // Sample the points and get spheres.
+                                        Ffi.points_to_icosahedrons(&vertices, &triangles, &areasVec,
+                                            totalArea, radius, &pointsVec, &icosahedronVerticesVec, 
+                                            &icosahedronIndicesVec, &icosahedronUvsVec);
                                     
-                                    // Sample the points and get spheres.
-                                    Ffi.points_to_icosahedrons(&vertices, &triangles, &areasVec,
-                                        totalArea, radius, &pointsVec, 
-                                        &icosahedraVerticesVec, &icosahedraIndicesVec);
-                                    
-                                    // Build the mesh.
-                                    Mesh pointsMesh = new Mesh();
-                                    pointsMesh.vertices = icosahedraVertices;
-                                    pointsMesh.triangles = Array.ConvertAll(icosahedraIndices, uIntPtrToInt);
-                                    pointsMesh.RecalculateNormals();
-                                    pointsMesh.RecalculateTangents();
-                                    pointsMesh.RecalculateBounds();
-                                    return pointsMesh;
+                                        // Build the mesh.
+                                        Mesh pointsMesh = new Mesh();
+                                        pointsMesh.vertices = icosahedronVertices;
+                                        pointsMesh.triangles = Array.ConvertAll(icosahedronIndices, uIntPtrToInt);
+                                        pointsMesh.uv = icosahedronUvs;
+                                        pointsMesh.RecalculateNormals();
+                                        pointsMesh.RecalculateTangents();
+                                        pointsMesh.RecalculateBounds();
+                                        return pointsMesh;
+                                    }
                                 }
                             }
                         }

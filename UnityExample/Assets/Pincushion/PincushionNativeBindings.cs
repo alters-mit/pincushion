@@ -92,6 +92,7 @@ public unsafe partial class Ffi {
     /// - <c>points</c>: A pre-defined slice of vertices that will be filled with points. The size can differ from <c>triangles</c> and <c>areas</c>.
     /// - <c>ico_vertices</c> The vertices of *all* icosahedrons in the mesh. Expected size: <c>points.len() * 12</c>.
     /// - <c>ico_triangles</c> The triangle indices of *all* icosahedrons in the mesh. Expected size: <c>points.len() * 20</c>.
+    /// - <c>ico_uvs</c> The UVs of *all* icosahedrons in the mesh. Expected size: <c>points.len() * 2</c>.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void points_to_icosahedrons (
@@ -102,7 +103,8 @@ public unsafe partial class Ffi {
         float radius,
         Vec_float_t * points,
         Vec_float_t * ico_vertices,
-        Vec_size_t * ico_triangles);
+        Vec_size_t * ico_triangles,
+        Vec_float_t * ico_uvs);
 }
 
 public unsafe partial class Ffi {
