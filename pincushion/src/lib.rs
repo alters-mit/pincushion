@@ -158,6 +158,7 @@ pub fn sample_points(
 /// - `radius` The radius of each icosahedron.
 /// - `vertices` The vertices of *all* icosahedrons in the mesh. Expected size: `points.len() * 12`.
 /// - `triangles` The triangle indices of *all* icosahedrons in the mesh. Expected size: `points.len() * 20`.
+/// - `uvs` The (u, v) coordinates of each icosahedron vertex.
 pub fn points_to_icosahedrons_in_place(
     points: &[Vertex],
     radius: f32,

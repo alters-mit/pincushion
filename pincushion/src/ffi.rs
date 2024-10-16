@@ -64,7 +64,7 @@ pub fn sample_points(
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
 /// - `ico_vertices` The vertices of *all* icosahedrons in the mesh. Expected size: `points.len() * 12`.
 /// - `ico_triangles` The triangle indices of *all* icosahedrons in the mesh. Expected size: `points.len() * 20`.
-/// - `ico_uvs` The UVs of *all* icosahedrons in the mesh. Expected size: `points.len() * 2`.
+/// - `ico_uvs` The UVs of the vertices of *all* icosahedrons in the mesh. Expected size: `points.len() * 2`.
 #[ffi_export]
 pub fn points_to_icosahedrons(
     vertices: &safer_ffi::Vec<f32>,
