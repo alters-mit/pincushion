@@ -53,13 +53,13 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="PincushionDynamicGenerator.cs" />
-        <Compile Include="PincushionGenerator.cs" />
-        <Compile Include="PincushionStaticGenerator.cs" />
+        <Compile Include="PincushionDynamicRenderer.cs" />
         <Compile Include="MeshExtensions.cs" />
         <Compile Include="PincushionNativeBindings.cs" />
+        <Compile Include="PincushionStaticRenderer.cs" />
+        <Compile Include="PincushionVisibilityToggler.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
-        <Compile Include="PincushionStaticCreationMode.cs" />
+        <Compile Include="PincushionCreationMode.cs" />
         <Compile Include="PincushionRenderer.cs" />
     </ItemGroup>
     <ItemGroup>

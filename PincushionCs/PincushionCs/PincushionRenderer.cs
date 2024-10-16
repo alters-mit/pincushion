@@ -1,42 +1,87 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 
 namespace Pincushion
 {
     /// <summary>
-    /// This script manages the Renderer that renders the sampled points mesh as well as the original object.
+    /// This script creates or replaces a mesh with sampled points.
     /// </summary>
-    public class PincushionRenderer : MonoBehaviour
+    public abstract class PincushionRenderer<T> : MonoBehaviour where T: Component
     {
         /// <summary>
-        /// My Renderer.
+        /// The number of points per square meter.
         /// </summary>
-        [HideInInspector]
-        public Renderer myRenderer;
+        public float pointsPerM = 0.015f;
         /// <summary>
-        /// The original GameObject. This is assumed to be parented to me.
+        /// The radius of each point in meters.
         /// </summary>
-        [HideInInspector]
-        public GameObject originalGameObject;
+        public float pointRadius = 0.02f;
+        /// <summary>
+        /// What to do with the points once they've been sampled.
+        /// </summary>
+        public PincushionCreationMode mode = PincushionCreationMode.replace;
 
         
-        /// <summary>
-        /// Show/hide my Renderer.
-        /// </summary>
-        /// <param name="show">If true, show.</param>
-        public void SetMyVisibility(bool show)
+        private void Awake()
         {
-            myRenderer.enabled = show;
+            // Get the renderer.
+            T meshContainer = GetComponent<T>();
+            Mesh mesh = GetMesh(meshContainer);
+            
+            
+            // Decide what to do with the material and points.
+            if (mode == PincushionCreationMode.create)
+            {
+                Create(mesh);
+            }
+            else if (mode == PincushionCreationMode.replace)
+            {
+                ReplaceMesh(meshContainer, mesh);
+            }
+            else if (mode == PincushionCreationMode.createAndHideOriginal)
+            {
+                Create(mesh).SetOriginalVisibility(false);
+            }
+            else
+            {
+                throw new Exception("Invalid mode: " + mode);
+            }
         }
-        
-        
-        /// <summary>
-        /// Show/hide the child original object.
-        /// </summary>
-        /// <param name="show">If true, show.</param>
-        public void SetOriginalVisibility(bool show)
+
+        private PincushionVisibilityToggler Create(Mesh mesh)
         {
-            originalGameObject.SetActive(show);
+            // Instantiate.
+            GameObject go = new GameObject();
+            // Match my transform.
+            Transform t = transform;
+            go.transform.position = t.position;
+            go.transform.rotation = t.rotation;
+            go.transform.localScale = t.localScale;
+            
+            // Assign the mesh.
+            T meshContainer = go.AddComponent<T>();
+            ReplaceMesh(meshContainer, mesh);
+            
+            // Render.
+            PincushionVisibilityToggler pincushionVisibilityToggler = go.AddComponent<PincushionVisibilityToggler>();
+            pincushionVisibilityToggler.originalGameObject = gameObject;
+            pincushionVisibilityToggler.myRenderer = SetCreatedMesh(meshContainer);
+            // Parent myself.
+            t.parent = go.transform;
+            return pincushionVisibilityToggler;
         }
+
+
+        protected abstract Mesh GetMesh(T meshContainer);
+
+
+        protected abstract void ReplaceMesh(T meshContainer, Mesh mesh);
+
+
+        protected abstract Material GetMaterial();
+
+
+        protected abstract Renderer SetCreatedMesh(T meshContainer);
     }
 }

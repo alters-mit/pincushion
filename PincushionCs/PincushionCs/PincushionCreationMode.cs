@@ -1,9 +1,9 @@
 ﻿namespace Pincushion
 {
     /// <summary>
-    /// How static sample points will be added to the scene.
+    /// How sampled points will be added to the scene.
     /// </summary>
-    public enum PincushionStaticCreationMode
+    public enum PincushionCreationMode
     {
         /// <summary>
         /// Create a new GameObject and mesh with sampled points.
