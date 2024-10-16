@@ -35,7 +35,7 @@ pub fn get_areas(
 /// - `areas`: The area of each triangle. See: `get_areas(vertices, triangles, areas)`
 /// - `total_area`: The total area.
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
-///   This will be filled with the sampled pointsc.
+///   This will be filled with the sampled points.
 ///   This must be defined on the other side of the FFI boundary.
 ///   To get the expected size of `points`, call `get_areas(vertices, triangles, areas)` followed by `get_num_points(total_area, points_per_m)`
 #[ffi_export]
@@ -62,6 +62,9 @@ pub fn sample_points(
 /// - `total_area`: The total area.
 /// - `radius`: The radius of each icosahedron.
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
+///   This will be filled with the sampled points.
+///   This must be defined on the other side of the FFI boundary.
+///   To get the expected size of `points`, call `get_areas(vertices, triangles, areas)` followed by `get_num_points(total_area, points_per_m)`
 /// - `ico_vertices` The vertices of *all* icosahedrons in the mesh. Expected size: `points.len() * 12`.
 /// - `ico_triangles` The triangle indices of *all* icosahedrons in the mesh. Expected size: `points.len() * 20`.
 /// - `ico_uvs` The UVs of the vertices of *all* icosahedrons in the mesh. Expected size: `points.len() * 2`.
