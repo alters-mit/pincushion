@@ -234,10 +234,11 @@ pub fn points_to_icosahedrons_in_place(
         .for_each(|(v1, v0)| *v1 = mul(&v0, t));
 
     // Fill with initial values.
-    let mut vs = vec![ico_vertices; triangles.len()];
-    let mut ts = vec![TRIANGLES; points.len()];
+    let points_len = points.len();
+    let mut vs = vec![ico_vertices; points_len];
+    let mut ts = vec![TRIANGLES; points_len];
     // The UVs never change. Fill immediately.
-    uvs.copy_from_slice(vec![UVS; points.len()].as_flattened());
+    uvs.copy_from_slice(vec![UVS; points_len].as_flattened());
 
     points
         .iter()
