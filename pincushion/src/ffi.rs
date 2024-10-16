@@ -6,7 +6,7 @@ use safer_ffi::ffi_export;
 
 use crate::{
     get_areas_in_place, points_to_icosahedrons_in_place, sample_points as sample_points_native,
-    Triangle, Vertex,
+    Triangle, Uv, Vertex,
 };
 
 /// - `vertices`: A flat vec of (x, y, z) vertices.
@@ -64,6 +64,7 @@ pub fn sample_points(
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
 /// - `ico_vertices` The vertices of *all* icosahedrons in the mesh. Expected size: `points.len() * 12`.
 /// - `ico_triangles` The triangle indices of *all* icosahedrons in the mesh. Expected size: `points.len() * 20`.
+/// - `ico_uvs` The UVs of *all* icosahedrons in the mesh. Expected size: `points.len() * 2`.
 #[ffi_export]
 pub fn points_to_icosahedrons(
     vertices: &safer_ffi::Vec<f32>,
@@ -74,6 +75,7 @@ pub fn points_to_icosahedrons(
     points: &mut safer_ffi::Vec<f32>,
     ico_vertices: &mut safer_ffi::Vec<f32>,
     ico_triangles: &mut safer_ffi::Vec<usize>,
+    ico_uvs: &mut safer_ffi::Vec<f32>,
 ) {
     unsafe {
         // Sample the points.
@@ -84,7 +86,8 @@ pub fn points_to_icosahedrons(
         // Get icosahedra.
         let ico_vertices = ffi_vertices_mut(ico_vertices);
         let ico_triangles = ffi_triangles_mut(ico_triangles);
-        points_to_icosahedrons_in_place(points, radius, ico_vertices, ico_triangles);
+        let ico_uvs = ffi_uvs_mut(ico_uvs);
+        points_to_icosahedrons_in_place(points, radius, ico_vertices, ico_triangles, ico_uvs);
     }
 }
 
@@ -108,4 +111,9 @@ unsafe fn ffi_triangles(triangles: &safer_ffi::Vec<usize>) -> &[Triangle] {
 /// Converts a flat array of triangle indices from a safer-ffi vec into a shaped slice of triangles.
 unsafe fn ffi_triangles_mut(triangles: &mut safer_ffi::Vec<usize>) -> &mut [Triangle] {
     slice::from_raw_parts_mut(triangles.as_mut_ptr() as *mut Triangle, triangles.len() / 3)
+}
+
+/// Converts a flat array of triangle indices from a safer-ffi vec into a shaped slice of triangles.
+unsafe fn ffi_uvs_mut(uvs: &mut safer_ffi::Vec<f32>) -> &mut [Uv] {
+    slice::from_raw_parts_mut(uvs.as_mut_ptr() as *mut Uv, uvs.len() / 2)
 }

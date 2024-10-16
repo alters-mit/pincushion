@@ -12,16 +12,17 @@
 //!
 #![doc = include_str!("../../readme_rs.md")]
 
+use rand::{distributions::Uniform, thread_rng, Rng};
+
 #[cfg(feature = "cs")]
 pub mod cs;
 
 #[cfg(feature = "ffi")]
 pub mod ffi;
 
-use rand::{distributions::Uniform, thread_rng, Rng};
-
 pub type Vertex = [f32; 3];
 pub type Triangle = [usize; 3];
+pub type Uv = [f32; 2];
 
 const NUM_ICOSAHEDRON_VERTICES: usize = 12;
 const NUM_ICOSAHEDRON_TRIANGLES: usize = 20;
@@ -126,8 +127,8 @@ pub fn sample_points(
                 let triangle = triangles[rng.gen_range(start_index_triangle..=index)];
                 // Get a random point on that triangle.
                 // Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
-                let mut u = rng.sample(&range);
-                let mut v = rng.sample(&range);
+                let mut u = rng.sample(range);
+                let mut v = rng.sample(range);
                 let t = f32::sqrt(v);
                 v = u * t;
                 u = (1.0 - u) * t;
@@ -162,7 +163,13 @@ pub fn points_to_icosahedrons_in_place(
     radius: f32,
     vertices: &mut [Vertex],
     triangles: &mut [Triangle],
+    uvs: &mut [Uv],
 ) {
+    // Golden ratio.
+    #[allow(clippy::excessive_precision)]
+    const PHI: f32 = 1.618033988749894848204586834365638118;
+    // The triangle indices in a icosahedron.
+    // Source: https://superhedralcom.wordpress.com/2020/05/17/building-the-unit-icosahedron/
     const TRIANGLES: [Triangle; NUM_ICOSAHEDRON_TRIANGLES] = [
         [0, 11, 5],
         [0, 5, 1],
@@ -185,27 +192,52 @@ pub fn points_to_icosahedrons_in_place(
         [8, 6, 7],
         [9, 8, 1],
     ];
-
+    // The vertices of an unit-sized icosahedron.
     // Source: https://superhedralcom.wordpress.com/2020/05/17/building-the-unit-icosahedron/
-    let t = radius * ((1.0 + f32::sqrt(5.0)) / 2.0);
-    let ico_vertices = [
-        [-radius, t, 0.],
-        [radius, t, 0.],
-        [-radius, -t, 0.],
-        [radius, -t, 0.],
-        [0., -radius, t],
-        [0., radius, t],
-        [0., -radius, -t],
-        [0., radius, -t],
-        [t, 0., -radius],
-        [t, 0., radius],
-        [-t, 0., -radius],
-        [-t, 0., radius],
+    const VERTICES: [Vertex; NUM_ICOSAHEDRON_VERTICES] = [
+        [-1., PHI, 0.],
+        [1., PHI, 0.],
+        [-1., -PHI, 0.],
+        [1., -PHI, 0.],
+        [0., -1., PHI],
+        [0., 1., PHI],
+        [0., -1., -PHI],
+        [0., 1., -PHI],
+        [PHI, 0., -1.],
+        [PHI, 0., 1.],
+        [-PHI, 0., -1.],
+        [-PHI, 0., 1.],
+    ];
+    // Source: https://www.alexisgiard.com/icosahedron-sphere/
+    // See also: dev_code/uvs.py
+    const UVS: [Uv; NUM_ICOSAHEDRON_VERTICES] = [
+        [0.19193012, 1.0],
+        [0.0881041, 1.0],
+        [0.19193012, 0.5],
+        [0.0881041, 0.5],
+        [0.1762082, 0.56116754],
+        [0.1762082, 0.8],
+        [0.0, 0.56116754],
+        [0.0, 0.8],
+        [0.030034214, 0.6666667],
+        [0.10825957, 0.6666667],
+        [0.25, 0.6666667],
+        [0.25, 0.6666667],
     ];
 
+    let t = radius * PHI;
+    // Scale the vertices.
+    let mut ico_vertices = [[0.; 3]; NUM_ICOSAHEDRON_VERTICES];
+    ico_vertices
+        .iter_mut()
+        .zip(VERTICES)
+        .for_each(|(v1, v0)| *v1 = mul(&v0, t));
+
     // Fill with initial values.
-    let mut vs = vec![ico_vertices; points.len()];
+    let mut vs = vec![ico_vertices; triangles.len()];
     let mut ts = vec![TRIANGLES; points.len()];
+    // The UVs never change. Fill immediately.
+    uvs.copy_from_slice(vec![UVS; points.len()].as_flattened());
 
     points
         .iter()
@@ -227,12 +259,18 @@ pub fn points_to_icosahedrons_in_place(
 ///
 /// - `points` The sampled points.
 /// - `radius` The radius of each icosahedron.
-pub fn points_to_icosahedrons(points: &[Vertex], radius: f32) -> (Vec<Vertex>, Vec<Triangle>) {
+///
+/// Returns: A flat vec of the vertices of *all* vertices, triangles, and UVs.
+pub fn points_to_icosahedrons(
+    points: &[Vertex],
+    radius: f32,
+) -> (Vec<Vertex>, Vec<Triangle>, Vec<Uv>) {
     let length = points.len();
-    let mut ico_vertices = vec![[0.; 3]; NUM_ICOSAHEDRON_VERTICES * length];
-    let mut ico_triangles = vec![[0; 3]; NUM_ICOSAHEDRON_TRIANGLES * length];
-    points_to_icosahedrons_in_place(points, radius, &mut ico_vertices, &mut ico_triangles);
-    (ico_vertices, ico_triangles)
+    let mut vertices = vec![[0.; 3]; NUM_ICOSAHEDRON_VERTICES * length];
+    let mut triangles = vec![[0; 3]; NUM_ICOSAHEDRON_TRIANGLES * length];
+    let mut uvs = vec![[0.; 2]; NUM_ICOSAHEDRON_VERTICES * length];
+    points_to_icosahedrons_in_place(points, radius, &mut vertices, &mut triangles, &mut uvs);
+    (vertices, triangles, uvs)
 }
 
 /// Returns the area of a triangle.
@@ -248,7 +286,9 @@ fn add(a: &Vertex, b: &Vertex) -> Vertex {
 }
 
 fn add_mut(a: &mut Vertex, b: &Vertex) {
-    a.iter_mut().zip(b).for_each(|(a, b)| *a += *b);
+    a[0] += b[0];
+    a[1] += b[1];
+    a[2] += b[2];
 }
 
 fn sub(a: &Vertex, b: &Vertex) -> Vertex {
@@ -295,7 +335,7 @@ mod tests {
     fn test_icosahedra() {
         let (vertices, triangles) = get_obj();
         let points = sample_points_from_ppm(&vertices, &triangles, 0.015);
-        let (ico_vertices, ico_triangles) = points_to_icosahedrons(&points, 0.02);
+        let (ico_vertices, ico_triangles, _) = points_to_icosahedrons(&points, 0.02);
         let num_ico_vertices = ico_vertices.iter().flatten().count();
         assert_eq!(ico_vertices.len(), points.len() * NUM_ICOSAHEDRON_VERTICES);
         assert_eq!(
