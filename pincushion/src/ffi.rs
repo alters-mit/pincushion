@@ -8,10 +8,11 @@ use crate::{
     get_areas_in_place, points_to_icosahedrons_in_place, sample_points as sample_points_native,
     sample_triangles_in_place, scale_areas as scale_areas_native,
     set_points_from_sampled_triangles as set_points_from_sampled_triangles_native,
-    vector3::{Vector3, Vector3U},
+    vecs::{Vector3, Vector3U},
     Triangle, Uv, Vertex,
 };
 
+#[derive(Clone)]
 #[safer_ffi::derive_ReprC]
 #[repr(C)]
 pub struct Vec3 {

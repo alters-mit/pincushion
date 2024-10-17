@@ -13,9 +13,9 @@
 #![doc = include_str!("../../readme_rs.md")]
 
 use rand::{distributions::Uniform, thread_rng, Rng};
-use vector3::Vector3U;
+use vecs::Vector3U;
 
-use crate::vector3::Vector3;
+use crate::vecs::Vector3;
 
 #[cfg(feature = "cs")]
 pub mod cs;
@@ -23,7 +23,7 @@ pub mod cs;
 #[cfg(feature = "ffi")]
 pub mod ffi;
 
-pub mod vector3;
+pub mod vecs;
 
 pub type Vertex = [f32; 3];
 pub type Triangle = [usize; 3];
@@ -102,7 +102,7 @@ pub fn get_num_points(total_area: f32, points_per_m: f32) -> usize {
 /// Returns: An vec of sampled points.
 pub fn sample_points_from_ppm<T, U>(vertices: &[T], triangles: &[U], points_per_m: f32) -> Vec<T>
 where
-    T: Vector3 + Clone,
+    T: Vector3,
     U: Vector3U,
 {
     let (areas, total_area) = get_areas(vertices, triangles);
@@ -179,7 +179,7 @@ pub fn sample_triangles_in_place<T>(
     total_area: f32,
     sampled_triangles: &mut [T],
 ) where
-    T: Vector3U + Copy + Clone,
+    T: Vector3U,
 {
     // The area per point is used to uniformly sample the points.
     let area_per_point = total_area / sampled_triangles.len() as f32;
@@ -223,7 +223,7 @@ pub fn sample_triangles<T>(
     points_per_m: f32,
 ) -> Vec<T>
 where
-    T: Vector3U + Copy + Clone,
+    T: Vector3U,
 {
     let mut samples = vec![T::new(0, 0, 0); get_num_points(total_area, points_per_m)];
     sample_triangles_in_place(triangles, areas, total_area, &mut samples);

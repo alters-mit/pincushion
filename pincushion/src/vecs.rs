@@ -1,4 +1,4 @@
-pub trait Vector3 {
+pub trait Vector3: Clone {
     fn new(x: f32, y: f32, z: f32) -> Self;
     fn x(&self) -> f32;
     fn y(&self) -> f32;
@@ -115,7 +115,7 @@ impl Vector3 for [f32; 3] {
     }
 }
 
-pub trait Vector3U {
+pub trait Vector3U: Copy + Clone {
     fn new(x: usize, y: usize, z: usize) -> Self;
     fn x(&self) -> usize;
     fn y(&self) -> usize;
