@@ -43,8 +43,7 @@ namespace Pincushion
         public override void Set()
         {
             // Sample the triangles.
-            float scale = (skinnedMeshRenderer.bounds.extents.magnitude * transform.localScale).magnitude;
-            sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, scale);
+            sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude);
             // Create the mesh.
             Mesh mesh = new Mesh();
             skinnedMeshRenderer.BakeMesh(bakedMesh);

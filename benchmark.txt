@@ -1,2 +1,1 @@
-Sampling: 19μs
-Quads: 17μs
+Sampling: 51μs

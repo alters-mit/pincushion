@@ -21,7 +21,7 @@ pub fn main() {
 
 fn benchmark(vertices: &[Vertex], triangles: &[Triangle]) -> Duration {
     let t0 = Instant::now();
-    sample_points_from_ppm(0.15, &vertices, &triangles);
+    sample_points_from_ppm(80., &vertices, &triangles);
     Instant::now() - t0
 }
 

@@ -34,9 +34,9 @@ pub trait Vector3: Clone {
         Self: Sized,
     {
         Self::new(
-            self.x() * other.x(),
-            self.y() * other.y(),
-            self.z() * other.z(),
+            self.x() - other.x(),
+            self.y() - other.y(),
+            self.z() - other.z(),
         )
     }
 

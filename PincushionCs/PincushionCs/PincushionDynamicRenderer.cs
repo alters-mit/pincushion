@@ -23,11 +23,25 @@ namespace Pincushion
         /// The renderer. This is set on Awake().
         /// </summary>
         private SkinnedMeshRenderer skinnedMeshRenderer;
-
+        /// <summary>
+        /// The original color of the renderer. This is used for showing/hiding the original mesh.
+        /// </summary>
         private Color originalColor;
+        /// <summary>
+        /// A cached array of indices of vertices, used to quickly re-sample positions.
+        /// </summary>
         private UIntPtr[] sampledTriangles;
+        /// <summary>
+        /// The MeshFilter that handles the sampled points.
+        /// </summary>
         private MeshFilter sampledMeshFilter;
+        /// <summary>
+        /// The MeshRenderer that handles the sampled points.
+        /// </summary>
         private MeshRenderer sampledMeshRenderer;
+        /// <summary>
+        /// This is used to re-sample points.
+        /// </summary>
         private Mesh bakedMesh;
 
 
@@ -43,8 +57,7 @@ namespace Pincushion
         public override void Set()
         {
             // Sample the triangles.
-            float scale = (skinnedMeshRenderer.bounds.extents.magnitude * transform.localScale).magnitude;
-            sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, scale);
+            sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude);
             // Create the mesh.
             Mesh mesh = new Mesh();
             skinnedMeshRenderer.BakeMesh(bakedMesh);
