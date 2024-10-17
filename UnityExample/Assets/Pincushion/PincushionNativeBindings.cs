@@ -142,6 +142,19 @@ public unsafe partial class Ffi {
 }
 
 public unsafe partial class Ffi {
+    /// <summary>
+    /// Scale pre-calculated areas.
+    ///
+    /// - <c>areas</c>: A slice that will be filled with the areas of each triangle
+    /// - <c>scale</c>: The uniform scale of the mesh.
+    /// </summary>
+    [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
+    float scale_areas (
+        Vec_float_t * areas,
+        float scale);
+}
+
+public unsafe partial class Ffi {
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void set_points_from_sampled_triangles (
         Vec_float_t /*const*/ * vertices,

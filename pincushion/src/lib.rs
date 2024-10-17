@@ -37,17 +37,22 @@ pub fn get_areas(vertices: &[Vertex], triangles: &[Triangle]) -> (Vec<f32>, f32)
     (areas, total_area)
 }
 
+/// Scale pre-calculated areas.
+///
+/// - `areas`: A slice that will be filled with the areas of each triangle
+/// - `scale`: The uniform scale of the mesh.
+pub fn scale_areas(areas: &mut [f32], scale: f32) -> f32 {
+    areas.iter_mut().for_each(|a| *a *= scale);
+    areas.iter().sum::<f32>()
+}
+
 /// - `vertices`: A slice of (x, y, z) vertices.
 /// - `triangles`: A slice of three indices of vertices.
 /// - `areas`: A slice that will be filled with the areas of each triangle in `triangles`.
 ///   This must be the same length as `triangles`.
 ///
 /// Returns: The total area.
-pub fn get_areas_in_place(
-    vertices: &[Vertex],
-    triangles: &[Triangle],
-    areas: &mut [f32],
-) -> f32 {
+pub fn get_areas_in_place(vertices: &[Vertex], triangles: &[Triangle], areas: &mut [f32]) -> f32 {
     let mut total_area = 0.;
     triangles
         .iter()

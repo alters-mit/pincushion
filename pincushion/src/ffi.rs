@@ -5,8 +5,8 @@ use core::slice;
 use safer_ffi::ffi_export;
 
 use crate::{
-    get_areas_in_place, points_to_icosahedrons_in_place,
-    sample_points as sample_points_native, sample_triangles_in_place,
+    get_areas_in_place, points_to_icosahedrons_in_place, sample_points as sample_points_native,
+    sample_triangles_in_place, scale_areas as scale_areas_native,
     set_points_from_sampled_triangles as set_points_from_sampled_triangles_native, Triangle, Uv,
     Vertex,
 };
@@ -28,6 +28,15 @@ pub fn get_areas(
         let triangles = ffi_triangles(triangles);
         get_areas_in_place(vertices, triangles, areas)
     }
+}
+
+/// Scale pre-calculated areas.
+///
+/// - `areas`: A slice that will be filled with the areas of each triangle
+/// - `scale`: The uniform scale of the mesh.
+#[ffi_export]
+pub fn scale_areas(areas: &mut safer_ffi::Vec<f32>, scale: f32) -> f32 {
+    scale_areas_native(areas, scale)
 }
 
 /// Sample random points on the mesh.
