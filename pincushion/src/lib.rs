@@ -12,11 +12,9 @@
 //!
 #![doc = include_str!("../../readme_rs.md")]
 
-use quad::Quad;
 use rand::{distributions::Uniform, thread_rng, Rng};
-use vecs::{Vector2, Vector3U};
 
-use crate::vecs::Vector3;
+use vecs::{Vector3, Vector3U};
 
 #[cfg(feature = "cs")]
 pub mod cs;
@@ -24,12 +22,10 @@ pub mod cs;
 #[cfg(feature = "ffi")]
 pub mod ffi;
 
-pub mod quad;
 pub mod vecs;
 
 pub type Vertex = [f32; 3];
 pub type Triangle = [usize; 3];
-pub type Uv = [f32; 2];
 
 /// - `vertices`: (x, y, z) vertices.
 /// - `triangles`: Indices of vertices comprising a triangle.
@@ -267,42 +263,6 @@ pub fn set_points_from_sampled_triangles<T, U>(
         });
 }
 
-/// Given pre-sampled points, get mesh quads.
-///
-/// - `size`: The length of one side of the quad in meters.
-/// - `points`: Sampled vertices.
-/// - `quads`: This will be filled with quads, one at each position in `points`.
-pub fn points_to_quads_in_place<T, U, V>(size: f32, points: &[T], quads: &mut [Quad<T, U, V>])
-where
-    T: Vector3,
-    U: Vector3U,
-    V: Vector2,
-{
-    quads.iter_mut().zip(points).for_each(|(quad, point)| {
-        quad.set_vertices(point, size);
-    });
-}
-
-/// Given pre-sampled points, get mesh quads.
-///
-/// - `size`: The length of one side of the quad in meters.
-/// - `points`: Sampled vertices.
-///
-/// Returns: Quads, one at each position in `points`.
-pub fn points_to_quads<T, U, V>(size: f32, points: &[T]) -> Vec<Quad<T, U, V>>
-where
-    T: Vector3,
-    U: Vector3U,
-    V: Vector2,
-{
-    let mut quads = vec![Quad::new(T::new(0., 0., 0.), size); points.len()];
-    quads
-        .iter_mut()
-        .zip(points)
-        .for_each(|(quad, point)| quad.set_positions(point));
-    quads
-}
-
 /// Get a point on a triangle.
 /// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
 fn set_point<T, U>(point: &mut T, u: f32, v: f32, vertices: &[T], triangle: &U)
@@ -325,20 +285,13 @@ where
 mod tests {
     use tobj::{load_obj, GPU_LOAD_OPTIONS};
 
-    use crate::{points_to_quads, sample_points_from_ppm, Triangle, Vertex};
+    use crate::{sample_points_from_ppm, Triangle, Vertex};
 
     #[test]
     fn test_sample_points() {
         let (vertices, triangles) = get_obj();
         let points = sample_points_from_ppm(0.3, &vertices, &triangles);
         assert_eq!(points.len(), 795);
-    }
-
-    #[test]
-    fn test_quads() {
-        let (vertices, triangles) = get_obj();
-        let points = sample_points_from_ppm(0.3, &vertices, &triangles);
-        let _ = points_to_quads::<_, [usize; 3], [f32; 2]>(0.02, &points);
     }
 
     fn get_obj() -> (Vec<Vertex>, Vec<Triangle>) {

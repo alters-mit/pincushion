@@ -55,7 +55,6 @@
      <Compile Include="Assets\Pincushion\PincushionStaticRenderer.cs" />
      <Compile Include="Assets\Pincushion\PincushionDynamicRenderer.cs" />
      <Compile Include="Assets\Pincushion\PincushionVisibilityToggler.cs" />
-     <Compile Include="Assets\Pincushion\PincushionCreationMode.cs" />
      <Compile Include="Assets\Pincushion\PincushionRenderer.cs" />
      <Compile Include="Assets\Test\DesertScene\Scripts\CamelMovement.cs" />
      <Compile Include="Assets\Pincushion\MeshExtensions.cs" />

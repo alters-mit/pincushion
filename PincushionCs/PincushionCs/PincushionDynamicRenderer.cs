@@ -13,20 +13,12 @@ namespace Pincushion
     /// This is relatively inefficient, but I haven't found an alternative that is compatible with the built-in render pipeline.
     /// </summary>
     [RequireComponent(typeof(SkinnedMeshRenderer))]
-    public class PincushionDynamicRenderer : MonoBehaviour
+    public class PincushionDynamicRenderer : PincushionRenderer
     {
         /// <summary>
         /// The color of each point.
         /// </summary>
         public Color pointsColor = Color.gray;
-        /// <summary>
-        /// The number of points per square meter.
-        /// </summary>
-        public float pointsPerM = 0.015f;
-        /// <summary>
-        /// The radius of each point in meters.
-        /// </summary>
-        public float pointRadius = 0.02f;
         /// <summary>
         /// The renderer. This is set on Awake().
         /// </summary>
@@ -48,7 +40,7 @@ namespace Pincushion
         }
 
 
-        public void Set()
+        public override void Set()
         {
             // Sample the triangles.
             float scale = (skinnedMeshRenderer.bounds.extents.magnitude * transform.localScale).magnitude;
@@ -79,12 +71,27 @@ namespace Pincushion
         }
 
 
+        public override void SetOriginalMeshVisibility(bool visible)
+        {
+            skinnedMeshRenderer.material.SetColor("_Color", visible ? originalColor : new Color(0, 0, 0, 0));
+        }
+
+
+        public override void SetSampledMeshVisibility(bool visible)
+        {
+            sampledMeshRenderer.enabled = visible;
+        }
+
+
         private void Update()
         {
-            skinnedMeshRenderer.BakeMesh(bakedMesh);
-            // Set the positions of the points.
-            sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(bakedMesh.vertices, sampledTriangles);
-            sampledMeshFilter.mesh.SetPointTopology();
+            if (sampledMeshRenderer.enabled)
+            {
+                skinnedMeshRenderer.BakeMesh(bakedMesh);
+                // Set the positions of the points.
+                sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(bakedMesh.vertices, sampledTriangles);
+                sampledMeshFilter.mesh.SetPointTopology();           
+            }
         }
     }
 }

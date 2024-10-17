@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 
 namespace Pincushion
@@ -7,7 +6,7 @@ namespace Pincushion
     /// <summary>
     /// Abstract base class that creates or replaces a mesh with sampled points.
     /// </summary>
-    public abstract class PincushionRenderer<T> : MonoBehaviour where T: Component
+    public abstract class PincushionRenderer : MonoBehaviour
     {
         /// <summary>
         /// The number of points per square meter.
@@ -17,85 +16,24 @@ namespace Pincushion
         /// The radius of each point in meters.
         /// </summary>
         public float pointRadius = 0.02f;
-        /// <summary>
-        /// What to do with the points once they've been sampled.
-        /// </summary>
-        public PincushionCreationMode mode = PincushionCreationMode.replace;
 
-        
-        private void Awake()
-        {
-            // Get the renderer.
-            T meshContainer = GetComponent<T>();
-            Mesh mesh = GetMesh(meshContainer);
-            
-            // Decide what to do with the material and points.
-            if (mode == PincushionCreationMode.create)
-            {
-                Create(mesh);
-            }
-            else if (mode == PincushionCreationMode.replace)
-            {
-                ReplaceMesh(meshContainer, mesh);
-            }
-            else if (mode == PincushionCreationMode.createAndHideOriginal)
-            {
-                Create(mesh).SetOriginalVisibility(false);
-            }
-            else
-            {
-                throw new Exception("Invalid mode: " + mode);
-            }
-        }
+        /// <summary>
+        /// Sample points and set the mesh(es).
+        /// </summary>
+        public abstract void Set();
 
         
         /// <summary>
-        /// Create a new GameObject to render the sampled points.
+        /// Toggle the visibility of the original mesh.
         /// </summary>
-        /// <param name="mesh">The mesh containing the sampled points/meshes.</param>
-        private PincushionVisibilityToggler Create(Mesh mesh)
-        {
-            // Instantiate.
-            GameObject go = new GameObject();
-            // Match my transform.
-            Transform t = transform;
-            go.transform.position = t.position;
-            go.transform.rotation = t.rotation;
-            go.transform.localScale = t.localScale;
-            
-            // Assign the mesh.
-            T meshContainer = go.AddComponent<T>();
-            ReplaceMesh(meshContainer, mesh);
-            
-            // Render.
-            PincushionVisibilityToggler pincushionVisibilityToggler = go.AddComponent<PincushionVisibilityToggler>();
-            pincushionVisibilityToggler.originalGameObject = gameObject;
-            pincushionVisibilityToggler.myRenderer = SetCreatedMesh(meshContainer);
-            // Parent myself.
-            t.parent = go.transform;
-            return pincushionVisibilityToggler;
-        }
-
-
+        /// <param name="visible">If true, the mesh will be visible.</param>
+        public abstract void SetOriginalMeshVisibility(bool visible);
+        
+        
         /// <summary>
-        /// Sample points and create a mesh.
+        /// Toggle the visibility of the sampled mesh(es).
         /// </summary>
-        /// <param name="meshContainer">The component containing the original mesh.</param>
-        protected abstract Mesh GetMesh(T meshContainer);
-
-
-        /// <summary>
-        /// Replace the existing mesh with the mesh containing the sampled points.
-        /// </summary>
-        /// <param name="meshContainer">The component containing the original mesh.</param>
-        /// <param name="mesh">The new mesh.</param>
-        protected abstract void ReplaceMesh(T meshContainer, Mesh mesh);
-
-
-        /// <summary>
-        /// Continue to set a newly-created mesh.
-        /// </summary>
-        /// <param name="meshContainer">The component containing the new mesh.</param>
-        protected abstract Renderer SetCreatedMesh(T meshContainer);
+        /// <param name="visible">If true, the mesh(es) will be visible.</param>
+        public abstract void SetSampledMeshVisibility(bool visible);
     }
 }

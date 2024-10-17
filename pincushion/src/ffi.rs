@@ -3,12 +3,11 @@
 use safer_ffi::ffi_export;
 
 use crate::{
-    get_areas_in_place, points_to_quads_in_place,
-    quad::Quad,
+    get_areas_in_place,
     sample_points as sample_points_native, sample_triangles_in_place,
     scale_areas as scale_areas_native,
     set_points_from_sampled_triangles as set_points_from_sampled_triangles_native,
-    vecs::{Vector2, Vector3, Vector3U},
+    vecs::{Vector3, Vector3U},
 };
 
 /// FFI-safe Vector3.
@@ -91,37 +90,6 @@ impl Vector3U for Vec3U {
     }
 }
 
-/// FFI-safe Vector2
-#[derive(Clone)]
-#[safer_ffi::derive_ReprC]
-#[repr(C)]
-pub struct Vec2 {
-    pub x: f32,
-    pub y: f32,
-}
-
-impl Vector2 for Vec2 {
-    fn x(&self) -> f32 {
-        self.x
-    }
-
-    fn y(&self) -> f32 {
-        self.y
-    }
-
-    fn x_mut(&mut self) -> &mut f32 {
-        &mut self.x
-    }
-
-    fn y_mut(&mut self) -> &mut f32 {
-        &mut self.y
-    }
-
-    fn new(x: f32, y: f32) -> Self {
-        Self { x, y }
-    }
-}
-
 /// - `vertices`: A flat vec of (x, y, z) vertices.
 /// - `triangles`: A flat vec of three indices of vertices.
 /// - `areas`: A vec that will be filled with the areas of each triangle in `triangles`.
@@ -167,34 +135,6 @@ pub fn sample_points(
     sample_points_native(total_area, vertices, triangles, areas, points);
 }
 
-/// Sample random points in a mesh and generate a single mesh compose of icosahedrons.
-///
-/// - `total_area`: The total surface area of the mesh in square meters.
-/// - `size`: The length of one side of the quad in meters.
-/// - `vertices`: (x, y, z) vertices.
-/// - `triangles`: Indices of vertices comprising a triangle.
-/// - `areas`: A slice that will be filled with the areas of each triangle. This must be the same length as `triangles`.
-/// - `points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
-///   This will be filled with the sampled points.
-///   This must be defined on the other side of the FFI boundary.
-///   To get the expected size of `points`, call `get_areas(vertices, triangles, areas)` followed by `get_num_points(total_area, points_per_m)`
-/// - `quads`: This will be filled with quads, one at each position in `points`.
-#[ffi_export]
-pub fn points_to_quads(
-    total_area: f32,
-    size: f32,
-    vertices: &safer_ffi::Vec<Vec3>,
-    triangles: &safer_ffi::Vec<Vec3U>,
-    areas: &safer_ffi::Vec<f32>,
-    points: &mut safer_ffi::Vec<Vec3>,
-    quads: &mut safer_ffi::Vec<Quad<Vec3, Vec3U, Vec2>>,
-) {
-    // Sample the points.
-    sample_points_native(total_area, vertices, triangles, areas, points);
-    // Get quads.
-    points_to_quads_in_place(size, points, quads);
-}
-
 /// Set the triangles at which points can be sampled.
 /// This is useful for deformable meshes in situations where the positions will change but not the triangles we want to derive positions from.
 ///
@@ -214,7 +154,7 @@ pub fn sample_triangles(
 
 /// Given pre-sampled triangles, sample vertices.
 /// The position of the vertex relative to the spatial area of the triangle is deterministic.
-/// In constrast, points sampled via `sample_points` and `sample_points_ppm` will be at a random point on a sampled triangle.
+/// In contrast, points sampled via `sample_points` and `sample_points_ppm` will be at a random point on a sampled triangle.
 ///
 /// - `vertices`: (x, y, z) vertices.
 /// - `sampled_triangles`: Presampled triangles.
