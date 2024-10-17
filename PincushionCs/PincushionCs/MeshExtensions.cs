@@ -144,17 +144,17 @@ namespace Pincushion
 
         public static void SetVerticesFromSampledTriangles(this Mesh mesh, Vector3[] originalVertices, UIntPtr[] sampledTriangles)
         {
-            Vector3[] vertices = new Vector3[sampledTriangles.Length / 3];
+            Vector3[] points = new Vector3[sampledTriangles.Length / 3];
             unsafe
             {
-                fixed (Vector3* verticesPointer = vertices, originalVerticesPointer = originalVertices)
+                fixed (Vector3* pointsPointer = points, originalVerticesPointer = originalVertices)
                 {
-                    UIntPtr verticesLength = (UIntPtr)(vertices.Length);
-                    Vec_float_t verticesVec = new Vec_float_t
+                    UIntPtr pointsLength = (UIntPtr)(points.Length * 3);
+                    Vec_float_t pointsVec = new Vec_float_t
                     {
-                        ptr = (float*)verticesPointer,
-                        len = verticesLength,
-                        cap = verticesLength
+                        ptr = (float*)pointsPointer,
+                        len = pointsLength,
+                        cap = pointsLength
                     };
                     UIntPtr originalVerticesLength = (UIntPtr)(originalVertices.Length * 3);
                     Vec_float_t originalVerticesVec = new Vec_float_t
@@ -173,11 +173,11 @@ namespace Pincushion
                             len = sampledTrianglesLength,
                             cap = sampledTrianglesLength
                         };
-                        Ffi.set_points_from_sampled_triangles(&originalVerticesVec, &sampledTrianglesVec, &verticesVec);
+                        Ffi.set_points_from_sampled_triangles(&originalVerticesVec, &sampledTrianglesVec, &pointsVec);
                     }
                 }
             }
-            mesh.vertices = vertices;
+            mesh.vertices = points;
             mesh.triangles = new int[sampledTriangles.Length];
         }
         

@@ -57,6 +57,10 @@ namespace Pincushion
             // Deterministically set sampled points.
             mesh.SetVerticesFromSampledTriangles(skinnedMeshRenderer.sharedMesh.vertices, sampledTriangles);
             mesh.SetPointTopology();
+            for (int i = 0; i < mesh.vertices.Length; i++)
+            {
+                Debug.Log(mesh.vertices[i]);
+            }
             
             // Set the material.
             Material material = new Material(Shader.Find("Pincushion/DynamicPoints"));
@@ -81,7 +85,7 @@ namespace Pincushion
         {
             // Bake the mesh into the samples mesh.
             Mesh mesh = new Mesh();
-            skinnedMeshRenderer.BakeMesh(mesh, true);
+            skinnedMeshRenderer.BakeMesh(mesh);
             // Set the positions of the points.
             sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(mesh.vertices, sampledTriangles);
         }

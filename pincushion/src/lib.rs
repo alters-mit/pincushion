@@ -75,7 +75,7 @@ pub fn get_areas_in_place(
 /// Returns: The number of points to be sampled.
 #[cfg_attr(feature = "ffi", safer_ffi::ffi_export)]
 pub fn get_num_points(total_area: f32, points_per_m: f32) -> usize {
-    (total_area / points_per_m) as usize
+    (total_area * points_per_m) as usize
 }
 
 /// Sample points on a mesh, given a density of points.
