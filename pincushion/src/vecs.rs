@@ -154,3 +154,33 @@ impl Vector3U for [usize; 3] {
         &mut self[2]
     }
 }
+
+pub trait Vector2: Clone {
+    fn new(x: f32, y: f32) -> Self;
+    fn x(&self) -> f32;
+    fn y(&self) -> f32;
+    fn x_mut(&mut self) -> &mut f32;
+    fn y_mut(&mut self) -> &mut f32;
+}
+
+impl Vector2 for [f32; 2] {
+    fn new(x: f32, y: f32) -> Self {
+        [x, y]
+    }
+
+    fn x(&self) -> f32 {
+        self[0]
+    }
+
+    fn y(&self) -> f32 {
+        self[1]
+    }
+
+    fn x_mut(&mut self) -> &mut f32 {
+        &mut self[0]
+    }
+
+    fn y_mut(&mut self) -> &mut f32 {
+        &mut self[1]
+    }
+}

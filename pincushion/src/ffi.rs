@@ -1,17 +1,17 @@
 //! FFI-safe functions for pincushion.
 
-use core::slice;
-
 use safer_ffi::ffi_export;
 
 use crate::{
-    get_areas_in_place, points_to_icosahedrons_in_place, sample_points as sample_points_native,
-    sample_triangles_in_place, scale_areas as scale_areas_native,
+    get_areas_in_place, points_to_quads_in_place,
+    quad::Quad,
+    sample_points as sample_points_native, sample_triangles_in_place,
+    scale_areas as scale_areas_native,
     set_points_from_sampled_triangles as set_points_from_sampled_triangles_native,
-    vecs::{Vector3, Vector3U},
-    Triangle, Uv, Vertex,
+    vecs::{Vector2, Vector3, Vector3U},
 };
 
+/// FFI-safe Vector3.
 #[derive(Clone)]
 #[safer_ffi::derive_ReprC]
 #[repr(C)]
@@ -51,6 +51,7 @@ impl Vector3 for Vec3 {
     }
 }
 
+/// FFI-safe Vector3Uint
 #[derive(Copy, Clone)]
 #[safer_ffi::derive_ReprC]
 #[repr(C)]
@@ -90,6 +91,37 @@ impl Vector3U for Vec3U {
     }
 }
 
+/// FFI-safe Vector2
+#[derive(Clone)]
+#[safer_ffi::derive_ReprC]
+#[repr(C)]
+pub struct Vec2 {
+    pub x: f32,
+    pub y: f32,
+}
+
+impl Vector2 for Vec2 {
+    fn x(&self) -> f32 {
+        self.x
+    }
+
+    fn y(&self) -> f32 {
+        self.y
+    }
+
+    fn x_mut(&mut self) -> &mut f32 {
+        &mut self.x
+    }
+
+    fn y_mut(&mut self) -> &mut f32 {
+        &mut self.y
+    }
+
+    fn new(x: f32, y: f32) -> Self {
+        Self { x, y }
+    }
+}
+
 /// - `vertices`: A flat vec of (x, y, z) vertices.
 /// - `triangles`: A flat vec of three indices of vertices.
 /// - `areas`: A vec that will be filled with the areas of each triangle in `triangles`.
@@ -116,75 +148,77 @@ pub fn scale_areas(areas: &mut safer_ffi::Vec<f32>, scale: f32) -> f32 {
 
 /// Sample random points on the mesh.
 ///
-/// - `vertices`: A flat vec of (x, y, z) vertices.
-/// - `triangles`: A flat vec of three indices of vertices.
-/// - `areas`: The area of each triangle. See: `get_areas(vertices, triangles, areas)`
-/// - `total_area`: The total area.
+/// - `total_area`: The total surface area of the mesh in square meters.
+/// - `vertices`: (x, y, z) vertices.
+/// - `triangles`: Indices of vertices comprising a triangle.
+/// - `areas`: A slice that will be filled with the areas of each triangle. This must be the same length as `triangles`.
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
 ///   This will be filled with the sampled points.
 ///   This must be defined on the other side of the FFI boundary.
 ///   To get the expected size of `points`, call `get_areas(vertices, triangles, areas)` followed by `get_num_points(total_area, points_per_m)`
 #[ffi_export]
 pub fn sample_points(
+    total_area: f32,
     vertices: &safer_ffi::Vec<Vec3>,
     triangles: &safer_ffi::Vec<Vec3U>,
     areas: &safer_ffi::Vec<f32>,
-    total_area: f32,
     points: &mut safer_ffi::Vec<Vec3>,
 ) {
-    sample_points_native(vertices, triangles, areas, total_area, points);
+    sample_points_native(total_area, vertices, triangles, areas, points);
 }
 
 /// Sample random points in a mesh and generate a single mesh compose of icosahedrons.
 ///
-/// - `vertices`: A flat vec of (x, y, z) vertices.
-/// - `triangles`: A flat vec of three indices of vertices.
-/// - `areas`: The area of each triangle. See: `get_areas(vertices, triangles, areas)`
-/// - `total_area`: The total area.
-/// - `radius`: The radius of each icosahedron.
+/// - `total_area`: The total surface area of the mesh in square meters.
+/// - `size`: The length of one side of the quad in meters.
+/// - `vertices`: (x, y, z) vertices.
+/// - `triangles`: Indices of vertices comprising a triangle.
+/// - `areas`: A slice that will be filled with the areas of each triangle. This must be the same length as `triangles`.
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
 ///   This will be filled with the sampled points.
 ///   This must be defined on the other side of the FFI boundary.
 ///   To get the expected size of `points`, call `get_areas(vertices, triangles, areas)` followed by `get_num_points(total_area, points_per_m)`
-/// - `ico_vertices` The vertices of *all* icosahedrons in the mesh. Expected size: `points.len() * 12`.
-/// - `ico_triangles` The triangle indices of *all* icosahedrons in the mesh. Expected size: `points.len() * 20`.
-/// - `ico_uvs` The UVs of the vertices of *all* icosahedrons in the mesh. Expected size: `points.len() * 2`.
+/// - `quads`: This will be filled with quads, one at each position in `points`.
 #[ffi_export]
-pub fn points_to_icosahedrons(
-    vertices: &safer_ffi::Vec<f32>,
-    triangles: &safer_ffi::Vec<usize>,
-    areas: &safer_ffi::Vec<f32>,
+pub fn points_to_quads(
     total_area: f32,
-    radius: f32,
-    points: &mut safer_ffi::Vec<f32>,
-    ico_vertices: &mut safer_ffi::Vec<f32>,
-    ico_triangles: &mut safer_ffi::Vec<usize>,
-    ico_uvs: &mut safer_ffi::Vec<f32>,
-) {
-    unsafe {
-        // Sample the points.
-        let vertices = ffi_vertices(vertices);
-        let triangles = ffi_triangles(triangles);
-        let points = ffi_vertices_mut(points);
-        sample_points_native(vertices, triangles, areas, total_area, points);
-        // Get icosahedra.
-        let ico_vertices = ffi_vertices_mut(ico_vertices);
-        let ico_triangles = ffi_triangles_mut(ico_triangles);
-        let ico_uvs = ffi_uvs_mut(ico_uvs);
-        points_to_icosahedrons_in_place(points, radius, ico_vertices, ico_triangles, ico_uvs);
-    }
-}
-
-#[ffi_export]
-pub fn sample_triangles(
+    size: f32,
+    vertices: &safer_ffi::Vec<Vec3>,
     triangles: &safer_ffi::Vec<Vec3U>,
     areas: &safer_ffi::Vec<f32>,
-    total_area: f32,
-    sampled_triangles: &mut safer_ffi::Vec<Vec3U>,
+    points: &mut safer_ffi::Vec<Vec3>,
+    quads: &mut safer_ffi::Vec<Quad<Vec3, Vec3U, Vec2>>,
 ) {
-    sample_triangles_in_place(triangles, areas, total_area, sampled_triangles);
+    // Sample the points.
+    sample_points_native(total_area, vertices, triangles, areas, points);
+    // Get quads.
+    points_to_quads_in_place(size, points, quads);
 }
 
+/// Set the triangles at which points can be sampled.
+/// This is useful for deformable meshes in situations where the positions will change but not the triangles we want to derive positions from.
+///
+/// - `total_area`: The total surface area of the mesh in square meters.
+/// - `triangles`: Indices of vertices comprising a triangle.
+/// - `areas`: A slice that will be filled with the areas of each triangle. This must be the same length as `triangles`.
+/// - `sampled_triangles`: A pre-defined slice of triangles that will be set in this function. The size can differ from `triangles` and `areas` and must match the number of points that will be sampled.
+#[ffi_export]
+pub fn sample_triangles(
+    total_area: f32,
+    triangles: &safer_ffi::Vec<Vec3U>,
+    areas: &safer_ffi::Vec<f32>,
+    sampled_triangles: &mut safer_ffi::Vec<Vec3U>,
+) {
+    sample_triangles_in_place(total_area, triangles, areas, sampled_triangles);
+}
+
+/// Given pre-sampled triangles, sample vertices.
+/// The position of the vertex relative to the spatial area of the triangle is deterministic.
+/// In constrast, points sampled via `sample_points` and `sample_points_ppm` will be at a random point on a sampled triangle.
+///
+/// - `vertices`: (x, y, z) vertices.
+/// - `sampled_triangles`: Presampled triangles.
+/// - `points`: A pre-defined slice of vertices that will be filled with points. The size must be the same as `sampled_triangles`.
 #[ffi_export]
 pub fn set_points_from_sampled_triangles(
     vertices: &safer_ffi::Vec<Vec3>,
@@ -192,31 +226,4 @@ pub fn set_points_from_sampled_triangles(
     points: &mut safer_ffi::Vec<Vec3>,
 ) {
     set_points_from_sampled_triangles_native(vertices, sampled_triangles, points);
-}
-
-/// Converts a flat array of vertex coordinates from a safer-ffi vec into a shaped slice of vertices.
-/// e.g.: `[x0, y0, z0, x1, y1, z1, ...]` into `[[x0, y0, z0], [x1, y1, z1], ...]`
-unsafe fn ffi_vertices(vertices: &safer_ffi::Vec<f32>) -> &[Vertex] {
-    slice::from_raw_parts(vertices.as_ptr() as *const Vertex, vertices.len() / 3)
-}
-
-/// Converts a flat array of vertex coordinates from a safer-ffi vec into a shaped slice of vertices.
-/// e.g.: `[x0, y0, z0, x1, y1, z1, ...]` into `[[x0, y0, z0], [x1, y1, z1], ...]`
-unsafe fn ffi_vertices_mut(vertices: &mut safer_ffi::Vec<f32>) -> &mut [Vertex] {
-    slice::from_raw_parts_mut(vertices.as_mut_ptr() as *mut Vertex, vertices.len() / 3)
-}
-
-/// Converts a flat array of triangle indices from a safer-ffi vec into a shaped slice of triangles.
-unsafe fn ffi_triangles(triangles: &safer_ffi::Vec<usize>) -> &[Triangle] {
-    slice::from_raw_parts(triangles.as_ptr() as *const Triangle, triangles.len() / 3)
-}
-
-/// Converts a flat array of triangle indices from a safer-ffi vec into a shaped slice of triangles.
-unsafe fn ffi_triangles_mut(triangles: &mut safer_ffi::Vec<usize>) -> &mut [Triangle] {
-    slice::from_raw_parts_mut(triangles.as_mut_ptr() as *mut Triangle, triangles.len() / 3)
-}
-
-/// Converts a flat array of triangle indices from a safer-ffi vec into a shaped slice of triangles.
-unsafe fn ffi_uvs_mut(uvs: &mut safer_ffi::Vec<f32>) -> &mut [Uv] {
-    slice::from_raw_parts_mut(uvs.as_mut_ptr() as *mut Uv, uvs.len() / 2)
 }

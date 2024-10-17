@@ -1,2 +1,2 @@
-Sampling: 23μs
-Icosahedrons: 270μs
+Sampling: 19μs
+Quads: 17μs

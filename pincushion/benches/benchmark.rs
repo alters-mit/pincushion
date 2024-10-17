@@ -5,7 +5,7 @@ use std::{
 
 use tobj::{load_obj, GPU_LOAD_OPTIONS};
 
-use pincushion::{points_to_icosahedrons, sample_points_from_ppm, Triangle, Vertex};
+use pincushion::{points_to_quads, sample_points_from_ppm, Triangle, Uv, Vertex};
 
 pub fn main() {
     let (vertices, triangles) = get_obj();
@@ -15,24 +15,20 @@ pub fn main() {
         .collect::<Vec<(Duration, Duration)>>();
     // Average the results.
     let dt_sampling = dts.iter().map(|(s, _)| s).sum::<Duration>().as_micros() / dts.len() as u128;
-    let dt_icosahedrons =
-        dts.iter().map(|(_, i)| i).sum::<Duration>().as_micros() / dts.len() as u128;
-    let text = format!(
-        "Sampling: {}μs\nIcosahedrons: {}μs",
-        dt_sampling, dt_icosahedrons
-    );
+    let dt_quads = dts.iter().map(|(_, i)| i).sum::<Duration>().as_micros() / dts.len() as u128;
+    let text = format!("Sampling: {}μs\nQuads: {}μs", dt_sampling, dt_quads);
     write("../benchmark.txt", &text).unwrap();
     println!("{}", text);
 }
 
 fn benchmark(vertices: &[Vertex], triangles: &[Triangle]) -> (Duration, Duration) {
     let t0 = Instant::now();
-    let points = sample_points_from_ppm(&vertices, &triangles, 0.15);
+    let points = sample_points_from_ppm(0.15, &vertices, &triangles);
     let dt_sampling = Instant::now() - t0;
     let t0 = Instant::now();
-    points_to_icosahedrons(&points, 0.02);
-    let dt_icosahedrons = Instant::now() - t0;
-    (dt_sampling, dt_icosahedrons)
+    points_to_quads::<_, Triangle, Uv>(0.02, &points);
+    let dt_quads = Instant::now() - t0;
+    (dt_sampling, dt_quads)
 }
 
 fn get_obj() -> (Vec<Vertex>, Vec<Triangle>) {
