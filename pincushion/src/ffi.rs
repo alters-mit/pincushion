@@ -6,7 +6,9 @@ use safer_ffi::ffi_export;
 
 use crate::{
     get_areas_in_place, points_to_icosahedrons_in_place, sample_points as sample_points_native,
-    Triangle, Uv, Vertex,
+    sample_triangles_in_place,
+    set_points_from_sampled_triangles as set_points_from_sampled_triangles_native, Triangle, Uv,
+    Vertex,
 };
 
 /// - `vertices`: A flat vec of (x, y, z) vertices.
@@ -91,6 +93,34 @@ pub fn points_to_icosahedrons(
         let ico_triangles = ffi_triangles_mut(ico_triangles);
         let ico_uvs = ffi_uvs_mut(ico_uvs);
         points_to_icosahedrons_in_place(points, radius, ico_vertices, ico_triangles, ico_uvs);
+    }
+}
+
+#[ffi_export]
+pub fn sample_triangles(
+    triangles: &safer_ffi::Vec<usize>,
+    areas: &safer_ffi::Vec<f32>,
+    total_area: f32,
+    sampled_triangles: &mut safer_ffi::Vec<usize>,
+) {
+    unsafe {
+        let triangles = ffi_triangles(triangles);
+        let sampled_triangles = ffi_triangles_mut(sampled_triangles);
+        sample_triangles_in_place(triangles, areas, total_area, sampled_triangles);
+    }
+}
+
+#[ffi_export]
+pub fn set_points_from_sampled_triangles(
+    vertices: &safer_ffi::Vec<f32>,
+    sampled_triangles: &mut safer_ffi::Vec<usize>,
+    points: &mut safer_ffi::Vec<f32>,
+) {
+    unsafe {
+        let vertices = ffi_vertices(vertices);
+        let sampled_triangles = ffi_triangles_mut(sampled_triangles);
+        let points = ffi_vertices_mut(points);
+        set_points_from_sampled_triangles_native(vertices, sampled_triangles, points);
     }
 }
 

@@ -130,20 +130,12 @@ pub fn sample_points(
                     triangles[rng.gen_range(start_index_triangle..=index)]
                 };
                 // Get a random point on that triangle.
-                // Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
-                let mut u = rng.sample(range);
-                let mut v = rng.sample(range);
-                let t = f32::sqrt(v);
-                v = u * t;
-                u = (1.0 - u) * t;
-                let w = 1.0 - u - v;
-                // Set the point at `start_index_pooint` offset by 0..num_points.
-                points[start_index_point + i] = add(
-                    &add(
-                        &mul(&vertices[triangle[0]], u),
-                        &mul(&vertices[triangle[1]], v),
-                    ),
-                    &mul(&vertices[triangle[2]], w),
+                set_point(
+                    &mut points[start_index_point + i],
+                    rng.sample(range),
+                    rng.sample(range),
+                    vertices,
+                    &triangle,
                 );
             }
             // Start adding points at the offset.
@@ -154,6 +146,71 @@ pub fn sample_points(
             start_index_triangle = index + 1;
         }
     }
+}
+
+pub fn sample_triangles_in_place(
+    triangles: &[Triangle],
+    areas: &[f32],
+    total_area: f32,
+    sampled_triangles: &mut [Triangle],
+) {
+    // The area per point is used to uniformly sample the points.
+    let area_per_point = total_area / sampled_triangles.len() as f32;
+    let mut rng = thread_rng();
+    // When sampling points, start at this index.
+    let mut start_index_point = 0;
+    // When choosing trandom triangles, start at this index.
+    let mut start_index_triangle = 0;
+    // The accumulated triangle area. This is used to set the end indices.
+    let mut total_accumulated_area = 0.0;
+    for (index, area) in areas.iter().enumerate() {
+        // Add area.
+        total_accumulated_area += *area;
+        // We have enough area.
+        if total_accumulated_area >= area_per_point {
+            // Derive how many points we can fit in the accumulated area.
+            let num_points = (total_accumulated_area / area_per_point) as usize;
+            // Sample some points.
+            for i in 0..num_points {
+                // Get a random triangle, bounded by the start index and the current index in `areas`.
+                sampled_triangles[start_index_point + i] = if start_index_point == index {
+                    triangles[start_index_point]
+                } else {
+                    triangles[rng.gen_range(start_index_triangle..=index)]
+                };
+            }
+            // Start adding points at the offset.
+            start_index_point += num_points;
+            // Reset the accumulated area.
+            total_accumulated_area = 0.0;
+            // Increment to the next starting triangle.
+            start_index_triangle = index + 1;
+        }
+    }
+}
+
+pub fn sample_triangles(
+    triangles: &[Triangle],
+    areas: &[f32],
+    total_area: f32,
+    points_per_m: f32,
+) -> Vec<Triangle> {
+    let mut samples = vec![[0; 3]; get_num_points(total_area, points_per_m)];
+    sample_triangles_in_place(triangles, areas, total_area, &mut samples);
+    samples
+}
+
+pub fn set_points_from_sampled_triangles(
+    vertices: &[Vertex],
+    sampled_triangles: &[Triangle],
+    points: &mut [Vertex],
+) {
+    points
+        .iter_mut()
+        .zip(sampled_triangles)
+        .for_each(|(point, triangle)| {
+            set_point(point, 0.5, 0.5, vertices, triangle);
+        });
 }
 
 /// Convert a slice of (x, y, z) points into a single mesh composed of multiple icosahedrons (20-sided die).
@@ -274,6 +331,22 @@ pub fn points_to_icosahedrons(
     let mut uvs = vec![[0.; 2]; NUM_ICOSAHEDRON_VERTICES * length];
     points_to_icosahedrons_in_place(points, radius, &mut vertices, &mut triangles, &mut uvs);
     (vertices, triangles, uvs)
+}
+
+/// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
+fn set_point(point: &mut Vertex, u: f32, v: f32, vertices: &[Vertex], triangle: &Triangle) {
+    let t = f32::sqrt(v);
+    let v = u * t;
+    let u = (1.0 - u) * t;
+    let w = 1.0 - u - v;
+    // Set the point at `start_index_pooint` offset by 0..num_points.
+    *point = add(
+        &add(
+            &mul(&vertices[triangle[0]], u),
+            &mul(&vertices[triangle[1]], v),
+        ),
+        &mul(&vertices[triangle[2]], w),
+    );
 }
 
 /// Returns the area of a triangle.
