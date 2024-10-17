@@ -120,6 +120,7 @@ namespace Pincushion
                             float totalArea = Ffi.get_areas(&vertices, &triangles, &areasVec);
                             // Get the number of points.
                             int numPoints = (int)Ffi.get_num_points(totalArea, pointsPerM);
+                            Debug.Log(totalArea + " " + numPoints);
                             // Allocate the array.
                             UIntPtr[] sampledTriangles = new UIntPtr[numPoints * 3];
                             UIntPtr sampledTrianglesLength = (UIntPtr)(sampledTriangles.Length);
