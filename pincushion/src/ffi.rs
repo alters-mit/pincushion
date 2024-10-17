@@ -5,8 +5,8 @@ use core::slice;
 use safer_ffi::ffi_export;
 
 use crate::{
-    get_areas_in_place, points_to_icosahedrons_in_place, sample_points as sample_points_native,
-    sample_triangles_in_place,
+    get_areas_in_place, points_to_icosahedrons_in_place,
+    sample_points as sample_points_native, sample_triangles_in_place,
     set_points_from_sampled_triangles as set_points_from_sampled_triangles_native, Triangle, Uv,
     Vertex,
 };

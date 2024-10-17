@@ -71,7 +71,8 @@ namespace Pincushion
             t.parent = transform;
             t.localPosition = Vector3.zero;
             t.localRotation = Quaternion.identity;
-            t.localScale = Vector3.one;
+            Vector3 scale = transform.localScale;
+            t.localScale = new Vector3(1 / scale.x, 1 / scale.y, 1 / scale.z);
             // Set the mesh.
             sampledMeshFilter = go.AddComponent<MeshFilter>();
             sampledMeshFilter.mesh = mesh;
