@@ -5,7 +5,7 @@ use core::slice;
 use safer_ffi::ffi_export;
 
 use crate::{
-    get_areas_in_place, points_to_icosahedrons_in_place, sample_points as sample_points_native, sample_triangles_in_place, scale_areas as scale_areas_native, set_points_from_sampled_triangles as set_points_from_sampled_triangles_native, vector3::Vector3, Triangle, Uv, Vertex
+    get_areas_in_place, points_to_icosahedrons_in_place, sample_points as sample_points_native, sample_triangles_in_place, scale_areas as scale_areas_native, set_points_from_sampled_triangles as set_points_from_sampled_triangles_native, vector3::{Vector3, Vector3U}, Triangle, Uv, Vertex
 };
 
 #[safer_ffi::derive_ReprC]
@@ -42,6 +42,48 @@ impl Vector3 for Vec3 {
     }
 
     fn new(x: f32, y: f32, z: f32) -> Self {
+        Self {
+            x, 
+            y,
+            z
+        }
+    }
+}
+
+#[safer_ffi::derive_ReprC]
+#[repr(C)]
+pub struct Vec3U {
+    pub x: usize,
+    pub y: usize,
+    pub z: usize
+}
+
+impl Vector3U for Vec3U {
+    fn x(&self) -> usize {
+        self.x
+    }
+
+    fn y(&self) -> usize {
+        self.y
+    }
+
+    fn z(&self) -> usize {
+        self.z
+    }
+
+    fn x_mut(&mut self) -> &mut usize {
+        &mut self.x
+    }
+
+    fn y_mut(&mut self) -> &mut usize {
+        &mut self.y
+    }
+
+    fn z_mut(&mut self) -> &mut usize {
+        &mut self.z
+    }
+
+    fn new(x: usize, y: usize, z: usize) -> Self {
         Self {
             x, 
             y,

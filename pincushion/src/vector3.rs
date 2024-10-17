@@ -118,3 +118,43 @@ impl Vector3 for [f32; 3] {
         &mut self[2]
     }
 }
+
+pub trait Vector3U {
+    fn new(x: usize, y: usize, z: usize) -> Self;
+    fn x(&self) -> usize;
+    fn y(&self) -> usize;
+    fn z(&self) -> usize;
+    fn x_mut(&mut self) -> &mut usize;
+    fn y_mut(&mut self) -> &mut usize;
+    fn z_mut(&mut self) -> &mut usize;
+}
+
+impl Vector3U for [usize; 3] {
+    fn new(x: usize, y: usize, z: usize) -> Self {
+        [x, y, z]
+    }
+
+    fn x(&self) -> usize {
+        self[0]
+    }
+
+    fn y(&self) -> usize {
+        self[1]
+    }
+
+    fn z(&self) -> usize {
+        self[2]
+    }
+
+    fn x_mut(&mut self) -> &mut usize {
+        &mut self[0]
+    }
+
+    fn y_mut(&mut self) -> &mut usize {
+        &mut self[1]
+    }
+
+    fn z_mut(&mut self) -> &mut usize {
+        &mut self[2]
+    }
+}
