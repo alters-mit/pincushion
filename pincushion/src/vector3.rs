@@ -44,11 +44,7 @@ pub trait Vector3 {
     where
         Self: Sized,
     {
-        Self::new(
-            self.x() * other,
-            self.y() * other,
-            self.z() * other,
-        )
+        Self::new(self.x() * other, self.y() * other, self.z() * other)
     }
 
     fn mul_mut(&mut self, other: f32)
@@ -83,7 +79,7 @@ pub trait Vector3 {
     /// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/90714a3b61dbc731d9e8dc4c4ca93c2ba1da5156/Assets/Script/VFXMeshBakingHelper.cs#L202
     fn get_triangle_area(p0: &Self, p1: &Self, p2: &Self) -> f32
     where
-        Self: Sized
+        Self: Sized,
     {
         0.5 * &p1.sub(p0).cross(&p2.sub(p0)).magnitude()
     }

@@ -5,7 +5,11 @@ use core::slice;
 use safer_ffi::ffi_export;
 
 use crate::{
-    get_areas_in_place, points_to_icosahedrons_in_place, sample_points as sample_points_native, sample_triangles_in_place, scale_areas as scale_areas_native, set_points_from_sampled_triangles as set_points_from_sampled_triangles_native, vector3::{Vector3, Vector3U}, Triangle, Uv, Vertex
+    get_areas_in_place, points_to_icosahedrons_in_place, sample_points as sample_points_native,
+    sample_triangles_in_place, scale_areas as scale_areas_native,
+    set_points_from_sampled_triangles as set_points_from_sampled_triangles_native,
+    vector3::{Vector3, Vector3U},
+    Triangle, Uv, Vertex,
 };
 
 #[safer_ffi::derive_ReprC]
@@ -13,7 +17,7 @@ use crate::{
 pub struct Vec3 {
     pub x: f32,
     pub y: f32,
-    pub z: f32
+    pub z: f32,
 }
 
 impl Vector3 for Vec3 {
@@ -42,20 +46,17 @@ impl Vector3 for Vec3 {
     }
 
     fn new(x: f32, y: f32, z: f32) -> Self {
-        Self {
-            x, 
-            y,
-            z
-        }
+        Self { x, y, z }
     }
 }
 
+#[derive(Copy, Clone)]
 #[safer_ffi::derive_ReprC]
 #[repr(C)]
 pub struct Vec3U {
     pub x: usize,
     pub y: usize,
-    pub z: usize
+    pub z: usize,
 }
 
 impl Vector3U for Vec3U {
@@ -84,11 +85,7 @@ impl Vector3U for Vec3U {
     }
 
     fn new(x: usize, y: usize, z: usize) -> Self {
-        Self {
-            x, 
-            y,
-            z
-        }
+        Self { x, y, z }
     }
 }
 
@@ -101,13 +98,10 @@ impl Vector3U for Vec3U {
 #[ffi_export]
 pub fn get_areas(
     vertices: &safer_ffi::Vec<Vec3>,
-    triangles: &safer_ffi::Vec<usize>,
+    triangles: &safer_ffi::Vec<Vec3U>,
     areas: &mut safer_ffi::Vec<f32>,
 ) -> f32 {
-    unsafe {
-        let triangles = ffi_triangles(triangles);
-        get_areas_in_place(vertices, triangles, areas)
-    }
+    get_areas_in_place(vertices, triangles, areas)
 }
 
 /// Scale pre-calculated areas.
@@ -132,15 +126,12 @@ pub fn scale_areas(areas: &mut safer_ffi::Vec<f32>, scale: f32) -> f32 {
 #[ffi_export]
 pub fn sample_points(
     vertices: &safer_ffi::Vec<Vec3>,
-    triangles: &safer_ffi::Vec<usize>,
+    triangles: &safer_ffi::Vec<Vec3U>,
     areas: &safer_ffi::Vec<f32>,
     total_area: f32,
     points: &mut safer_ffi::Vec<Vec3>,
 ) {
-    unsafe {
-        let triangles = ffi_triangles(triangles);
-        sample_points_native(vertices, triangles, areas, total_area, points);
-    }
+    sample_points_native(vertices, triangles, areas, total_area, points);
 }
 
 /// Sample random points in a mesh and generate a single mesh compose of icosahedrons.
@@ -185,28 +176,21 @@ pub fn points_to_icosahedrons(
 
 #[ffi_export]
 pub fn sample_triangles(
-    triangles: &safer_ffi::Vec<usize>,
+    triangles: &safer_ffi::Vec<Vec3U>,
     areas: &safer_ffi::Vec<f32>,
     total_area: f32,
-    sampled_triangles: &mut safer_ffi::Vec<usize>,
+    sampled_triangles: &mut safer_ffi::Vec<Vec3U>,
 ) {
-    unsafe {
-        let triangles = ffi_triangles(triangles);
-        let sampled_triangles = ffi_triangles_mut(sampled_triangles);
-        sample_triangles_in_place(triangles, areas, total_area, sampled_triangles);
-    }
+    sample_triangles_in_place(triangles, areas, total_area, sampled_triangles);
 }
 
 #[ffi_export]
 pub fn set_points_from_sampled_triangles(
     vertices: &safer_ffi::Vec<Vec3>,
-    sampled_triangles: &mut safer_ffi::Vec<usize>,
+    sampled_triangles: &mut safer_ffi::Vec<Vec3U>,
     points: &mut safer_ffi::Vec<Vec3>,
 ) {
-    unsafe {
-        let sampled_triangles = ffi_triangles_mut(sampled_triangles);
-        set_points_from_sampled_triangles_native(vertices, sampled_triangles, points);
-    }
+    set_points_from_sampled_triangles_native(vertices, sampled_triangles, points);
 }
 
 /// Converts a flat array of vertex coordinates from a safer-ffi vec into a shaped slice of vertices.

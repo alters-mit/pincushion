@@ -27,12 +27,42 @@ public unsafe partial class Ffi {
 #endif
 }
 
+[StructLayout(LayoutKind.Sequential, Size = 12)]
+public unsafe struct Vec3_t {
+    public float x;
+
+    public float y;
+
+    public float z;
+}
+
 /// <summary>
 /// Same as [<c>Vec<T></c>][<c>rust::Vec</c>], but with guaranteed <c>#[repr(C)]</c> layout
 /// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 24)]
-public unsafe struct Vec_float_t {
-    public float * ptr;
+public unsafe struct Vec_Vec3_t {
+    public Vec3_t * ptr;
+
+    public UIntPtr len;
+
+    public UIntPtr cap;
+}
+
+[StructLayout(LayoutKind.Sequential, Size = 24)]
+public unsafe struct Vec3U_t {
+    public UIntPtr x;
+
+    public UIntPtr y;
+
+    public UIntPtr z;
+}
+
+/// <summary>
+/// Same as [<c>Vec<T></c>][<c>rust::Vec</c>], but with guaranteed <c>#[repr(C)]</c> layout
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 24)]
+public unsafe struct Vec_Vec3U_t {
+    public Vec3U_t * ptr;
 
     public UIntPtr len;
 
@@ -43,8 +73,8 @@ public unsafe struct Vec_float_t {
 /// Same as [<c>Vec<T></c>][<c>rust::Vec</c>], but with guaranteed <c>#[repr(C)]</c> layout
 /// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 24)]
-public unsafe struct Vec_size_t {
-    public UIntPtr * ptr;
+public unsafe struct Vec_float_t {
+    public float * ptr;
 
     public UIntPtr len;
 
@@ -62,8 +92,8 @@ public unsafe partial class Ffi {
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     float get_areas (
-        Vec_float_t /*const*/ * vertices,
-        Vec_size_t /*const*/ * triangles,
+        Vec_Vec3_t /*const*/ * vertices,
+        Vec_Vec3U_t /*const*/ * triangles,
         Vec_float_t * areas);
 }
 
@@ -78,6 +108,18 @@ public unsafe partial class Ffi {
     UIntPtr get_num_points (
         float total_area,
         float points_per_m);
+}
+
+/// <summary>
+/// Same as [<c>Vec<T></c>][<c>rust::Vec</c>], but with guaranteed <c>#[repr(C)]</c> layout
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 24)]
+public unsafe struct Vec_size_t {
+    public UIntPtr * ptr;
+
+    public UIntPtr len;
+
+    public UIntPtr cap;
 }
 
 public unsafe partial class Ffi {
@@ -125,20 +167,20 @@ public unsafe partial class Ffi {
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void sample_points (
-        Vec_float_t /*const*/ * vertices,
-        Vec_size_t /*const*/ * triangles,
+        Vec_Vec3_t /*const*/ * vertices,
+        Vec_Vec3U_t /*const*/ * triangles,
         Vec_float_t /*const*/ * areas,
         float total_area,
-        Vec_float_t * points);
+        Vec_Vec3_t * points);
 }
 
 public unsafe partial class Ffi {
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void sample_triangles (
-        Vec_size_t /*const*/ * triangles,
+        Vec_Vec3U_t /*const*/ * triangles,
         Vec_float_t /*const*/ * areas,
         float total_area,
-        Vec_size_t * sampled_triangles);
+        Vec_Vec3U_t * sampled_triangles);
 }
 
 public unsafe partial class Ffi {
@@ -157,9 +199,9 @@ public unsafe partial class Ffi {
 public unsafe partial class Ffi {
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void set_points_from_sampled_triangles (
-        Vec_float_t /*const*/ * vertices,
-        Vec_size_t * sampled_triangles,
-        Vec_float_t * points);
+        Vec_Vec3_t /*const*/ * vertices,
+        Vec_Vec3U_t * sampled_triangles,
+        Vec_Vec3_t * points);
 }
 
 

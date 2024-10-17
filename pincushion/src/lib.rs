@@ -13,6 +13,7 @@
 #![doc = include_str!("../../readme_rs.md")]
 
 use rand::{distributions::Uniform, thread_rng, Rng};
+use vector3::Vector3U;
 
 use crate::vector3::Vector3;
 
@@ -35,9 +36,10 @@ const NUM_ICOSAHEDRON_TRIANGLES: usize = 20;
 /// - `triangles`: A slice of three indices of vertices.
 ///
 /// Returns: The area of each triangle and the total area.
-pub fn get_areas<T>(vertices: &[T], triangles: &[Triangle]) -> (Vec<f32>, f32)
+pub fn get_areas<T, U>(vertices: &[T], triangles: &[U]) -> (Vec<f32>, f32)
 where
     T: Vector3,
+    U: Vector3U,
 {
     let mut areas = vec![0.0; triangles.len()];
     let total_area = get_areas_in_place(vertices, triangles, &mut areas);
@@ -59,9 +61,10 @@ pub fn scale_areas(areas: &mut [f32], scale: f32) -> f32 {
 ///   This must be the same length as `triangles`.
 ///
 /// Returns: The total area.
-pub fn get_areas_in_place<T>(vertices: &[T], triangles: &[Triangle], areas: &mut [f32]) -> f32
+pub fn get_areas_in_place<T, U>(vertices: &[T], triangles: &[U], areas: &mut [f32]) -> f32
 where
     T: Vector3,
+    U: Vector3U,
 {
     let mut total_area = 0.;
     triangles
@@ -70,9 +73,9 @@ where
         .for_each(|(triangle, area)| {
             // Get this triangle's area.
             let a = Vector3::get_triangle_area(
-                &vertices[triangle[0]],
-                &vertices[triangle[1]],
-                &vertices[triangle[2]],
+                &vertices[triangle.x()],
+                &vertices[triangle.y()],
+                &vertices[triangle.z()],
             );
             // Add to the total.
             total_area += a;
@@ -97,11 +100,11 @@ pub fn get_num_points(total_area: f32, points_per_m: f32) -> usize {
 /// - `points_per_m`: The number of points per square meter.
 ///
 /// Returns: An vec of sampled points.
-pub fn sample_points_from_ppm<T>(
-    vertices: &[T],
-    triangles: &[Triangle],
-    points_per_m: f32,
-) -> Vec<T> where T: Vector3 + Clone {
+pub fn sample_points_from_ppm<T, U>(vertices: &[T], triangles: &[U], points_per_m: f32) -> Vec<T>
+where
+    T: Vector3 + Clone,
+    U: Vector3U,
+{
     let (areas, total_area) = get_areas(vertices, triangles);
     let num_points = get_num_points(total_area, points_per_m);
     let mut points = vec![T::new(0., 0., 0.); num_points];
@@ -116,13 +119,16 @@ pub fn sample_points_from_ppm<T>(
 /// - `areas`: The area of each triangle. See: [`get_areas(vertices, triangles)`] and [`get_areas_in_place(vertices, triangles, areas)`].
 /// - `total_area`: The total area.
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
-pub fn sample_points<T>(
+pub fn sample_points<T, U>(
     vertices: &[T],
-    triangles: &[Triangle],
+    triangles: &[U],
     areas: &[f32],
     total_area: f32,
     points: &mut [T],
-) where T: Vector3 {
+) where
+    T: Vector3,
+    U: Vector3U,
+{
     // The area per point is used to uniformly sample the points.
     let area_per_point = total_area / points.len() as f32;
     let mut rng = thread_rng();
@@ -144,9 +150,9 @@ pub fn sample_points<T>(
             for i in 0..num_points {
                 // Get a random triangle, bounded by the start index and the current index in `areas`.
                 let triangle = if start_index_point == index {
-                    triangles[start_index_point]
+                    &triangles[start_index_point]
                 } else {
-                    triangles[rng.gen_range(start_index_triangle..=index)]
+                    &triangles[rng.gen_range(start_index_triangle..=index)]
                 };
                 // Get a random point on that triangle.
                 set_point(
@@ -154,7 +160,7 @@ pub fn sample_points<T>(
                     rng.sample(range),
                     rng.sample(range),
                     vertices,
-                    &triangle,
+                    triangle,
                 );
             }
             // Start adding points at the offset.
@@ -167,12 +173,14 @@ pub fn sample_points<T>(
     }
 }
 
-pub fn sample_triangles_in_place(
-    triangles: &[Triangle],
+pub fn sample_triangles_in_place<T>(
+    triangles: &[T],
     areas: &[f32],
     total_area: f32,
-    sampled_triangles: &mut [Triangle],
-) {
+    sampled_triangles: &mut [T],
+) where
+    T: Vector3U + Copy + Clone,
+{
     // The area per point is used to uniformly sample the points.
     let area_per_point = total_area / sampled_triangles.len() as f32;
     let mut rng = thread_rng();
@@ -208,22 +216,28 @@ pub fn sample_triangles_in_place(
     }
 }
 
-pub fn sample_triangles(
-    triangles: &[Triangle],
+pub fn sample_triangles<T>(
+    triangles: &[T],
     areas: &[f32],
     total_area: f32,
     points_per_m: f32,
-) -> Vec<Triangle> {
-    let mut samples = vec![[0; 3]; get_num_points(total_area, points_per_m)];
+) -> Vec<T>
+where
+    T: Vector3U + Copy + Clone,
+{
+    let mut samples = vec![T::new(0, 0, 0); get_num_points(total_area, points_per_m)];
     sample_triangles_in_place(triangles, areas, total_area, &mut samples);
     samples
 }
 
-pub fn set_points_from_sampled_triangles<T>(
+pub fn set_points_from_sampled_triangles<T, U>(
     vertices: &[T],
-    sampled_triangles: &[Triangle],
+    sampled_triangles: &[U],
     points: &mut [T],
-) where T: Vector3 {
+) where
+    T: Vector3,
+    U: Vector3U,
+{
     points
         .iter_mut()
         .zip(sampled_triangles)
@@ -353,13 +367,20 @@ pub fn points_to_icosahedrons(
 }
 
 /// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
-fn set_point<T>(point: &mut T, u: f32, v: f32, vertices: &[T], triangle: &Triangle) where T: Vector3 {
+fn set_point<T, U>(point: &mut T, u: f32, v: f32, vertices: &[T], triangle: &U)
+where
+    T: Vector3,
+    U: Vector3U,
+{
     let t = f32::sqrt(v);
     let v = u * t;
     let u = (1.0 - u) * t;
     let w = 1.0 - u - v;
     // Set the point at `start_index_pooint` offset by 0..num_points.
-    *point = vertices[triangle[0]].mul(u).add(&vertices[triangle[1]].mul(v)).add(&vertices[triangle[2]].mul(w));
+    *point = vertices[triangle.x()]
+        .mul(u)
+        .add(&vertices[triangle.y()].mul(v))
+        .add(&vertices[triangle.z()].mul(w));
 }
 
 #[cfg(test)]

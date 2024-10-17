@@ -19,22 +19,22 @@ namespace Pincushion
         {
             // Get the casted indices.
             UIntPtr[] indices = Array.ConvertAll(mesh.triangles, intToUIntPtr);
+            UIntPtr verticesLength = (UIntPtr)mesh.vertices.Length;
+            int numTriangles = indices.Length / 3;
+            // Allocate an array of areas.
+            float[] areas = new float[numTriangles];
+            UIntPtr areasLength = (UIntPtr)numTriangles;
             unsafe
             {
                 // All `fixed` statements are boilerplate C#-to-Rust declarations.
                 fixed (Vector3* verticesPointerVec3 = mesh.vertices)
                 {
-                    UIntPtr verticesLength = (UIntPtr)(mesh.vertices.Length * 3);
-                    Vec_float_t vertices = new Vec_float_t
+                    Vec_Vec3_t vertices = new Vec_Vec3_t
                     {
-                        ptr = (float*)verticesPointerVec3,
+                        ptr = (Vec3_t*)verticesPointerVec3,
                         len = verticesLength,
                         cap = verticesLength
                     };
-                    int numTriangles = mesh.triangles.Length / 3;
-                    // Allocate an array of areas.
-                    float[] areas = new float[numTriangles];
-                    UIntPtr areasLength = (UIntPtr)numTriangles;
                     fixed (float* areasPointer = areas)
                     {
                         Vec_float_t areasVec = new Vec_float_t
@@ -43,29 +43,27 @@ namespace Pincushion
                             len = areasLength,
                             cap = areasLength
                         };
-                        UIntPtr indicesLength = (UIntPtr)indices.Length;
                         fixed (UIntPtr* indicesPointer = indices)
                         {
-                            Vec_size_t triangles = new Vec_size_t
+                            Vec_Vec3U_t triangles = new Vec_Vec3U_t
                             {
-                                ptr = indicesPointer,
-                                len = indicesLength,
-                                cap = indicesLength
+                                ptr = (Vec3U_t*)indicesPointer,
+                                len = areasLength,
+                                cap = areasLength
                             };
-
                             // Get the areas and the total area.
                             float totalArea = Ffi.get_areas(&vertices, &triangles, &areasVec);
                             // Get the number of points.
                             int numPoints = (int)Ffi.get_num_points(totalArea, pointsPerM);
                             // Allocate the array.
                             Vector3[] points = new Vector3[numPoints];
-                            UIntPtr pointsLength = (UIntPtr)(numPoints * 3);
+                            UIntPtr pointsLength = (UIntPtr)numPoints;
                             // Sample the points.
                             fixed (Vector3* pointsPointer = points) 
                             {
-                                Vec_float_t pointsVec = new Vec_float_t()
+                                Vec_Vec3_t pointsVec = new Vec_Vec3_t
                                 {
-                                    ptr = (float*)pointsPointer,
+                                    ptr = (Vec3_t*)pointsPointer,
                                     len = pointsLength,
                                     cap = pointsLength
                                 };
@@ -82,22 +80,22 @@ namespace Pincushion
         {
             // Get the casted indices.
             UIntPtr[] indices = Array.ConvertAll(mesh.triangles, intToUIntPtr);
+            UIntPtr verticesLength = (UIntPtr)mesh.vertices.Length;
+            int numTriangles = mesh.triangles.Length / 3;
+            // Allocate an array of areas.
+            float[] areas = new float[numTriangles];
+            UIntPtr areasLength = (UIntPtr)numTriangles;
             unsafe
             {
                 // All `fixed` statements are boilerplate C#-to-Rust declarations.
                 fixed (Vector3* verticesPointerVec3 = mesh.vertices)
                 {
-                    UIntPtr verticesLength = (UIntPtr)(mesh.vertices.Length * 3);
-                    Vec_float_t vertices = new Vec_float_t
+                    Vec_Vec3_t vertices = new Vec_Vec3_t
                     {
-                        ptr = (float*)verticesPointerVec3,
+                        ptr = (Vec3_t*)verticesPointerVec3,
                         len = verticesLength,
                         cap = verticesLength
                     };
-                    int numTriangles = mesh.triangles.Length / 3;
-                    // Allocate an array of areas.
-                    float[] areas = new float[numTriangles];
-                    UIntPtr areasLength = (UIntPtr)numTriangles;
                     fixed (float* areasPointer = areas)
                     {
                         Vec_float_t areasVec = new Vec_float_t
@@ -106,16 +104,14 @@ namespace Pincushion
                             len = areasLength,
                             cap = areasLength
                         };
-                        UIntPtr indicesLength = (UIntPtr)indices.Length;
                         fixed (UIntPtr* indicesPointer = indices)
                         {
-                            Vec_size_t triangles = new Vec_size_t
+                            Vec_Vec3U_t triangles = new Vec_Vec3U_t
                             {
-                                ptr = indicesPointer,
-                                len = indicesLength,
-                                cap = indicesLength
+                                ptr = (Vec3U_t*)indicesPointer,
+                                len = areasLength,
+                                cap = areasLength
                             };
-
                             // Get the areas and the total area.
                             Ffi.get_areas(&vertices, &triangles, &areasVec);
                             // Scale the areas.
@@ -124,13 +120,13 @@ namespace Pincushion
                             int numPoints = (int)Ffi.get_num_points(totalArea, pointsPerM);
                             // Allocate the array.
                             UIntPtr[] sampledTriangles = new UIntPtr[numPoints * 3];
-                            UIntPtr sampledTrianglesLength = (UIntPtr)(sampledTriangles.Length);
+                            UIntPtr sampledTrianglesLength = (UIntPtr)numPoints;
                             // Sample the points.
                             fixed (UIntPtr* sampledTrianglesPointer = sampledTriangles) 
                             {
-                                Vec_size_t sampledTrianglesVec = new Vec_size_t
+                                Vec_Vec3U_t sampledTrianglesVec = new Vec_Vec3U_t
                                 {
-                                    ptr = sampledTrianglesPointer,
+                                    ptr = (Vec3U_t*)sampledTrianglesPointer,
                                     len = sampledTrianglesLength,
                                     cap = sampledTrianglesLength
                                 };
@@ -147,33 +143,32 @@ namespace Pincushion
         public static void SetVerticesFromSampledTriangles(this Mesh mesh, Vector3[] originalVertices, UIntPtr[] sampledTriangles)
         {
             Vector3[] points = new Vector3[sampledTriangles.Length / 3];
+            UIntPtr pointsLength = (UIntPtr)points.Length;
+            UIntPtr originalVerticesLength = (UIntPtr)originalVertices.Length;
             unsafe
             {
                 fixed (Vector3* pointsPointer = points, originalVerticesPointer = originalVertices)
                 {
-                    UIntPtr pointsLength = (UIntPtr)(points.Length * 3);
-                    Vec_float_t pointsVec = new Vec_float_t
+                    Vec_Vec3_t pointsVec = new Vec_Vec3_t
                     {
-                        ptr = (float*)pointsPointer,
+                        ptr = (Vec3_t*)pointsPointer,
                         len = pointsLength,
                         cap = pointsLength
                     };
-                    UIntPtr originalVerticesLength = (UIntPtr)(originalVertices.Length * 3);
-                    Vec_float_t originalVerticesVec = new Vec_float_t
+                    Vec_Vec3_t originalVerticesVec = new Vec_Vec3_t
                     {
-                        ptr = (float*)originalVerticesPointer,
+                        ptr = (Vec3_t*)originalVerticesPointer,
                         len = originalVerticesLength,
                         cap = originalVerticesLength
                     };
                     // Deterministically sample the points.
-                    UIntPtr sampledTrianglesLength = (UIntPtr)(sampledTriangles.Length);
                     fixed (UIntPtr* sampledTrianglesPointer = sampledTriangles) 
                     {
-                        Vec_size_t sampledTrianglesVec = new Vec_size_t
+                        Vec_Vec3U_t sampledTrianglesVec = new Vec_Vec3U_t
                         {
-                            ptr = sampledTrianglesPointer,
-                            len = sampledTrianglesLength,
-                            cap = sampledTrianglesLength
+                            ptr = (Vec3U_t*)sampledTrianglesPointer,
+                            len = pointsLength,
+                            cap = pointsLength
                         };
                         Ffi.set_points_from_sampled_triangles(&originalVerticesVec, &sampledTrianglesVec, &pointsVec);
                     }
