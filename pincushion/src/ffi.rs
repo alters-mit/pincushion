@@ -5,11 +5,50 @@ use core::slice;
 use safer_ffi::ffi_export;
 
 use crate::{
-    get_areas_in_place, points_to_icosahedrons_in_place, sample_points as sample_points_native,
-    sample_triangles_in_place, scale_areas as scale_areas_native,
-    set_points_from_sampled_triangles as set_points_from_sampled_triangles_native, Triangle, Uv,
-    Vertex,
+    get_areas_in_place, points_to_icosahedrons_in_place, sample_points as sample_points_native, sample_triangles_in_place, scale_areas as scale_areas_native, set_points_from_sampled_triangles as set_points_from_sampled_triangles_native, vector3::Vector3, Triangle, Uv, Vertex
 };
+
+#[safer_ffi::derive_ReprC]
+#[repr(C)]
+pub struct Vec3 {
+    pub x: f32,
+    pub y: f32,
+    pub z: f32
+}
+
+impl Vector3 for Vec3 {
+    fn x(&self) -> f32 {
+        self.x
+    }
+
+    fn y(&self) -> f32 {
+        self.y
+    }
+
+    fn z(&self) -> f32 {
+        self.z
+    }
+
+    fn x_mut(&mut self) -> &mut f32 {
+        &mut self.x
+    }
+
+    fn y_mut(&mut self) -> &mut f32 {
+        &mut self.y
+    }
+
+    fn z_mut(&mut self) -> &mut f32 {
+        &mut self.z
+    }
+
+    fn new(x: f32, y: f32, z: f32) -> Self {
+        Self {
+            x, 
+            y,
+            z
+        }
+    }
+}
 
 /// - `vertices`: A flat vec of (x, y, z) vertices.
 /// - `triangles`: A flat vec of three indices of vertices.
@@ -19,12 +58,11 @@ use crate::{
 /// Returns: The total area.
 #[ffi_export]
 pub fn get_areas(
-    vertices: &safer_ffi::Vec<f32>,
+    vertices: &safer_ffi::Vec<Vec3>,
     triangles: &safer_ffi::Vec<usize>,
     areas: &mut safer_ffi::Vec<f32>,
 ) -> f32 {
     unsafe {
-        let vertices = ffi_vertices(vertices);
         let triangles = ffi_triangles(triangles);
         get_areas_in_place(vertices, triangles, areas)
     }
@@ -51,16 +89,14 @@ pub fn scale_areas(areas: &mut safer_ffi::Vec<f32>, scale: f32) -> f32 {
 ///   To get the expected size of `points`, call `get_areas(vertices, triangles, areas)` followed by `get_num_points(total_area, points_per_m)`
 #[ffi_export]
 pub fn sample_points(
-    vertices: &safer_ffi::Vec<f32>,
+    vertices: &safer_ffi::Vec<Vec3>,
     triangles: &safer_ffi::Vec<usize>,
     areas: &safer_ffi::Vec<f32>,
     total_area: f32,
-    points: &mut safer_ffi::Vec<f32>,
+    points: &mut safer_ffi::Vec<Vec3>,
 ) {
     unsafe {
-        let vertices = ffi_vertices(vertices);
         let triangles = ffi_triangles(triangles);
-        let points = ffi_vertices_mut(points);
         sample_points_native(vertices, triangles, areas, total_area, points);
     }
 }
@@ -121,14 +157,12 @@ pub fn sample_triangles(
 
 #[ffi_export]
 pub fn set_points_from_sampled_triangles(
-    vertices: &safer_ffi::Vec<f32>,
+    vertices: &safer_ffi::Vec<Vec3>,
     sampled_triangles: &mut safer_ffi::Vec<usize>,
-    points: &mut safer_ffi::Vec<f32>,
+    points: &mut safer_ffi::Vec<Vec3>,
 ) {
     unsafe {
-        let vertices = ffi_vertices(vertices);
         let sampled_triangles = ffi_triangles_mut(sampled_triangles);
-        let points = ffi_vertices_mut(points);
         set_points_from_sampled_triangles_native(vertices, sampled_triangles, points);
     }
 }
