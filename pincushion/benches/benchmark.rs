@@ -27,7 +27,7 @@ pub fn main() {
 
 fn benchmark(vertices: &[Vertex], triangles: &[Triangle]) -> (Duration, Duration) {
     let t0 = Instant::now();
-    let points = sample_points_from_ppm(&vertices, &triangles, 0.015);
+    let points = sample_points_from_ppm(&vertices, &triangles, 0.15);
     let dt_sampling = Instant::now() - t0;
     let t0 = Instant::now();
     points_to_icosahedrons(&points, 0.02);
