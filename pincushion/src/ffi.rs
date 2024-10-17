@@ -15,6 +15,7 @@ use crate::{
 /// - `triangles`: A flat vec of three indices of vertices.
 /// - `areas`: A vec that will be filled with the areas of each triangle in `triangles`.
 ///   This must be the same length as `triangles.len() / 3`.
+/// - `scale`: The uniform scale of the original mesh.
 ///
 /// Returns: The total area.
 #[ffi_export]
@@ -22,11 +23,12 @@ pub fn get_areas(
     vertices: &safer_ffi::Vec<f32>,
     triangles: &safer_ffi::Vec<usize>,
     areas: &mut safer_ffi::Vec<f32>,
+    scale: f32
 ) -> f32 {
     unsafe {
         let vertices = ffi_vertices(vertices);
         let triangles = ffi_triangles(triangles);
-        get_areas_in_place(vertices, triangles, areas)
+        get_areas_in_place(vertices, triangles, areas, scale)
     }
 }
 

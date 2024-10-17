@@ -27,7 +27,7 @@ namespace Pincushion
 
         protected override Mesh GetMesh(MeshFilter meshContainer)
         {
-            return meshContainer.mesh.GetIcosahedrons(pointsPerM, pointRadius);
+            return meshContainer.mesh.GetIcosahedrons(pointsPerM, pointRadius, transform.localScale.magnitude);
         }
 
 
