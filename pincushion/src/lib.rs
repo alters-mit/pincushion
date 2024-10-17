@@ -29,12 +29,11 @@ const NUM_ICOSAHEDRON_TRIANGLES: usize = 20;
 
 /// - `vertices`: A slice of (x, y, z) vertices.
 /// - `triangles`: A slice of three indices of vertices.
-/// - `scale`: The uniform scale of the original mesh.
 ///
 /// Returns: The area of each triangle and the total area.
-pub fn get_areas(vertices: &[Vertex], triangles: &[Triangle], scale: f32) -> (Vec<f32>, f32) {
+pub fn get_areas(vertices: &[Vertex], triangles: &[Triangle]) -> (Vec<f32>, f32) {
     let mut areas = vec![0.0; triangles.len()];
-    let total_area = get_areas_in_place(vertices, triangles, &mut areas, scale);
+    let total_area = get_areas_in_place(vertices, triangles, &mut areas);
     (areas, total_area)
 }
 
@@ -42,14 +41,12 @@ pub fn get_areas(vertices: &[Vertex], triangles: &[Triangle], scale: f32) -> (Ve
 /// - `triangles`: A slice of three indices of vertices.
 /// - `areas`: A slice that will be filled with the areas of each triangle in `triangles`.
 ///   This must be the same length as `triangles`.
-/// - `scale`: The uniform scale of the original mesh.
 ///
 /// Returns: The total area.
 pub fn get_areas_in_place(
     vertices: &[Vertex],
     triangles: &[Triangle],
     areas: &mut [f32],
-    scale: f32,
 ) -> f32 {
     let mut total_area = 0.;
     triangles
@@ -61,7 +58,7 @@ pub fn get_areas_in_place(
                 &vertices[triangle[0]],
                 &vertices[triangle[1]],
                 &vertices[triangle[2]],
-            ) * scale;
+            );
             // Add to the total.
             total_area += a;
             *area = a;
@@ -83,16 +80,14 @@ pub fn get_num_points(total_area: f32, points_per_m: f32) -> usize {
 /// - `vertices`: A slice of (x, y, z) vertices.
 /// - `triangles`: A slice of three indices of vertices.
 /// - `points_per_m`: The number of points per square meter.
-/// - `scale`: The uniform scale of the original mesh.
 ///
 /// Returns: An vec of sampled points.
 pub fn sample_points_from_ppm(
     vertices: &[Vertex],
     triangles: &[Triangle],
     points_per_m: f32,
-    scale: f32,
 ) -> Vec<Vertex> {
-    let (areas, total_area) = get_areas(vertices, triangles, scale);
+    let (areas, total_area) = get_areas(vertices, triangles);
     let num_points = get_num_points(total_area, points_per_m);
     let mut points = vec![[0.0; 3]; num_points];
     sample_points(vertices, triangles, &areas, total_area, &mut points);
@@ -418,14 +413,14 @@ mod tests {
     #[test]
     fn test_sample_points() {
         let (vertices, triangles) = get_obj();
-        let points = sample_points_from_ppm(&vertices, &triangles, 0.015, 1.);
+        let points = sample_points_from_ppm(&vertices, &triangles, 0.015);
         assert_eq!(points.len(), 831);
     }
 
     #[test]
     fn test_icosahedra() {
         let (vertices, triangles) = get_obj();
-        let points = sample_points_from_ppm(&vertices, &triangles, 0.015, 1.);
+        let points = sample_points_from_ppm(&vertices, &triangles, 0.015);
         let (ico_vertices, ico_triangles, _) = points_to_icosahedrons(&points, 0.02);
         let num_ico_vertices = ico_vertices.iter().flatten().count();
         assert_eq!(ico_vertices.len(), points.len() * NUM_ICOSAHEDRON_VERTICES);

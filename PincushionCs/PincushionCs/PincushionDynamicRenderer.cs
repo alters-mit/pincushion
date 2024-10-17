@@ -36,14 +36,14 @@ namespace Pincushion
         private UIntPtr[] sampledTriangles;
         private MeshFilter sampledMeshFilter;
         private MeshRenderer sampledMeshRenderer;
-        private float scale;
+        private Vector3[] originalVertices;
 
 
         private void Awake()
         {
             skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
             originalColor = skinnedMeshRenderer.material.color;
-            scale = skinnedMeshRenderer.transform.localScale.magnitude;
+            originalVertices = skinnedMeshRenderer.sharedMesh.vertices;
             Set();
         }
 
@@ -51,13 +51,12 @@ namespace Pincushion
         public void Set()
         {
             // Sample the triangles.
-            Mesh originalMesh = new Mesh();
-            skinnedMeshRenderer.BakeMesh(originalMesh);
-            sampledTriangles = originalMesh.GetSampledTriangles(pointsPerM, 1);
+            sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM);
             // Create the mesh.
             Mesh mesh = new Mesh();
             // Deterministically set sampled points.
-            mesh.SetVerticesFromSampledTriangles(originalMesh.vertices, sampledTriangles);
+            mesh.SetVerticesFromSampledTriangles(skinnedMeshRenderer.sharedMesh.vertices, sampledTriangles);
+            Debug.Log(sampledTriangles.Length);
             mesh.SetPointTopology();
             mesh.RecalculateBounds();
 
@@ -81,11 +80,12 @@ namespace Pincushion
         }
 
 
-        private void OnRenderObject()
+        private void Update()
         {
             // Bake the mesh into the samples mesh.
             Mesh mesh = new Mesh();
             skinnedMeshRenderer.BakeMesh(mesh);
+            mesh.vertices = originalVertices;
             // Set the positions of the points.
             sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(mesh.vertices, sampledTriangles);
         }

@@ -15,7 +15,7 @@ namespace Pincushion
         /// </summary>
         /// <param name="mesh">(this)</param>
         /// <param name="pointsPerM">The number of points per square meter.</param>
-        public static Vector3[] GetSampledPoints(this Mesh mesh, float pointsPerM, float scale) 
+        public static Vector3[] GetSampledPoints(this Mesh mesh, float pointsPerM) 
         {
             // Get the casted indices.
             UIntPtr[] indices = Array.ConvertAll(mesh.triangles, intToUIntPtr);
@@ -54,7 +54,7 @@ namespace Pincushion
                             };
 
                             // Get the areas and the total area.
-                            float totalArea = Ffi.get_areas(&vertices, &triangles, &areasVec, scale);
+                            float totalArea = Ffi.get_areas(&vertices, &triangles, &areasVec);
                             // Get the number of points.
                             int numPoints = (int)Ffi.get_num_points(totalArea, pointsPerM);
                             // Allocate the array.
@@ -78,7 +78,7 @@ namespace Pincushion
             }
         }
 
-        public static UIntPtr[] GetSampledTriangles(this Mesh mesh, float pointsPerM, float scale)
+        public static UIntPtr[] GetSampledTriangles(this Mesh mesh, float pointsPerM)
         {
             // Get the casted indices.
             UIntPtr[] indices = Array.ConvertAll(mesh.triangles, intToUIntPtr);
@@ -117,7 +117,7 @@ namespace Pincushion
                             };
 
                             // Get the areas and the total area.
-                            float totalArea = Ffi.get_areas(&vertices, &triangles, &areasVec, scale);
+                            float totalArea = Ffi.get_areas(&vertices, &triangles, &areasVec);
                             // Get the number of points.
                             int numPoints = (int)Ffi.get_num_points(totalArea, pointsPerM);
                             // Allocate the array.
@@ -190,7 +190,7 @@ namespace Pincushion
         /// <param name="mesh">(this)</param>
         /// <param name="pointsPerM">The number of points per square meter.</param>
         /// <param name="radius">The radius of each icosahedron.</param>
-        public static Mesh GetIcosahedrons(this Mesh mesh, float pointsPerM, float radius, float scale) 
+        public static Mesh GetIcosahedrons(this Mesh mesh, float pointsPerM, float radius) 
         {
             // Get the casted indices.
             UIntPtr[] indices = Array.ConvertAll(mesh.triangles, intToUIntPtr);
@@ -229,7 +229,7 @@ namespace Pincushion
                             };
 
                             // Get the areas and the total area.
-                            float totalArea = Ffi.get_areas(&vertices, &triangles, &areasVec, scale);
+                            float totalArea = Ffi.get_areas(&vertices, &triangles, &areasVec);
                             // Get the number of points.
                             int numPoints = (int)Ffi.get_num_points(totalArea, pointsPerM);
                             // Allocate the icosahedron arrays.

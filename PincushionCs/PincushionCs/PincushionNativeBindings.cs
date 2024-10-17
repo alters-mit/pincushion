@@ -57,7 +57,6 @@ public unsafe partial class Ffi {
     /// - <c>triangles</c>: A flat vec of three indices of vertices.
     /// - <c>areas</c>: A vec that will be filled with the areas of each triangle in <c>triangles</c>.
     /// This must be the same length as <c>triangles.len() / 3</c>.
-    /// - <c>scale</c>: The uniform scale of the original mesh.
     ///
     /// Returns: The total area.
     /// </summary>
@@ -65,8 +64,7 @@ public unsafe partial class Ffi {
     float get_areas (
         Vec_float_t /*const*/ * vertices,
         Vec_size_t /*const*/ * triangles,
-        Vec_float_t * areas,
-        float scale);
+        Vec_float_t * areas);
 }
 
 public unsafe partial class Ffi {
