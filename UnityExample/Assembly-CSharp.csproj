@@ -53,12 +53,13 @@
   </PropertyGroup>
   <ItemGroup>
      <Compile Include="Assets\Pincushion\PincushionStaticRenderer.cs" />
-     <Compile Include="Assets\Pincushion\PincushionRenderer.cs" />
-     <Compile Include="Assets\Pincushion\PincushionNativeBindings.cs" />
      <Compile Include="Assets\Pincushion\PincushionDynamicRenderer.cs" />
      <Compile Include="Assets\Pincushion\PincushionVisibilityToggler.cs" />
-     <Compile Include="Assets\Pincushion\MeshExtensions.cs" />
      <Compile Include="Assets\Pincushion\PincushionCreationMode.cs" />
+     <Compile Include="Assets\Pincushion\PincushionRenderer.cs" />
+     <Compile Include="Assets\Pincushion\MeshExtensions.cs" />
+     <Compile Include="Assets\Pincushion\PincushionNativeBindings.cs" />
+     <Compile Include="Assets\Test\DesertScene\Scripts\CamelMovement.cs" />
      <None Include="Assets\Pincushion\DynamicPoints.shader" />
  <Reference Include="UnityEngine">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2020.3.24f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
@@ -281,9 +282,6 @@
  </Reference>
  <Reference Include="UnityEditor.UnityConnectModule">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2020.3.24f1/Editor/Data/Managed/UnityEngine/UnityEditor.UnityConnectModule.dll</HintPath>
- </Reference>
- <Reference Include="Newtonsoft.Json">
- <HintPath>D:/pincushion/UnityExample/Library/PackageCache/com.unity.nuget.newtonsoft-json@2.0.0/Runtime/Newtonsoft.Json.dll</HintPath>
  </Reference>
  <Reference Include="mscorlib">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2020.3.24f1/Editor/Data/MonoBleedingEdge/lib/mono/4.7.1-api/mscorlib.dll</HintPath>
@@ -636,26 +634,11 @@
  <Reference Include="Unity.VSCode.Editor">
  <HintPath>D:/pincushion/UnityExample/Library/ScriptAssemblies/Unity.VSCode.Editor.dll</HintPath>
  </Reference>
- <Reference Include="Unity.TextMeshPro.Editor">
- <HintPath>D:/pincushion/UnityExample/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
- </Reference>
  <Reference Include="Unity.VisualStudio.Editor">
  <HintPath>D:/pincushion/UnityExample/Library/ScriptAssemblies/Unity.VisualStudio.Editor.dll</HintPath>
  </Reference>
- <Reference Include="Unity.Timeline.Editor">
- <HintPath>D:/pincushion/UnityExample/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
- </Reference>
- <Reference Include="Unity.Timeline">
- <HintPath>D:/pincushion/UnityExample/Library/ScriptAssemblies/Unity.Timeline.dll</HintPath>
- </Reference>
- <Reference Include="Unity.TextMeshPro">
- <HintPath>D:/pincushion/UnityExample/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
- </Reference>
  <Reference Include="UnityEditor.UI">
  <HintPath>D:/pincushion/UnityExample/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
- </Reference>
- <Reference Include="Unity.PlasticSCM.Editor">
- <HintPath>D:/pincushion/UnityExample/Library/ScriptAssemblies/Unity.PlasticSCM.Editor.dll</HintPath>
  </Reference>
  <Reference Include="Unity.Rider.Editor">
  <HintPath>D:/pincushion/UnityExample/Library/ScriptAssemblies/Unity.Rider.Editor.dll</HintPath>
