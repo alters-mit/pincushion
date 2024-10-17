@@ -51,17 +51,17 @@ namespace Pincushion
         public void Set()
         {
             // Sample the triangles.
-            sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, scale);
+            Mesh originalMesh = new Mesh();
+            skinnedMeshRenderer.BakeMesh(originalMesh);
+            sampledTriangles = originalMesh.GetSampledTriangles(pointsPerM, 1);
             // Create the mesh.
             Mesh mesh = new Mesh();
             // Deterministically set sampled points.
-            mesh.SetVerticesFromSampledTriangles(skinnedMeshRenderer.sharedMesh.vertices, sampledTriangles);
+            mesh.SetVerticesFromSampledTriangles(originalMesh.vertices, sampledTriangles);
             mesh.SetPointTopology();
-            for (int i = 0; i < mesh.vertices.Length; i++)
-            {
-                Debug.Log(mesh.vertices[i]);
-            }
-            
+            mesh.RecalculateBounds();
+
+
             // Set the material.
             Material material = new Material(Shader.Find("Pincushion/DynamicPoints"));
             material.SetColor("_Color", pointsColor);
