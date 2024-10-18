@@ -62,7 +62,7 @@ namespace Pincushion
             Mesh mesh = new Mesh();
             skinnedMeshRenderer.BakeMesh(bakedMesh);
             // Deterministically set sampled points.
-            mesh.SetVerticesFromSampledTriangles(bakedMesh.vertices, sampledTriangles);
+            mesh.SetVerticesFromSampledTriangles(bakedMesh.vertices, bakedMesh.normals, sampledTriangles);
             mesh.SetPointTopology();
             
             // Set the material.
@@ -102,7 +102,7 @@ namespace Pincushion
             {
                 skinnedMeshRenderer.BakeMesh(bakedMesh);
                 // Set the positions of the points.
-                sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(bakedMesh.vertices, sampledTriangles);
+                sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(bakedMesh.vertices, bakedMesh.normals, sampledTriangles);
                 sampledMeshFilter.mesh.SetPointTopology();           
             }
         }

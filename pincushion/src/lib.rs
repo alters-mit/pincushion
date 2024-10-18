@@ -245,21 +245,26 @@ where
 /// In constrast, points sampled via `sample_points` and `sample_points_ppm` will be at a random point on a sampled triangle.
 ///
 /// - `vertices`: (x, y, z) vertices.
+/// - `normals`: (x, y, z) normals.
 /// - `sampled_triangles`: Presampled triangles.
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size must be the same as `sampled_triangles`.
+/// - `normals`: A pre-defined slice of normal vectors per point in `points`.
 pub fn set_points_from_sampled_triangles<T, U>(
     vertices: &[T],
+    normals: &[T],
     sampled_triangles: &[U],
     points: &mut [T],
+    sampled_normals: &mut [T],
 ) where
     T: Vector3,
     U: Vector3U,
 {
     points
         .iter_mut()
-        .zip(sampled_triangles)
-        .for_each(|(point, triangle)| {
+        .zip(sampled_triangles.iter().zip(sampled_normals.iter_mut()))
+        .for_each(|(point, (triangle, normal))| {
             set_point(point, 0.5, 0.5, vertices, triangle);
+            set_normal(normal, normals, triangle);
         });
 }
 
@@ -312,6 +317,17 @@ where
         .mul(u)
         .add(&vertices[triangle.y()].mul(v))
         .add(&vertices[triangle.z()].mul(w));
+}
+
+fn set_normal<T, U>(normal: &mut T, normals: &[T], triangle: &U)
+where
+    T: Vector3,
+    U: Vector3U,
+{
+    *normal = normals[triangle.x()]
+        .add(&normals[triangle.y()])
+        .add(&normals[triangle.z()])
+        .div(3.)
 }
 
 #[cfg(test)]

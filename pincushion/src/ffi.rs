@@ -158,11 +158,20 @@ pub fn sample_triangles(
 /// - `vertices`: (x, y, z) vertices.
 /// - `sampled_triangles`: Presampled triangles.
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size must be the same as `sampled_triangles`.
+/// - `sampled_normals`: A pre-defined slice of normal vectors per point in `points`.
 #[ffi_export]
 pub fn set_points_from_sampled_triangles(
     vertices: &safer_ffi::Vec<Vec3>,
+    normals: &safer_ffi::Vec<Vec3>,
     sampled_triangles: &mut safer_ffi::Vec<Vec3U>,
     points: &mut safer_ffi::Vec<Vec3>,
+    sampled_normals: &mut safer_ffi::Vec<Vec3>,
 ) {
-    set_points_from_sampled_triangles_native(vertices, sampled_triangles, points);
+    set_points_from_sampled_triangles_native(
+        vertices,
+        normals,
+        sampled_triangles,
+        points,
+        sampled_normals,
+    );
 }

@@ -178,12 +178,15 @@ public unsafe partial class Ffi {
     /// - <c>vertices</c>: (x, y, z) vertices.
     /// - <c>sampled_triangles</c>: Presampled triangles.
     /// - <c>points</c>: A pre-defined slice of vertices that will be filled with points. The size must be the same as <c>sampled_triangles</c>.
+    /// - <c>sampled_normals</c>: A pre-defined slice of normal vectors per point in <c>points</c>.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void set_points_from_sampled_triangles (
         Vec_Vec3_t /*const*/ * vertices,
+        Vec_Vec3_t /*const*/ * normals,
         Vec_Vec3U_t * sampled_triangles,
-        Vec_Vec3_t * points);
+        Vec_Vec3_t * points,
+        Vec_Vec3_t * sampled_normals);
 }
 
 

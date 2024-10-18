@@ -155,14 +155,17 @@ namespace Pincushion
         /// <param name="mesh">(this)</param>
         /// <param name="originalVertices">The vertices of the original mesh.</param>
         /// <param name="sampledTriangles">The pre-sampled triangles.</param>
-        public static void SetVerticesFromSampledTriangles(this Mesh mesh, Vector3[] originalVertices, UIntPtr[] sampledTriangles)
+        public static void SetVerticesFromSampledTriangles(this Mesh mesh, Vector3[] originalVertices, 
+            Vector3[] originalNormals, UIntPtr[] sampledTriangles)
         {
             Vector3[] points = new Vector3[sampledTriangles.Length / 3];
+            Vector3[] normals = new Vector3[sampledTriangles.Length / 3];
             UIntPtr pointsLength = (UIntPtr)points.Length;
             UIntPtr originalVerticesLength = (UIntPtr)originalVertices.Length;
             unsafe
             {
-                fixed (Vector3* pointsPointer = points, originalVerticesPointer = originalVertices)
+                fixed (Vector3* pointsPointer = points, normalsPointer = normals,
+                       originalVerticesPointer = originalVertices, originalNormalsPointer = originalNormals)
                 {
                     Vec_Vec3_t pointsVec = new Vec_Vec3_t
                     {
@@ -170,9 +173,21 @@ namespace Pincushion
                         len = pointsLength,
                         cap = pointsLength
                     };
+                    Vec_Vec3_t normalsVec = new Vec_Vec3_t
+                    {
+                        ptr = (Vec3_t*)normalsPointer,
+                        len = pointsLength,
+                        cap = pointsLength
+                    };
                     Vec_Vec3_t originalVerticesVec = new Vec_Vec3_t
                     {
                         ptr = (Vec3_t*)originalVerticesPointer,
+                        len = originalVerticesLength,
+                        cap = originalVerticesLength
+                    };
+                    Vec_Vec3_t originalNormalsVec = new Vec_Vec3_t
+                    {
+                        ptr = (Vec3_t*)originalNormalsPointer,
                         len = originalVerticesLength,
                         cap = originalVerticesLength
                     };
@@ -185,11 +200,13 @@ namespace Pincushion
                             len = pointsLength,
                             cap = pointsLength
                         };
-                        Ffi.set_points_from_sampled_triangles(&originalVerticesVec, &sampledTrianglesVec, &pointsVec);
+                        Ffi.set_points_from_sampled_triangles(&originalVerticesVec, &originalNormalsVec,
+                            &sampledTrianglesVec, &pointsVec, &normalsVec);
                     }
                 }
             }
             mesh.vertices = points;
+            mesh.normals = normals;
             mesh.triangles = new int[sampledTriangles.Length];
         }
 
