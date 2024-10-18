@@ -9,7 +9,6 @@ Shader "Pincushion/StaticPoints" {
 	SubShader {
 		Tags{ "Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent" "DisableBatching" = "True" }
 		ZWrite On
-		Cull Off
 		Blend SrcAlpha OneMinusSrcAlpha
 		
 		Pass 

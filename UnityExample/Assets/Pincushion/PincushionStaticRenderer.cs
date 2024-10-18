@@ -58,9 +58,9 @@ namespace Pincushion
             float s = pointRadius / 2;
             quadMesh.vertices = new []
             {
-                new Vector3(-s, s, 0),
-                new Vector3(s, s, 0),
                 new Vector3(-s, -s, 0),
+                new Vector3(s, -s, 0),
+                new Vector3(-s, s, 0),
                 new Vector3(s, -s, 0),
             };
             quadMesh.triangles = new []
@@ -70,10 +70,10 @@ namespace Pincushion
             };
             quadMesh.normals = new[]
             {
-                -Vector3.forward,
-                -Vector3.forward,
-                -Vector3.forward,
-                -Vector3.forward,
+                Vector3.forward,
+                Vector3.forward,
+                Vector3.forward,
+                Vector3.forward,
             };
             quadMesh.uv = new [] 
             {
