@@ -147,6 +147,7 @@ namespace Pincushion
             }
         }
         
+        
         /// <summary>
         /// Given a pre-sampled array of triangles, sample points on the original mesh.
         /// The sampled points will be vertices on this mesh.
