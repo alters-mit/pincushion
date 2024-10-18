@@ -24,10 +24,6 @@ namespace Pincushion
         /// </summary>
         private SkinnedMeshRenderer skinnedMeshRenderer;
         /// <summary>
-        /// The original color of the renderer. This is used for showing/hiding the original mesh.
-        /// </summary>
-        private Color originalColor;
-        /// <summary>
         /// A cached array of indices of vertices, used to quickly re-sample positions.
         /// </summary>
         private UIntPtr[] sampledTriangles;
@@ -48,7 +44,6 @@ namespace Pincushion
         private void Awake()
         {
             skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
-            originalColor = skinnedMeshRenderer.material.color;
             bakedMesh = new Mesh();
             Set();
         }
@@ -81,12 +76,14 @@ namespace Pincushion
             sampledMeshFilter.mesh = mesh;
             sampledMeshRenderer = go.AddComponent<MeshRenderer>();
             sampledMeshRenderer.material = material;
+            
+            SetOriginalMeshVisibility(false);
         }
 
 
         public override void SetOriginalMeshVisibility(bool visible)
         {
-            skinnedMeshRenderer.material.SetColor("_Color", visible ? originalColor : new Color(0, 0, 0, 0));
+            skinnedMeshRenderer.enabled = visible;
         }
 
 

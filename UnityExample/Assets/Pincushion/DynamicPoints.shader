@@ -22,21 +22,26 @@
 			struct appdata
 			{
 			    float4 vertex : POSITION;
+				float4 normal: NORMAL;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
 			struct v2g
 			{
 			    float4 position : SV_POSITION;
+				float4 color: COLOR;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
 			struct g2f
 			{
 			    float4 position : SV_POSITION;
+				float4 color: COLOR;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
+
+			fixed4 noColor = fixed4(0, 0, 0, 0);
 
 			v2g vert (appdata v)
             {
@@ -47,8 +52,17 @@
 				UNITY_SETUP_INSTANCE_ID(v);
 				// copy instance id in the appdata v to the v2g o
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
-
+				
                 o.position = UnityObjectToClipPos(v.vertex);
+
+				float3 viewDir = UNITY_MATRIX_IT_MV[2].xyz;
+				if (dot(viewDir, v.normal) > 0) {
+					o.color = _Color;
+				}
+				else
+				{
+					o.color = noColor;
+				}
                 return o;
             }
 
@@ -70,6 +84,7 @@
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
 				o.position = input[0].position;
+				o.color = input[0].color;
 
 			    // Determine the number of slices based on the radius of the
 			    // point on the screen.
@@ -112,7 +127,7 @@
 
 			half4 frag(g2f i) : SV_Target
 			{
-				return _Color;
+				return i.color;
 			}
 		
 		ENDCG

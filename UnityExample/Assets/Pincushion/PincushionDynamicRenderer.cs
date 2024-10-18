@@ -81,12 +81,14 @@ namespace Pincushion
             sampledMeshFilter.mesh = mesh;
             sampledMeshRenderer = go.AddComponent<MeshRenderer>();
             sampledMeshRenderer.material = material;
+            
+            SetOriginalMeshVisibility(false);
         }
 
 
         public override void SetOriginalMeshVisibility(bool visible)
         {
-            skinnedMeshRenderer.material.SetColor("_Color", visible ? originalColor : new Color(0, 0, 0, 0));
+            skinnedMeshRenderer.enabled = visible;
         }
 
 
