@@ -290,8 +290,8 @@ mod tests {
     #[test]
     fn test_sample_points() {
         let (vertices, triangles) = get_obj();
-        let points = sample_points_from_ppm(0.3, &vertices, &triangles);
-        assert_eq!(points.len(), 795);
+        let points = sample_points_from_ppm(80., &vertices, &triangles);
+        assert_eq!(points.len(), 997);
     }
 
     fn get_obj() -> (Vec<Vertex>, Vec<Triangle>) {
