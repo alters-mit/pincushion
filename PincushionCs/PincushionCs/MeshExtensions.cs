@@ -205,11 +205,14 @@ namespace Pincushion
         }
 
 
-        private static Vector3 ToVector3(Vec3_t v3)
+        public static void FlipNormals(this Mesh mesh)
         {
-            return new Vector3(v3.x, v3.y, v3.z);
+            for (int i = 0; i < mesh.normals.Length; i++)
+            {
+                mesh.normals[i] *= -1;
+            }
         }
-        
+
 
         private static UIntPtr intToUIntPtr(int i)
         {
