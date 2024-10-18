@@ -72,7 +72,7 @@
 				o.position = input[0].position;
 
 			    // Determine the number of slices based on the radius of the
-			    // v2g on the screen.
+			    // point on the screen.
 			    float radius = extent.y / origin.w * _ScreenParams.y;
 			    uint slices = min((radius + 1) / 5, 4) + 2;
 
