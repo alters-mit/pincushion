@@ -13,7 +13,9 @@ pub fn main() {
     let num_iterations = 1000;
     let dt = (0..num_iterations)
         .map(|_| benchmark(&vertices, &triangles))
-        .sum::<Duration>().as_micros() / num_iterations as u128;
+        .sum::<Duration>()
+        .as_micros()
+        / num_iterations as u128;
     let text = format!("Sampling: {}μs", dt);
     write("../benchmark.txt", &text).unwrap();
     println!("{}", text);

@@ -3,8 +3,7 @@
 use safer_ffi::ffi_export;
 
 use crate::{
-    get_areas_in_place,
-    sample_points as sample_points_native, sample_triangles_in_place,
+    get_areas_in_place, sample_points as sample_points_native, sample_triangles_in_place,
     scale_areas as scale_areas_native,
     set_points_from_sampled_triangles as set_points_from_sampled_triangles_native,
     vecs::{Vector3, Vector3U},
