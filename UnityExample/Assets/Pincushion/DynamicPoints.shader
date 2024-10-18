@@ -1,7 +1,7 @@
 ﻿Shader "Pincushion/DynamicPoints" {
 	Properties {
 		_Color ("Color", Color) = (0.9, 0.9, 0.9, 1)
-		_v2gSize("v2g Size", Float) = 0.02
+		_PointSize("Point Size", Float) = 0.02
 	}
 	SubShader {
 		Tags { "RenderType"="Opaque" }
@@ -17,7 +17,7 @@
             #include "UnityCG.cginc"
 
 			half4 _Color;
-			half _v2gSize;
+			half _PointSize;
 
 			struct appdata
 			{
@@ -57,7 +57,7 @@
 			void geom(point v2g input[1], inout TriangleStream<g2f> outStream)
 			{
 				float4 origin = input[0].position;
-				float2 extent = abs(UNITY_MATRIX_P._11_22 * _v2gSize);
+				float2 extent = abs(UNITY_MATRIX_P._11_22 * _PointSize);
 				// Copy the basic information.
 			    g2f o;
 
