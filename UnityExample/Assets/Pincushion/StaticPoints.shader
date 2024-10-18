@@ -1,15 +1,15 @@
-﻿// Original source: https://gist.github.com/josephbk117/2227128370097500d07c4dd894931429
+﻿// Original sources:
+// https://gist.github.com/josephbk117/2227128370097500d07c4dd894931429
+// https://gist.github.com/kaiware007/8ebad2d28638ff83b6b74970a4f70c9a
 Shader "Pincushion/StaticPoints" {
 	Properties {
 		_MainTex ("Albedo (RGB)", 2D) = "white" {}
-		[Toggle] _KeepConstantScaling("Keep Constant Scaling", Int) = 1
-		[Enum(RenderOnTop, 0,RenderWithTest, 4)] _ZTest("Render on top", Int) = 1
+		[Toggle] _KeepConstantScaling("Keep Constant Scaling", Int) = 0
 	}
 	SubShader {
 		Tags{ "Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent" "DisableBatching" = "True" }
 		ZWrite On
-			Cull Off
-		// ZTest [_ZTest]
+		Cull Off
 		Blend SrcAlpha OneMinusSrcAlpha
 		
 		Pass 
@@ -19,11 +19,11 @@ Shader "Pincushion/StaticPoints" {
 			#pragma vertex vert
 			#pragma fragment frag
 
-			#include "UnityCG.cginc"
-
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
 			int _KeepConstantScaling;
+
+			#include "UnityCG.cginc"
 
 			struct appdata
 			{
@@ -42,11 +42,8 @@ Shader "Pincushion/StaticPoints" {
 				v2f o;
 				o.uv = v.uv;
 
-				// billboard mesh towards camera
-				float3 vpos = mul((float3x3)unity_ObjectToWorld, v.vertex.xyz);
-				float4 worldCoord = float4(unity_ObjectToWorld._m03, unity_ObjectToWorld._m13, unity_ObjectToWorld._m23, 1);
-				float4 viewPos = mul(UNITY_MATRIX_V, worldCoord) + float4(vpos, 0);
-				o.vertex = mul(UNITY_MATRIX_P, viewPos);
+				float relativeScaler = _KeepConstantScaling ? distance(mul(unity_ObjectToWorld, v.vertex), _WorldSpaceCameraPos) : 1;
+				o.vertex = UnityViewToClipPos(UnityObjectToViewPos(float4(0.0, 0.0, 0.0, 1.0)) + float4(v.vertex.x, v.vertex.y, 0.0, 0.0) * relativeScaler);
 				return o;
 			}
 
