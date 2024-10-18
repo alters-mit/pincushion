@@ -1,4 +1,4 @@
-pub trait Vector3: Clone {
+pub trait Vector3: Clone + Sized {
     fn new(x: f32, y: f32, z: f32) -> Self;
     fn x(&self) -> f32;
     fn y(&self) -> f32;
@@ -9,10 +9,7 @@ pub trait Vector3: Clone {
 
     // For add, sub, etc. see: glam::Vec3
 
-    fn add(&self, other: &Self) -> Self
-    where
-        Self: Sized,
-    {
+    fn add(&self, other: &Self) -> Self {
         Self::new(
             self.x() + other.x(),
             self.y() + other.y(),
@@ -20,19 +17,13 @@ pub trait Vector3: Clone {
         )
     }
 
-    fn add_mut(&mut self, other: &Self)
-    where
-        Self: Sized,
-    {
+    fn add_mut(&mut self, other: &Self) {
         *self.x_mut() += other.x();
         *self.y_mut() += other.y();
         *self.z_mut() += other.z();
     }
 
-    fn sub(&self, other: &Self) -> Self
-    where
-        Self: Sized,
-    {
+    fn sub(&self, other: &Self) -> Self {
         Self::new(
             self.x() - other.x(),
             self.y() - other.y(),
@@ -40,26 +31,17 @@ pub trait Vector3: Clone {
         )
     }
 
-    fn mul(&self, other: f32) -> Self
-    where
-        Self: Sized,
-    {
+    fn mul(&self, other: f32) -> Self {
         Self::new(self.x() * other, self.y() * other, self.z() * other)
     }
 
-    fn mul_mut(&mut self, other: f32)
-    where
-        Self: Sized,
-    {
+    fn mul_mut(&mut self, other: f32) {
         *self.x_mut() *= other;
         *self.y_mut() *= other;
         *self.z_mut() *= other;
     }
 
-    fn cross(&self, other: &Self) -> Self
-    where
-        Self: Sized,
-    {
+    fn cross(&self, other: &Self) -> Self {
         Self::new(
             self.y() * other.z() - other.y() * self.z(),
             self.z() * other.x() - other.z() * self.x(),
