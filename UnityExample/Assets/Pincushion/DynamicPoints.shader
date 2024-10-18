@@ -19,26 +19,57 @@
 			half4 _Color;
 			half _PointSize;
 
-			struct Point
+			struct appdata
 			{
-			    float4 position : SV_POSITION;
+			    float4 vertex : POSITION;
+				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
-			Point vert (appdata_base v)
+			struct v2g
+			{
+			    float4 position : SV_POSITION;
+				UNITY_VERTEX_INPUT_INSTANCE_ID
+			};
+
+			struct g2f
+			{
+			    float4 position : SV_POSITION;
+				UNITY_VERTEX_INPUT_INSTANCE_ID
+				UNITY_VERTEX_OUTPUT_STEREO
+			};
+
+			v2g vert (appdata v)
             {
-                Point o;
+                v2g o;
+				// set all values in the v2g o to 0.0
+				UNITY_INITIALIZE_OUTPUT(v2g, o);
+				// setup the instanced id to be accessed
+				UNITY_SETUP_INSTANCE_ID(v);
+				// copy instance id in the appdata v to the v2g o
+				UNITY_TRANSFER_INSTANCE_ID(v, o);
+
                 o.position = UnityObjectToClipPos(v.vertex);
                 return o;
             }
 
-			// Source: https://github.com/keijiro/Pcx/blob/master/Packages/jp.keijiro.pcx/Runtime/Shaders/Disk.cginc
+// Original Source: https://github.com/keijiro/Pcx/blob/master/Packages/jp.keijiro.pcx/Runtime/Shaders/Disk.cginc
 			[maxvertexcount(36)]
-			void geom(point Point input[1], inout TriangleStream<Point> outStream)
+			void geom(point v2g input[1], inout TriangleStream<g2f> outStream)
 			{
 				float4 origin = input[0].position;
 				float2 extent = abs(UNITY_MATRIX_P._11_22 * _PointSize);
 				// Copy the basic information.
-			    Point o = input[0];
+			    g2f o;
+
+				// set all values in the g2f o to 0.0
+				UNITY_INITIALIZE_OUTPUT(g2f, o);
+				// setup the instanced id to be accessed
+				UNITY_SETUP_INSTANCE_ID(input[0]);
+				// copy instance id in the v2f i[0] to the g2f o
+				UNITY_TRANSFER_INSTANCE_ID(input[0], o);
+				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+
+				o.position = input[0].position;
 
 			    // Determine the number of slices based on the radius of the
 			    // point on the screen.
@@ -76,7 +107,7 @@
 			    outStream.RestartStrip();
 			}
 
-			half4 frag() : SV_Target
+			half4 frag(g2f i) : SV_Target
 			{
 				return _Color;
 			}
