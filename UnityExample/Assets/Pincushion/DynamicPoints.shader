@@ -52,7 +52,7 @@
                 return o;
             }
 
-// Original Source: https://github.com/keijiro/Pcx/blob/master/Packages/jp.keijiro.pcx/Runtime/Shaders/Disk.cginc
+			// Original Source: https://github.com/keijiro/Pcx/blob/master/Packages/jp.keijiro.pcx/Runtime/Shaders/Disk.cginc
 			[maxvertexcount(36)]
 			void geom(point v2g input[1], inout TriangleStream<g2f> outStream)
 			{
@@ -78,7 +78,10 @@
 
 			    // Slightly enlarge quad points to compensate area reduction.
 			    // Hopefully this line would be complied without branch.
-			    if (slices == 2) extent *= 1.2;
+			    if (slices == 2)
+			    {
+				    extent *= 1.2;
+			    }
 
 			    // Top vertex
 			    o.position.y = origin.y + extent.y;
