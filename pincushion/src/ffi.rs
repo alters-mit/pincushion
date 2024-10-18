@@ -156,6 +156,7 @@ pub fn sample_triangles(
 /// In contrast, points sampled via `sample_points` and `sample_points_ppm` will be at a random point on a sampled triangle.
 ///
 /// - `vertices`: (x, y, z) vertices.
+/// - `normals`: (x, y, z) normals.
 /// - `sampled_triangles`: Presampled triangles.
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size must be the same as `sampled_triangles`.
 /// - `sampled_normals`: A pre-defined slice of normal vectors per point in `points`.

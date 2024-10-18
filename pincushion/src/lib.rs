@@ -248,7 +248,7 @@ where
 /// - `normals`: (x, y, z) normals.
 /// - `sampled_triangles`: Presampled triangles.
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size must be the same as `sampled_triangles`.
-/// - `normals`: A pre-defined slice of normal vectors per point in `points`.
+/// - `sampled_normals`: A pre-defined slice of normal vectors per point in `points`.
 pub fn set_points_from_sampled_triangles<T, U>(
     vertices: &[T],
     normals: &[T],
@@ -319,6 +319,7 @@ where
         .add(&vertices[triangle.z()].mul(w));
 }
 
+/// Set the average normal of a triangle.
 fn set_normal<T, U>(normal: &mut T, normals: &[T], triangle: &U)
 where
     T: Vector3,
