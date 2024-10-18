@@ -8,6 +8,10 @@ description = "Uniformly sample points on a mesh. Includes FFI-safe functions fo
 [dependencies]
 rand = "0.8.5"
 safer-ffi = { version = "0.1.13", optional = true }
+tobj = { version = "4.0.0", optional = true }
+
+[dev-dependencies]
+macroquad = "0.4.13"
 
 [lib]
 crate-type = ["lib", "cdylib"]
@@ -15,21 +19,25 @@ crate-type = ["lib", "cdylib"]
 [features]
 default = ["ffi"]
 ffi = ["dep:safer-ffi"]
+obj = ["dep:tobj"]
 cs = ["safer-ffi/headers"]
 
 [[bin]]
 name = "cs"
-required-features = ["cs"]
 path = "bin/cs.rs"
+required-features = ["cs"]
 
 [[example]]
 name = "suzanne"
 path = "examples/suzanne/src/main.rs"
+required-features = ["obj"]
+
+[[example]]
+name = "readme"
+path = "examples/readme.rs"
+required-features = ["obj"]
 
 [[bench]]
 name = "benchmark"
 harness = false
-
-[dev-dependencies]
-macroquad = "0.4.13"
-tobj = "4.0.0"
+required-features = ["obj"]
