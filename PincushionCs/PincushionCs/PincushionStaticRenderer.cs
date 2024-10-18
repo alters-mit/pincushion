@@ -53,7 +53,7 @@ namespace Pincushion
                 new Vector3(-s, -s, 0),
                 new Vector3(s, -s, 0),
                 new Vector3(-s, s, 0),
-                new Vector3(s, -s, 0),
+                new Vector3(s, s, 0),
             };
             quadMesh.triangles = new []
             {
