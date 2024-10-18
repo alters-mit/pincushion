@@ -263,6 +263,39 @@ pub fn set_points_from_sampled_triangles<T, U>(
         });
 }
 
+/// Load a .obj file.
+///
+/// Returns: The vertices, the triangles, and the normals.
+#[cfg(feature = "obj")]
+pub fn from_obj<P>(path: P) -> (Vec<Vertex>, Vec<Triangle>, Vec<Vertex>)
+where
+    P: AsRef<std::path::Path> + std::fmt::Debug,
+{
+    let obj = &tobj::load_obj(path, &tobj::GPU_LOAD_OPTIONS).unwrap().0[0].mesh;
+    let vertices = obj
+        .positions
+        .chunks_exact(3)
+        .map(|v| [v[0], v[1], v[2]])
+        .collect::<Vec<Vertex>>();
+    let triangles = obj
+        .indices
+        .chunks_exact(3)
+        .map(|triangle| {
+            [
+                triangle[0] as usize,
+                triangle[1] as usize,
+                triangle[2] as usize,
+            ]
+        })
+        .collect::<Vec<Triangle>>();
+    let normals = obj
+        .normals
+        .chunks_exact(3)
+        .map(|normal| [normal[0], normal[1], normal[2]])
+        .collect::<Vec<Vertex>>();
+    (vertices, triangles, normals)
+}
+
 /// Get a point on a triangle.
 /// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
 fn set_point<T, U>(point: &mut T, u: f32, v: f32, vertices: &[T], triangle: &U)
@@ -283,35 +316,11 @@ where
 
 #[cfg(test)]
 mod tests {
-    use tobj::{load_obj, GPU_LOAD_OPTIONS};
-
-    use crate::{sample_points_from_ppm, Triangle, Vertex};
-
+    #[cfg(feature = "obj")]
     #[test]
     fn test_sample_points() {
-        let (vertices, triangles) = get_obj();
-        let points = sample_points_from_ppm(80., &vertices, &triangles);
+        let (vertices, triangles, _) = super::from_obj("tests/suzanne.obj");
+        let points = super::sample_points_from_ppm(80., &vertices, &triangles);
         assert_eq!(points.len(), 997);
-    }
-
-    fn get_obj() -> (Vec<Vertex>, Vec<Triangle>) {
-        let obj = &load_obj("tests/suzanne.obj", &GPU_LOAD_OPTIONS).unwrap().0[0].mesh;
-        let vertices = obj
-            .positions
-            .chunks_exact(3)
-            .map(|v| [v[0], v[1], v[2]])
-            .collect::<Vec<Vertex>>();
-        let triangles = obj
-            .indices
-            .chunks_exact(3)
-            .map(|triangle| {
-                [
-                    triangle[0] as usize,
-                    triangle[1] as usize,
-                    triangle[2] as usize,
-                ]
-            })
-            .collect::<Vec<Triangle>>();
-        (vertices, triangles)
     }
 }

@@ -2,43 +2,23 @@
 
 use macroquad::prelude::*;
 
-use tobj::{load_obj, GPU_LOAD_OPTIONS};
-
-use pincushion::{sample_points_from_ppm, Triangle, Vertex as PincushionVertex};
+/// Add feature "obj" to enable `from_obj`.
+use pincushion::{from_obj, sample_points_from_ppm};
 
 #[macroquad::main("3D")]
 async fn main() {
-    // Load the obj.
-    let obj = &load_obj("tests/suzanne.obj", &GPU_LOAD_OPTIONS).unwrap().0[0].mesh;
-    let vertices = obj
-        .positions
-        .chunks_exact(3)
+    let (vertices, triangles, _) = from_obj("tests/suzanne.obj");
+    let macroquad_vertices = vertices
+        .iter()
         .map(|v| Vertex::new(v[0], v[1], v[2], 0.0, 0.0, PURPLE))
         .collect();
-    let indices = obj.indices.iter().map(|p| *p as u16).collect();
+    let macroquad_indices = triangles.iter().flatten().map(|t| *t as u16).collect();
     // Create the mesh.
     let mesh = Mesh {
-        vertices,
-        indices,
+        vertices: macroquad_vertices,
+        indices: macroquad_indices,
         texture: None,
     };
-    // Get pincushion data.
-    let vertices = obj
-        .positions
-        .chunks_exact(3)
-        .map(|v| [v[0], v[1], v[2]])
-        .collect::<Vec<PincushionVertex>>();
-    let triangles = obj
-        .indices
-        .chunks_exact(3)
-        .map(|triangle| {
-            [
-                triangle[0] as usize,
-                triangle[1] as usize,
-                triangle[2] as usize,
-            ]
-        })
-        .collect::<Vec<Triangle>>();
     // Sample the points and convert to macroquad Vec3's.
     let points = sample_points_from_ppm(0.15, &vertices, &triangles)
         .iter()
