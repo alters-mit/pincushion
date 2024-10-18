@@ -21,7 +21,7 @@
 
 			struct appdata
 			{
-				float4 pos : POSITION;
+				float4 vertex : POSITION;
 				float2 uv : TEXCOORD0;
 			};
 	        
@@ -31,26 +31,29 @@
 				float4 pos : SV_POSITION;
 			};
 
-			const float3 vect3Zero = float3(0.0, 0.0, 0.0);
-
 			// Original source: https://gist.github.com/kaiware007/8ebad2d28638ff83b6b74970a4f70c9a
 			v2f vert (appdata v)
 			{
 				v2f o;
+				o.uv = v.uv.xy;
 
-				float4 camPos = float4(UnityObjectToViewPos(vect3Zero).xyz, 1.0);
+				// billboard mesh towards camera
+				float3 vpos = mul((float3x3)unity_ObjectToWorld, v.vertex.xyz);
+				float4 worldCoord = float4(unity_ObjectToWorld._m03, unity_ObjectToWorld._m13, unity_ObjectToWorld._m23, 1);
+				float4 viewPos = mul(UNITY_MATRIX_V, worldCoord) + float4(vpos, 0);
+				float4 outPos = mul(UNITY_MATRIX_P, viewPos);
 
-                float4 viewDir = float4(v.pos.x, v.pos.y, 0.0, 0.0);
-                float4 outPos = mul(UNITY_MATRIX_P, camPos + viewDir);
-
-                o.pos = outPos;
-                o.uv = v.uv;
+				o.pos = outPos;
 				return o;
 			}
 
 			fixed4 frag (v2f i) : SV_Target
 			{
-				 return tex2D(_MainTex, i.uv);
+				// sample the texture
+				fixed4 col = tex2D(_MainTex, i.uv);
+				// apply fog
+				UNITY_APPLY_FOG(i.fogCoord, col);
+				return col;
 			}
 			
 			ENDCG	
