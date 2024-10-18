@@ -52,7 +52,7 @@
                 return o;
             }
 
-			// Source: https://github.com/keijiro/Pcx/blob/master/Packages/jp.keijiro.pcx/Runtime/Shaders/Disk.cginc
+			// Original Source: https://github.com/keijiro/Pcx/blob/master/Packages/jp.keijiro.pcx/Runtime/Shaders/Disk.cginc
 			[maxvertexcount(36)]
 			void geom(point v2g input[1], inout TriangleStream<g2f> outStream)
 			{
@@ -76,7 +76,7 @@
 			    float radius = extent.y / origin.w * _ScreenParams.y;
 			    uint slices = min((radius + 1) / 5, 4) + 2;
 
-			    // Slightly enlarge quad v2gs to compensate area reduction.
+			    // Slightly enlarge quad points to compensate area reduction.
 			    // Hopefully this line would be complied without branch.
 			    if (slices == 2) extent *= 1.2;
 
