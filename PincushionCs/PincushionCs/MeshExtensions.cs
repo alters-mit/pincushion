@@ -154,6 +154,7 @@ namespace Pincushion
         /// </summary>
         /// <param name="mesh">(this)</param>
         /// <param name="originalVertices">The vertices of the original mesh.</param>
+        /// <param name="originalNormals">The normals of the original mesh.</param>
         /// <param name="sampledTriangles">The pre-sampled triangles.</param>
         public static void SetVerticesFromSampledTriangles(this Mesh mesh, Vector3[] originalVertices, 
             Vector3[] originalNormals, UIntPtr[] sampledTriangles)
