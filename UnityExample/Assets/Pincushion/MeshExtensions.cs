@@ -15,7 +15,7 @@ namespace Pincushion
         /// </summary>
         /// <param name="mesh">(this)</param>
         /// <param name="pointsPerM">The number of points per square meter.</param>
-        public static Vector3[] GetSampledPoints(this Mesh mesh, float pointsPerM) 
+        public static SampledPoints GetSampledPoints(this Mesh mesh, float pointsPerM) 
         {
             // Get the casted indices.
             UIntPtr[] indices = Array.ConvertAll(mesh.triangles, intToUIntPtr);
@@ -27,11 +27,17 @@ namespace Pincushion
             unsafe
             {
                 // All `fixed` statements are boilerplate C#-to-Rust declarations.
-                fixed (Vector3* verticesPointerVec3 = mesh.vertices)
+                fixed (Vector3* verticesPointer = mesh.vertices, normalsPointer = mesh.normals)
                 {
                     Vec_Vec3_t vertices = new Vec_Vec3_t
                     {
-                        ptr = (Vec3_t*)verticesPointerVec3,
+                        ptr = (Vec3_t*)verticesPointer,
+                        len = verticesLength,
+                        cap = verticesLength
+                    };
+                    Vec_Vec3_t normals = new Vec_Vec3_t
+                    {
+                        ptr = (Vec3_t*)normalsPointer,
                         len = verticesLength,
                         cap = verticesLength
                     };
@@ -55,11 +61,13 @@ namespace Pincushion
                             float totalArea = Ffi.get_areas(&vertices, &triangles, &areasVec);
                             // Get the number of points.
                             int numPoints = (int)Ffi.get_num_points(totalArea, pointsPerM);
-                            // Allocate the array.
+                            // Allocate the arrays.
                             Vector3[] points = new Vector3[numPoints];
+                            Vector3[] sampledNormals = new Vector3[numPoints * 4];
                             UIntPtr pointsLength = (UIntPtr)numPoints;
+                            UIntPtr sampledNormalsLength = (UIntPtr)sampledNormals.Length;
                             // Sample the points.
-                            fixed (Vector3* pointsPointer = points) 
+                            fixed (Vector3* pointsPointer = points, sampledNormalsPointer = sampledNormals) 
                             {
                                 Vec_Vec3_t pointsVec = new Vec_Vec3_t
                                 {
@@ -67,9 +75,20 @@ namespace Pincushion
                                     len = pointsLength,
                                     cap = pointsLength
                                 };
-                                Ffi.sample_points(totalArea, &vertices, &triangles, &areasVec, &pointsVec);
+                                Vec_Vec3_t sampledNormalsVec = new Vec_Vec3_t
+                                {
+                                    ptr = (Vec3_t*)sampledNormalsPointer,
+                                    len = sampledNormalsLength,
+                                    cap = sampledNormalsLength
+                                };
+                                Ffi.sample_points(totalArea, &vertices, &triangles, &normals, &areasVec,
+                                    &pointsVec, &sampledNormalsVec);
                             }
-                            return points;
+                            return new SampledPoints
+                            {
+                                points = points,
+                                normals = sampledNormals,
+                            };
                         }
                     }
                 }
@@ -220,15 +239,6 @@ namespace Pincushion
         {
             int length = mesh.vertices.Length;
             mesh.SetIndices(Enumerable.Range(0, length).ToArray(), 0, length, MeshTopology.Points, 0);
-        }
-
-
-        public static void FlipNormals(this Mesh mesh)
-        {
-            for (int i = 0; i < mesh.normals.Length; i++)
-            {
-                mesh.normals[i] *= -1;
-            }
         }
 
 

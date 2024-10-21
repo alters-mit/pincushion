@@ -18,6 +18,7 @@
 
 			half4 _Color;
 			half _PointSize;
+			fixed4 noColor = fixed4(0, 0, 0, 0);
 
 			struct appdata
 			{
@@ -40,8 +41,6 @@
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
-
-			fixed4 noColor = fixed4(0, 0, 0, 0);
 
 			v2g vert (appdata v)
             {

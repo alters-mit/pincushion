@@ -129,7 +129,7 @@ where
 /// - `triangles`: Indices of vertices comprising a triangle.
 /// - `areas`: A slice that will be filled with the areas of each triangle. This must be the same length as `triangles`.
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
-/// - `sampled_normals`: A pre-defined slice that will be filled with normals. The size must match that of `points`.
+/// - `sampled_normals`: A pre-defined slice that will be filled with normals. This must be the same size as `points`.
 pub fn sample_points<T, U>(
     total_area: f32,
     vertices: &[T],
@@ -152,6 +152,17 @@ pub fn sample_points<T, U>(
     // The accumulated triangle area. This is used to set the end indices.
     let mut total_accumulated_area = 0.0;
     let range = Uniform::new(0., 1.);
+    let normal_points = if sampled_normals.len() == points.len() {
+        true
+    } else if sampled_normals.len() == points.len() * 4 {
+        false
+    } else {
+        panic!(
+            "Invalid length of normals. Vertices: {} Normals: {}",
+            normals.len(),
+            vertices.len()
+        );
+    };
     for (index, area) in areas.iter().enumerate() {
         // Add area.
         total_accumulated_area += *area;
@@ -177,7 +188,16 @@ pub fn sample_points<T, U>(
                     triangle,
                 );
                 // Set the normal.
-                set_normal(&mut sampled_normals[point_index], normals, triangle);
+                if normal_points {
+                    set_normal(&mut sampled_normals[point_index], normals, triangle);
+                }
+                // Set the normals for a quad.
+                else {
+                    let normal_index = point_index * 4;
+                    (0..4).for_each(|i| {
+                        set_normal(&mut sampled_normals[normal_index + i], normals, triangle)
+                    });
+                }
             }
             // Start adding points at the offset.
             start_index_point += num_points;

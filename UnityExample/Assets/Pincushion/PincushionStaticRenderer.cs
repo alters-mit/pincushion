@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 
 namespace Pincushion
@@ -42,7 +43,7 @@ namespace Pincushion
             t.localScale = Vector3.one;
 
             // Sample the points.
-            Vector3[] points = GetComponent<MeshFilter>().mesh.GetSampledPoints(pointsPerM);
+            SampledPoints sampledPoints = GetComponent<MeshFilter>().mesh.GetSampledPoints(pointsPerM);
             
             // Get a quad.
             // Source: https://docs.unity3d.com/Manual/Example-CreatingaBillboardPlane.html
@@ -60,13 +61,8 @@ namespace Pincushion
                 0, 2, 1,
                 2, 3, 1
             };
-            quadMesh.normals = new[]
-            {
-                Vector3.forward,
-                Vector3.forward,
-                Vector3.forward,
-                Vector3.forward,
-            };
+            // This gets set per-mesh.
+            quadMesh.normals = new Vector3[4];
             quadMesh.uv = new [] 
             {
                 new Vector2(0, 0),
@@ -76,16 +72,29 @@ namespace Pincushion
             };
 
             // Create game objects.
-            for (int i = 0; i < points.Length; i++)
+            for (int i = 0; i < sampledPoints.points.Length; i++)
             {
+                // Set the mesh.
                 GameObject quad = new GameObject();
-                quad.AddComponent<MeshFilter>().sharedMesh = quadMesh;
+                MeshFilter meshFilter = quad.AddComponent<MeshFilter>();
+                meshFilter.mesh = quadMesh;
+                Vector3[] normals = new Vector3[4];
+                // Copy the normals.
+                Array.Copy(sampledPoints.normals, i * 4, normals, 0, 4);
+                meshFilter.mesh.normals = normals;
+                if (i < 20)
+                {
+                    for (int j = 0; j < 4; j++)
+                    {
+                        Debug.Log(meshFilter.mesh.normals[j]);
+                        Debug.Log(sampledPoints.normals[i * 4 + j]);
+                    }    
+                }
                 quad.AddComponent<MeshRenderer>().sharedMaterial = material;
-
                 // Set the transform of the quad.
                 Transform q = quad.transform;
                 q.parent = t;
-                q.localPosition = points[i];
+                q.localPosition = sampledPoints.points[i];
                 q.localRotation = Quaternion.identity;
                 q.localScale = Vector3.one;
             }

@@ -63,8 +63,9 @@ namespace Pincushion
                             int numPoints = (int)Ffi.get_num_points(totalArea, pointsPerM);
                             // Allocate the arrays.
                             Vector3[] points = new Vector3[numPoints];
-                            Vector3[] sampledNormals = new Vector3[numPoints];
+                            Vector3[] sampledNormals = new Vector3[numPoints * 4];
                             UIntPtr pointsLength = (UIntPtr)numPoints;
+                            UIntPtr sampledNormalsLength = (UIntPtr)sampledNormals.Length;
                             // Sample the points.
                             fixed (Vector3* pointsPointer = points, sampledNormalsPointer = sampledNormals) 
                             {
@@ -77,8 +78,8 @@ namespace Pincushion
                                 Vec_Vec3_t sampledNormalsVec = new Vec_Vec3_t
                                 {
                                     ptr = (Vec3_t*)sampledNormalsPointer,
-                                    len = pointsLength,
-                                    cap = pointsLength
+                                    len = sampledNormalsLength,
+                                    cap = sampledNormalsLength
                                 };
                                 Ffi.sample_points(totalArea, &vertices, &triangles, &normals, &areasVec,
                                     &pointsVec, &sampledNormalsVec);
