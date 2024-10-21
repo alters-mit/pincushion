@@ -69,9 +69,9 @@ To add `pinchusion` to your project: `cargo add pincushion`.
 use pincushion::{from_obj, sample_points_from_ppm};
 
 fn main() {
-    let (vertices, triangles, _) = from_obj("tests/suzanne.obj");
+    let (vertices, triangles, normals) = from_obj("tests/suzanne.obj");
     let points_per_m = 0.15;
-    let _ = sample_points_from_ppm(points_per_m, &vertices, &triangles);
+    let _ = sample_points_from_ppm(points_per_m, &vertices, &triangles, &normals);
 }
 
 ```
@@ -109,6 +109,6 @@ To run the benchmark: `cargo bench benchmark`
 
 Results:
 
-Sampling: 51μs
+Sampling: 64μs
 
 Documentation for the Rust codebase can be found on [docs.rs](https://docs.rs/pincushion/latest/pincushion/).
