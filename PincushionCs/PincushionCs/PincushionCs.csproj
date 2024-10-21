@@ -59,6 +59,7 @@
         <Compile Include="PincushionStaticRenderer.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="PincushionRenderer.cs" />
+        <Compile Include="SampledPoints.cs" />
     </ItemGroup>
     <ItemGroup>
       <None Include="packages.config" />

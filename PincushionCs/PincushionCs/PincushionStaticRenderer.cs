@@ -42,7 +42,7 @@ namespace Pincushion
             t.localScale = Vector3.one;
 
             // Sample the points.
-            Vector3[] points = GetComponent<MeshFilter>().mesh.GetSampledPoints(pointsPerM);
+            SampledPoints sampledPoints = GetComponent<MeshFilter>().mesh.GetSampledPoints(pointsPerM);
             
             // Get a quad.
             // Source: https://docs.unity3d.com/Manual/Example-CreatingaBillboardPlane.html
@@ -76,10 +76,11 @@ namespace Pincushion
             };
 
             // Create game objects.
-            for (int i = 0; i < points.Length; i++)
+            for (int i = 0; i < sampledPoints.points.Length; i++)
             {
+                Mesh mesh = Instantiate(quadMesh);
                 GameObject quad = new GameObject();
-                quad.AddComponent<MeshFilter>().sharedMesh = quadMesh;
+                quad.AddComponent<MeshFilter>().mesh = quadMesh;
                 quad.AddComponent<MeshRenderer>().sharedMaterial = material;
 
                 // Set the transform of the quad.
