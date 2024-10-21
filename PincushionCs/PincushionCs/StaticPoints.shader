@@ -18,6 +18,7 @@ Shader "Pincushion/StaticPoints" {
 
 			#pragma vertex vert
 			#pragma fragment frag
+			#pragma multi_compile _ _OCCLUDE_BACKFACING
 
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
@@ -41,26 +42,40 @@ Shader "Pincushion/StaticPoints" {
 				float2 uv : TEXCOORD0;
 				float4 color: COLOR;
 			};
+
+			void setvert(in appdata v, inout v2f o)
+			{
+				o.color = _Color;
+				// Set the position.
+				float relativeScaler = _KeepConstantScaling ? distance(mul(unity_ObjectToWorld, v.vertex), _WorldSpaceCameraPos) : 1;
+				o.vertex = UnityViewToClipPos(UnityObjectToViewPos(float4(0.0, 0.0, 0.0, 1.0)) + float4(v.vertex.x, v.vertex.y, 0.0, 0.0) * relativeScaler);
+			}
 			
 			v2f vert (appdata v)
 			{
 				v2f o;
 				o.uv = v.uv;
 				
+				#if _OCCLUDE_BACKFACING
+				
 				float3 viewDir = UNITY_MATRIX_IT_MV[2].xyz;
 				// Show only front-facing points.
 				if (dot(viewDir, v.normal) > 0)
 				{
-					o.color = _Color;
-					// Set the position.
-					float relativeScaler = _KeepConstantScaling ? distance(mul(unity_ObjectToWorld, v.vertex), _WorldSpaceCameraPos) : 1;
-					o.vertex = UnityViewToClipPos(UnityObjectToViewPos(float4(0.0, 0.0, 0.0, 1.0)) + float4(v.vertex.x, v.vertex.y, 0.0, 0.0) * relativeScaler);
+					setvert(v, o);
 				}
 				else
 				{
 					o.color = noColor;
 					o.vertex = noPosition;
 				}
+				
+				#else
+
+				setvert(v, o);
+
+				#endif
+				
 				return o;
 			}
 

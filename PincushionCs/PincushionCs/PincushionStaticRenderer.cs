@@ -71,6 +71,11 @@ namespace Pincushion
                 new Vector2(1, 1)
             };
 
+            if (occludeBackFacing)
+            {
+                material.EnableKeyword("_OCCLUDE_BACKFACING");   
+            }
+
             // Create game objects.
             for (int i = 0; i < sampledPoints.points.Length; i++)
             {

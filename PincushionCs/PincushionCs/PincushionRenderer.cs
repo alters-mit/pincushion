@@ -16,6 +16,11 @@ namespace Pincushion
         /// The radius of each point in meters.
         /// </summary>
         public float pointRadius = 0.02f;
+        /// <summary>
+        /// If true, hide points facing away from the camera.
+        /// </summary>
+        public bool occludeBackFacing = true;
+        
 
         /// <summary>
         /// Sample points and set the mesh(es).

@@ -71,6 +71,11 @@ namespace Pincushion
                 new Vector2(1, 1)
             };
 
+            if (occludeBackFacing)
+            {
+                material.EnableKeyword("_OCCLUDE_BACKFACING");   
+            }
+
             // Create game objects.
             for (int i = 0; i < sampledPoints.points.Length; i++)
             {
@@ -78,19 +83,16 @@ namespace Pincushion
                 GameObject quad = new GameObject();
                 MeshFilter meshFilter = quad.AddComponent<MeshFilter>();
                 meshFilter.mesh = quadMesh;
+
+                // For some reason, we have to allocate the array rather than copying directly into mesh.normals.
                 Vector3[] normals = new Vector3[4];
                 // Copy the normals.
                 Array.Copy(sampledPoints.normals, i * 4, normals, 0, 4);
+                // Set the normals.
                 meshFilter.mesh.normals = normals;
-                if (i < 20)
-                {
-                    for (int j = 0; j < 4; j++)
-                    {
-                        Debug.Log(meshFilter.mesh.normals[j]);
-                        Debug.Log(sampledPoints.normals[i * 4 + j]);
-                    }    
-                }
+                
                 quad.AddComponent<MeshRenderer>().sharedMaterial = material;
+                
                 // Set the transform of the quad.
                 Transform q = quad.transform;
                 q.parent = t;
