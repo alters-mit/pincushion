@@ -15,6 +15,7 @@
             #pragma fragment frag
 			#pragma geometry geom
             #include "UnityCG.cginc"
+			#pragma multi_compile _ _OCCLUDE_BACKFACING
 
 			half4 _Color;
 			half _PointSize;
@@ -54,6 +55,8 @@
 				
                 o.position = UnityObjectToClipPos(v.vertex);
 
+				#if _OCCLUDE_BACKFACING
+
 				float3 viewDir = UNITY_MATRIX_IT_MV[2].xyz;
 				if (dot(viewDir, v.normal) > 0) {
 					o.color = _Color;
@@ -62,6 +65,13 @@
 				{
 					o.color = noColor;
 				}
+
+				#else
+
+				o.color = _Color;
+
+				#endif
+				
                 return o;
             }
 

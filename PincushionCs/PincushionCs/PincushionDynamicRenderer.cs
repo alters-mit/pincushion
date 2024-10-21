@@ -64,6 +64,10 @@ namespace Pincushion
             Material material = new Material(Shader.Find("Pincushion/DynamicPoints"));
             material.SetColor("_Color", pointsColor);
             material.SetFloat("_PointSize", pointRadius);
+            if (occludeBackFacing)
+            {
+                material.EnableKeyword("_OCCLUDE_BACKFACING");   
+            }
             
             // Create the child object that will hold the sampled points.
             GameObject go = new GameObject();
