@@ -17,6 +17,11 @@ namespace Pincushion
         /// </summary>
         public Material material;
         /// <summary>
+        /// If true, points will always render at the same size, regardless of distance.
+        /// If false, scale the points normally. 
+        /// </summary>
+        public bool keepConstantScaling = false;
+        /// <summary>
         /// The parent of the points.
         /// </summary>
         private GameObject pointsParent;
@@ -74,6 +79,11 @@ namespace Pincushion
             if (occludeBackFacing)
             {
                 material.EnableKeyword("_OCCLUDE_BACKFACING");   
+            }
+
+            if (keepConstantScaling)
+            {
+                material.SetInt("_KeepConstantScaling", 1);
             }
 
             // Create game objects.
