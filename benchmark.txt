@@ -1,1 +1,1 @@
-Sampling: 64μs
+Sampling: 70μs

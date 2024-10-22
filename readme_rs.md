@@ -31,4 +31,4 @@ To run the benchmark: `cargo bench benchmark`
 
 Results:
 
-Sampling: 64μs
+Sampling: 70μs

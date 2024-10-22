@@ -27,35 +27,28 @@ pub mod vecs;
 pub type Vertex = [f32; 3];
 pub type Triangle = [usize; 3];
 
+/// - `scale` The uniform scale of the mesh.
 /// - `vertices`: (x, y, z) vertices.
 /// - `triangles`: Indices of vertices comprising a triangle.
 ///
 /// Returns: The area of each triangle and the total surface area of the mesh in square meters.
-pub fn get_areas<T, U>(vertices: &[T], triangles: &[U]) -> (Vec<f32>, f32)
+pub fn get_area<T, U>(scale: f32, vertices: &[T], triangles: &[U]) -> (Vec<f32>, f32)
 where
     T: Vector3,
     U: Vector3U,
 {
     let mut areas = vec![0.0; triangles.len()];
-    let total_area = get_areas_in_place(vertices, triangles, &mut areas);
+    let total_area = set_area(scale, vertices, triangles, &mut areas);
     (areas, total_area)
 }
 
-/// Scale pre-calculated areas.
-///
-/// - `areas`: A slice that will be filled with the areas of each triangle.
-/// - `scale`: The uniform scale of the mesh.
-pub fn scale_areas(areas: &mut [f32], scale: f32) -> f32 {
-    areas.iter_mut().for_each(|a| *a *= scale);
-    areas.iter().sum::<f32>()
-}
-
+/// - `scale` The uniform scale of the mesh.
 /// - `vertices`: (x, y, z) vertices.
 /// - `triangles`: Indices of vertices comprising a triangle.
-/// - `areas`: A slice that will be filled with the areas of each triangle. This must be the same length as `triangles`.
+/// - `areas`: This will be filled with the area of each triangle, in square meters.
 ///
 /// Returns: The total surface area of the mesh in square meters.
-pub fn get_areas_in_place<T, U>(vertices: &[T], triangles: &[U], areas: &mut [f32]) -> f32
+pub fn set_area<T, U>(scale: f32, vertices: &[T], triangles: &[U], areas: &mut [f32]) -> f32
 where
     T: Vector3,
     U: Vector3U,
@@ -70,7 +63,7 @@ where
                 &vertices[triangle.x()],
                 &vertices[triangle.y()],
                 &vertices[triangle.z()],
-            );
+            ) * scale;
             // Add to the total.
             total_area += a;
             *area = a;
@@ -90,13 +83,15 @@ pub fn get_num_points(total_area: f32, points_per_m: f32) -> usize {
 /// Sample points on a mesh, given a density of points.
 ///
 /// - `points_per_m`: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
+/// - `scale` The uniform scale of the mesh.
 /// - `vertices`:  (x, y, z) vertices.
 /// - `triangles`:Indices of vertices comprising a triangle.
 /// - `normals`: (x, y, z) normals.
 ///
 /// Returns: An vec of sampled points and a vec of normals for each point.
-pub fn sample_points_from_ppm<T, U>(
+pub fn sample_points<T, U>(
     points_per_m: f32,
+    scale: f32,
     vertices: &[T],
     triangles: &[U],
     normals: &[T],
@@ -105,11 +100,11 @@ where
     T: Vector3,
     U: Vector3U,
 {
-    let (areas, total_area) = get_areas(vertices, triangles);
+    let (areas, total_area) = get_area(scale, vertices, triangles);
     let num_points = get_num_points(total_area, points_per_m);
     let mut points = vec![T::new(0., 0., 0.); num_points];
     let mut sampled_normals = points.clone();
-    sample_points(
+    set_sampled_points(
         total_area,
         vertices,
         triangles,
@@ -128,9 +123,9 @@ where
 /// - `normals`: (x, y, z) normals.
 /// - `triangles`: Indices of vertices comprising a triangle.
 /// - `areas`: A slice that will be filled with the areas of each triangle. This must be the same length as `triangles`.
-/// - `points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
-/// - `sampled_normals`: A pre-defined slice that will be filled with normals. This must be the same size as `points`.
-pub fn sample_points<T, U>(
+/// - `points`: This will be filled with points. The size can differ from `triangles` and `areas`.
+/// - `sampled_normals`: This will be filled with normal directional vectors. This must be the same size as `points`.
+pub fn set_sampled_points<T, U>(
     total_area: f32,
     vertices: &[T],
     triangles: &[U],
@@ -209,14 +204,38 @@ pub fn sample_points<T, U>(
     }
 }
 
+/// Get the triangles at which points can be sampled.
+/// This is useful for deformable meshes in situations where the positions will change but not the triangles we want to derive positions from.
+///
+/// - `total_area`: The total surface area of the mesh in square meters.
+/// - `points_per_m`: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
+/// - `vertices`: (x, y, z) vertices.
+/// - `triangles`: Indices of vertices comprising a triangle.
+/// - `areas`: The area of each triangle in square meters.
+///
+/// Returns the sampled triangles.
+pub fn sample_triangles<T>(
+    total_area: f32,
+    points_per_m: f32,
+    triangles: &[T],
+    areas: &[f32],
+) -> Vec<T>
+where
+    T: Vector3U,
+{
+    let mut samples = vec![T::new(0, 0, 0); get_num_points(total_area, points_per_m)];
+    set_sampled_triangles(total_area, triangles, areas, &mut samples);
+    samples
+}
+
 /// Set the triangles at which points can be sampled.
 /// This is useful for deformable meshes in situations where the positions will change but not the triangles we want to derive positions from.
 ///
 /// - `total_area`: The total surface area of the mesh in square meters.
 /// - `triangles`: Indices of vertices comprising a triangle.
 /// - `areas`: A slice that will be filled with the areas of each triangle. This must be the same length as `triangles`.
-/// - `sampled_triangles`: A pre-defined slice of triangles that will be set in this function. The size can differ from `triangles` and `areas` and must match the number of points that will be sampled.
-pub fn sample_triangles_in_place<T>(
+/// - `sampled_triangles`: This will be filled with sampled triangles. The size can differ from `triangles` and `areas` and must match the number of points that will be sampled.
+pub fn set_sampled_triangles<T>(
     total_area: f32,
     triangles: &[T],
     areas: &[f32],
@@ -257,29 +276,6 @@ pub fn sample_triangles_in_place<T>(
             start_index_triangle = index + 1;
         }
     }
-}
-
-/// Get the triangles at which points can be sampled.
-/// This is useful for deformable meshes in situations where the positions will change but not the triangles we want to derive positions from.
-///
-/// - `total_area`: The total surface area of the mesh in square meters.
-/// - `points_per_m`: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
-/// - `triangles`: Indices of vertices comprising a triangle.
-/// - `areas`: A slice that will be filled with the areas of each triangle. This must be the same length as `triangles`.
-///
-/// Returns the sampled triangles.
-pub fn sample_triangles<T>(
-    total_area: f32,
-    points_per_m: f32,
-    triangles: &[T],
-    areas: &[f32],
-) -> Vec<T>
-where
-    T: Vector3U,
-{
-    let mut samples = vec![T::new(0, 0, 0); get_num_points(total_area, points_per_m)];
-    sample_triangles_in_place(total_area, triangles, areas, &mut samples);
-    samples
 }
 
 /// Given pre-sampled triangles, sample vertices.
@@ -379,7 +375,7 @@ mod tests {
     #[test]
     fn test_sample_points() {
         let (vertices, triangles, normals) = super::from_obj("tests/suzanne.obj");
-        let (points, _) = super::sample_points_from_ppm(80., &vertices, &triangles, &normals);
+        let (points, _) = super::sample_points(80., 1., &vertices, &triangles, &normals);
         assert_eq!(points.len(), 997);
     }
 }

@@ -27,6 +27,19 @@ public unsafe partial class Ffi {
 #endif
 }
 
+public unsafe partial class Ffi {
+    /// <summary>
+    /// - <c>total_area</c>: The total area of the triangles in square meters. See: <c>get_areas(vertices, triangles)</c> and <c>get_areas_in_place(vertices, triangles, areas)</c>
+    /// - <c>points_per_m</c>: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
+    ///
+    /// Returns: The number of points to be sampled.
+    /// </summary>
+    [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
+    UIntPtr get_num_points (
+        float total_area,
+        float points_per_m);
+}
+
 /// <summary>
 /// FFI-safe Vector3.
 /// </summary>
@@ -89,35 +102,6 @@ public unsafe struct Vec_float_t {
 
 public unsafe partial class Ffi {
     /// <summary>
-    /// - <c>vertices</c>: A flat vec of (x, y, z) vertices.
-    /// - <c>triangles</c>: A flat vec of three indices of vertices.
-    /// - <c>areas</c>: A vec that will be filled with the areas of each triangle in <c>triangles</c>.
-    /// This must be the same length as <c>triangles.len() / 3</c>.
-    ///
-    /// Returns: The total area.
-    /// </summary>
-    [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
-    float get_areas (
-        Vec_Vec3_t /*const*/ * vertices,
-        Vec_Vec3U_t /*const*/ * triangles,
-        Vec_float_t * areas);
-}
-
-public unsafe partial class Ffi {
-    /// <summary>
-    /// - <c>total_area</c>: The total area of the triangles in square meters. See: <c>get_areas(vertices, triangles)</c> and <c>get_areas_in_place(vertices, triangles, areas)</c>
-    /// - <c>points_per_m</c>: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
-    ///
-    /// Returns: The number of points to be sampled.
-    /// </summary>
-    [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
-    UIntPtr get_num_points (
-        float total_area,
-        float points_per_m);
-}
-
-public unsafe partial class Ffi {
-    /// <summary>
     /// Sample random points on the mesh.
     ///
     /// - <c>total_area</c>: The total surface area of the mesh in square meters.
@@ -162,15 +146,20 @@ public unsafe partial class Ffi {
 
 public unsafe partial class Ffi {
     /// <summary>
-    /// Scale pre-calculated areas.
+    /// - <c>scale</c> The uniform scale of the mesh.
+    /// - <c>vertices</c>: A flat vec of (x, y, z) vertices.
+    /// - <c>triangles</c>: A flat vec of three indices of vertices.
+    /// - <c>areas</c>: A vec that will be filled with the areas of each triangle in <c>triangles</c>.
+    /// This must be the same length as <c>triangles.len() / 3</c>.
     ///
-    /// - <c>areas</c>: A slice that will be filled with the areas of each triangle
-    /// - <c>scale</c>: The uniform scale of the mesh.
+    /// Returns: The total area.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
-    float scale_areas (
-        Vec_float_t * areas,
-        float scale);
+    float set_area (
+        float scale,
+        Vec_Vec3_t /*const*/ * vertices,
+        Vec_Vec3U_t /*const*/ * triangles,
+        Vec_float_t * areas);
 }
 
 public unsafe partial class Ffi {
