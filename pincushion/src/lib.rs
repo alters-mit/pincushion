@@ -14,46 +14,62 @@
 
 use rand::{distributions::Uniform, thread_rng, Rng};
 
+use vecs::{Vector3, Vector3U};
+
 #[cfg(feature = "cs")]
 pub mod cs;
 
 #[cfg(feature = "ffi")]
 pub mod ffi;
 
+pub mod vecs;
+
 pub type Vertex = [f32; 3];
 pub type Triangle = [usize; 3];
-pub type Uv = [f32; 2];
 
-const NUM_ICOSAHEDRON_VERTICES: usize = 12;
-const NUM_ICOSAHEDRON_TRIANGLES: usize = 20;
-
-/// - `vertices`: A slice of (x, y, z) vertices.
-/// - `triangles`: A slice of three indices of vertices.
+/// - `vertices`: (x, y, z) vertices.
+/// - `triangles`: Indices of vertices comprising a triangle.
 ///
-/// Returns: The area of each triangle and the total area.
-pub fn get_areas(vertices: &[Vertex], triangles: &[Triangle]) -> (Vec<f32>, f32) {
+/// Returns: The area of each triangle and the total surface area of the mesh in square meters.
+pub fn get_areas<T, U>(vertices: &[T], triangles: &[U]) -> (Vec<f32>, f32)
+where
+    T: Vector3,
+    U: Vector3U,
+{
     let mut areas = vec![0.0; triangles.len()];
     let total_area = get_areas_in_place(vertices, triangles, &mut areas);
     (areas, total_area)
 }
 
-/// - `vertices`: A slice of (x, y, z) vertices.
-/// - `triangles`: A slice of three indices of vertices.
-/// - `areas`: A slice that will be filled with the areas of each triangle in `triangles`.
-///   This must be the same length as `triangles`.
+/// Scale pre-calculated areas.
 ///
-/// Returns: The total area.
-pub fn get_areas_in_place(vertices: &[Vertex], triangles: &[Triangle], areas: &mut [f32]) -> f32 {
+/// - `areas`: A slice that will be filled with the areas of each triangle.
+/// - `scale`: The uniform scale of the mesh.
+pub fn scale_areas(areas: &mut [f32], scale: f32) -> f32 {
+    areas.iter_mut().for_each(|a| *a *= scale);
+    areas.iter().sum::<f32>()
+}
+
+/// - `vertices`: (x, y, z) vertices.
+/// - `triangles`: Indices of vertices comprising a triangle.
+/// - `areas`: A slice that will be filled with the areas of each triangle. This must be the same length as `triangles`.
+///
+/// Returns: The total surface area of the mesh in square meters.
+pub fn get_areas_in_place<T, U>(vertices: &[T], triangles: &[U], areas: &mut [f32]) -> f32
+where
+    T: Vector3,
+    U: Vector3U,
+{
     let mut total_area = 0.;
     triangles
         .iter()
         .zip(areas.iter_mut())
         .for_each(|(triangle, area)| {
             // Get this triangle's area.
-            let a = get_triangle_area(
-                &vertices[triangle[0]],
-                &vertices[triangle[1]],
-                &vertices[triangle[2]],
+            let a = Vector3::get_triangle_area(
+                &vertices[triangle.x()],
+                &vertices[triangle.y()],
+                &vertices[triangle.z()],
             );
             // Add to the total.
             total_area += a;
@@ -63,47 +79,69 @@ pub fn get_areas_in_place(vertices: &[Vertex], triangles: &[Triangle], areas: &m
 }
 
 /// - `total_area`: The total area of the triangles in square meters. See: `get_areas(vertices, triangles)` and `get_areas_in_place(vertices, triangles, areas)`
-/// - `points_per_m`: The number of points per square meter.
+/// - `points_per_m`: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
 ///
 /// Returns: The number of points to be sampled.
 #[cfg_attr(feature = "ffi", safer_ffi::ffi_export)]
 pub fn get_num_points(total_area: f32, points_per_m: f32) -> usize {
-    (total_area / points_per_m) as usize
+    (total_area * points_per_m) as usize
 }
 
 /// Sample points on a mesh, given a density of points.
 ///
-/// - `vertices`: A slice of (x, y, z) vertices.
-/// - `triangles`: A slice of three indices of vertices.
-/// - `points_per_m`: The number of points per square meter.
+/// - `points_per_m`: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
+/// - `vertices`:  (x, y, z) vertices.
+/// - `triangles`:Indices of vertices comprising a triangle.
+/// - `normals`: (x, y, z) normals.
 ///
-/// Returns: An vec of sampled points.
-pub fn sample_points_from_ppm(
-    vertices: &[Vertex],
-    triangles: &[Triangle],
+/// Returns: An vec of sampled points and a vec of normals for each point.
+pub fn sample_points_from_ppm<T, U>(
     points_per_m: f32,
-) -> Vec<Vertex> {
+    vertices: &[T],
+    triangles: &[U],
+    normals: &[T],
+) -> (Vec<T>, Vec<T>)
+where
+    T: Vector3,
+    U: Vector3U,
+{
     let (areas, total_area) = get_areas(vertices, triangles);
     let num_points = get_num_points(total_area, points_per_m);
-    let mut points = vec![[0.0; 3]; num_points];
-    sample_points(vertices, triangles, &areas, total_area, &mut points);
-    points
+    let mut points = vec![T::new(0., 0., 0.); num_points];
+    let mut sampled_normals = points.clone();
+    sample_points(
+        total_area,
+        vertices,
+        triangles,
+        normals,
+        &areas,
+        &mut points,
+        &mut sampled_normals,
+    );
+    (points, sampled_normals)
 }
 
 /// Sample random points on the mesh.triangle_end_index
 ///
-/// - `vertices`: A slice of (x, y, z) vertices.
-/// - `triangles`: A slice of three indices of vertices.
-/// - `areas`: The area of each triangle. See: [`get_areas(vertices, triangles)`] and [`get_areas_in_place(vertices, triangles, areas)`].
-/// - `total_area`: The total area.
+/// - `total_area`: The total surface area of the mesh in square meters.
+/// - `vertices`: (x, y, z) vertices.
+/// - `normals`: (x, y, z) normals.
+/// - `triangles`: Indices of vertices comprising a triangle.
+/// - `areas`: A slice that will be filled with the areas of each triangle. This must be the same length as `triangles`.
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
-pub fn sample_points(
-    vertices: &[Vertex],
-    triangles: &[Triangle],
-    areas: &[f32],
+/// - `sampled_normals`: A pre-defined slice that will be filled with normals. This must be the same size as `points`.
+pub fn sample_points<T, U>(
     total_area: f32,
-    points: &mut [Vertex],
-) {
+    vertices: &[T],
+    triangles: &[U],
+    normals: &[T],
+    areas: &[f32],
+    points: &mut [T],
+    sampled_normals: &mut [T],
+) where
+    T: Vector3,
+    U: Vector3U,
+{
     // The area per point is used to uniformly sample the points.
     let area_per_point = total_area / points.len() as f32;
     let mut rng = thread_rng();
@@ -114,6 +152,17 @@ pub fn sample_points(
     // The accumulated triangle area. This is used to set the end indices.
     let mut total_accumulated_area = 0.0;
     let range = Uniform::new(0., 1.);
+    let normal_points = if sampled_normals.len() == points.len() {
+        true
+    } else if sampled_normals.len() == points.len() * 4 {
+        false
+    } else {
+        panic!(
+            "Invalid length of normals. Vertices: {} Normals: {}",
+            normals.len(),
+            vertices.len()
+        );
+    };
     for (index, area) in areas.iter().enumerate() {
         // Add area.
         total_accumulated_area += *area;
@@ -125,26 +174,30 @@ pub fn sample_points(
             for i in 0..num_points {
                 // Get a random triangle, bounded by the start index and the current index in `areas`.
                 let triangle = if start_index_point == index {
-                    triangles[start_index_point]
+                    &triangles[start_index_point]
                 } else {
-                    triangles[rng.gen_range(start_index_triangle..=index)]
+                    &triangles[rng.gen_range(start_index_triangle..=index)]
                 };
+                let point_index = start_index_point + i;
                 // Get a random point on that triangle.
-                // Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
-                let mut u = rng.sample(range);
-                let mut v = rng.sample(range);
-                let t = f32::sqrt(v);
-                v = u * t;
-                u = (1.0 - u) * t;
-                let w = 1.0 - u - v;
-                // Set the point at `start_index_pooint` offset by 0..num_points.
-                points[start_index_point + i] = add(
-                    &add(
-                        &mul(&vertices[triangle[0]], u),
-                        &mul(&vertices[triangle[1]], v),
-                    ),
-                    &mul(&vertices[triangle[2]], w),
+                set_point(
+                    &mut points[point_index],
+                    rng.sample(range),
+                    rng.sample(range),
+                    vertices,
+                    triangle,
                 );
+                // Set the normal.
+                if normal_points {
+                    set_normal(&mut sampled_normals[point_index], normals, triangle);
+                }
+                // Set the normals for a quad.
+                else {
+                    let normal_index = point_index * 4;
+                    (0..4).for_each(|i| {
+                        set_normal(&mut sampled_normals[normal_index + i], normals, triangle)
+                    });
+                }
             }
             // Start adding points at the offset.
             start_index_point += num_points;
@@ -156,225 +209,177 @@ pub fn sample_points(
     }
 }
 
-/// Convert a slice of (x, y, z) points into a single mesh composed of multiple icosahedrons (20-sided die).
+/// Set the triangles at which points can be sampled.
+/// This is useful for deformable meshes in situations where the positions will change but not the triangles we want to derive positions from.
 ///
-/// - `points` The sampled points.
-/// - `radius` The radius of each icosahedron.
-/// - `vertices` The vertices of *all* icosahedrons in the mesh. Expected size: `points.len() * 12`.
-/// - `triangles` The triangle indices of *all* icosahedrons in the mesh. Expected size: `points.len() * 20`.
-/// - `uvs` The (u, v) coordinates of each icosahedron vertex.
-pub fn points_to_icosahedrons_in_place(
-    points: &[Vertex],
-    radius: f32,
-    vertices: &mut [Vertex],
-    triangles: &mut [Triangle],
-    uvs: &mut [Uv],
-) {
-    // Golden ratio.
-    #[allow(clippy::excessive_precision)]
-    const PHI: f32 = 1.618033988749894848204586834365638118;
-    // The triangle indices in a icosahedron.
-    // Source: https://superhedralcom.wordpress.com/2020/05/17/building-the-unit-icosahedron/
-    const TRIANGLES: [Triangle; NUM_ICOSAHEDRON_TRIANGLES] = [
-        [0, 11, 5],
-        [0, 5, 1],
-        [0, 1, 7],
-        [0, 7, 10],
-        [0, 10, 11],
-        [1, 5, 9],
-        [5, 11, 4],
-        [11, 10, 2],
-        [10, 7, 6],
-        [7, 1, 8],
-        [3, 9, 4],
-        [3, 4, 2],
-        [3, 2, 6],
-        [3, 6, 8],
-        [3, 8, 9],
-        [4, 9, 5],
-        [2, 4, 11],
-        [6, 2, 10],
-        [8, 6, 7],
-        [9, 8, 1],
-    ];
-    // The vertices of an unit-sized icosahedron.
-    // Source: https://superhedralcom.wordpress.com/2020/05/17/building-the-unit-icosahedron/
-    const VERTICES: [Vertex; NUM_ICOSAHEDRON_VERTICES] = [
-        [-1., PHI, 0.],
-        [1., PHI, 0.],
-        [-1., -PHI, 0.],
-        [1., -PHI, 0.],
-        [0., -1., PHI],
-        [0., 1., PHI],
-        [0., -1., -PHI],
-        [0., 1., -PHI],
-        [PHI, 0., -1.],
-        [PHI, 0., 1.],
-        [-PHI, 0., -1.],
-        [-PHI, 0., 1.],
-    ];
-    // Source: https://www.alexisgiard.com/icosahedron-sphere/
-    // See also: dev_code/uvs.py
-    const UVS: [Uv; NUM_ICOSAHEDRON_VERTICES] = [
-        [0.19193012, 1.0],
-        [0.0881041, 1.0],
-        [0.19193012, 0.5],
-        [0.0881041, 0.5],
-        [0.1762082, 0.56116754],
-        [0.1762082, 0.8],
-        [0.0, 0.56116754],
-        [0.0, 0.8],
-        [0.030034214, 0.6666667],
-        [0.10825957, 0.6666667],
-        [0.25, 0.6666667],
-        [0.25, 0.6666667],
-    ];
+/// - `total_area`: The total surface area of the mesh in square meters.
+/// - `triangles`: Indices of vertices comprising a triangle.
+/// - `areas`: A slice that will be filled with the areas of each triangle. This must be the same length as `triangles`.
+/// - `sampled_triangles`: A pre-defined slice of triangles that will be set in this function. The size can differ from `triangles` and `areas` and must match the number of points that will be sampled.
+pub fn sample_triangles_in_place<T>(
+    total_area: f32,
+    triangles: &[T],
+    areas: &[f32],
+    sampled_triangles: &mut [T],
+) where
+    T: Vector3U,
+{
+    // The area per point is used to uniformly sample the points.
+    let area_per_point = total_area / sampled_triangles.len() as f32;
+    let mut rng = thread_rng();
+    // When sampling points, start at this index.
+    let mut start_index_point = 0;
+    // When choosing trandom triangles, start at this index.
+    let mut start_index_triangle = 0;
+    // The accumulated triangle area. This is used to set the end indices.
+    let mut total_accumulated_area = 0.0;
+    for (index, area) in areas.iter().enumerate() {
+        // Add area.
+        total_accumulated_area += *area;
+        // We have enough area.
+        if total_accumulated_area >= area_per_point {
+            // Derive how many points we can fit in the accumulated area.
+            let num_points = (total_accumulated_area / area_per_point) as usize;
+            // Sample some points.
+            for i in 0..num_points {
+                // Get a random triangle, bounded by the start index and the current index in `areas`.
+                sampled_triangles[start_index_point + i] = if start_index_point == index {
+                    triangles[start_index_point]
+                } else {
+                    triangles[rng.gen_range(start_index_triangle..=index)]
+                };
+            }
+            // Start adding points at the offset.
+            start_index_point += num_points;
+            // Reset the accumulated area.
+            total_accumulated_area = 0.0;
+            // Increment to the next starting triangle.
+            start_index_triangle = index + 1;
+        }
+    }
+}
 
-    let t = radius * PHI;
-    // Scale the vertices.
-    let mut ico_vertices = VERTICES;
-    ico_vertices.iter_mut().for_each(|v| mul_mut(v, t));
+/// Get the triangles at which points can be sampled.
+/// This is useful for deformable meshes in situations where the positions will change but not the triangles we want to derive positions from.
+///
+/// - `total_area`: The total surface area of the mesh in square meters.
+/// - `points_per_m`: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
+/// - `triangles`: Indices of vertices comprising a triangle.
+/// - `areas`: A slice that will be filled with the areas of each triangle. This must be the same length as `triangles`.
+///
+/// Returns the sampled triangles.
+pub fn sample_triangles<T>(
+    total_area: f32,
+    points_per_m: f32,
+    triangles: &[T],
+    areas: &[f32],
+) -> Vec<T>
+where
+    T: Vector3U,
+{
+    let mut samples = vec![T::new(0, 0, 0); get_num_points(total_area, points_per_m)];
+    sample_triangles_in_place(total_area, triangles, areas, &mut samples);
+    samples
+}
 
-    // Fill with initial values.
-    let points_len = points.len();
-    let mut vs = vec![ico_vertices; points_len];
-    let mut ts = vec![TRIANGLES; points_len];
-    // The UVs never change. Fill immediately.
-    uvs.copy_from_slice(vec![UVS; points_len].as_flattened());
-
+/// Given pre-sampled triangles, sample vertices.
+/// The position of the vertex relative to the spatial area of the triangle is deterministic.
+/// In constrast, points sampled via `sample_points` and `sample_points_ppm` will be at a random point on a sampled triangle.
+///
+/// - `vertices`: (x, y, z) vertices.
+/// - `normals`: (x, y, z) normals.
+/// - `sampled_triangles`: Presampled triangles.
+/// - `points`: A pre-defined slice of vertices that will be filled with points. The size must be the same as `sampled_triangles`.
+/// - `sampled_normals`: A pre-defined slice of normal vectors per point in `points`.
+pub fn set_points_from_sampled_triangles<T, U>(
+    vertices: &[T],
+    normals: &[T],
+    sampled_triangles: &[U],
+    points: &mut [T],
+    sampled_normals: &mut [T],
+) where
+    T: Vector3,
+    U: Vector3U,
+{
     points
-        .iter()
-        .enumerate()
-        .zip(vs.iter_mut().zip(ts.iter_mut()))
-        .for_each(|((i, point), (verts, tris))| {
-            // Set the positions of the vertices.
-            verts.iter_mut().for_each(|v| add_mut(v, point));
-            // Increment the indices.
-            let offset = i * NUM_ICOSAHEDRON_VERTICES;
-            tris.iter_mut().flatten().for_each(|t| *t += offset);
+        .iter_mut()
+        .zip(sampled_triangles.iter().zip(sampled_normals.iter_mut()))
+        .for_each(|(point, (triangle, normal))| {
+            set_point(point, 0.5, 0.5, vertices, triangle);
+            set_normal(normal, normals, triangle);
         });
-    // Copy into final arrays.
-    vertices.copy_from_slice(vs.as_flattened());
-    triangles.copy_from_slice(ts.as_flattened());
 }
 
-/// Convert a slice of (x, y, z) points into a single mesh composed of multiple icosahedrons (20-sided die).
+/// Load a .obj file.
 ///
-/// - `points` The sampled points.
-/// - `radius` The radius of each icosahedron.
-///
-/// Returns: A flat vec of the vertices of *all* vertices, triangles, and UVs.
-pub fn points_to_icosahedrons(
-    points: &[Vertex],
-    radius: f32,
-) -> (Vec<Vertex>, Vec<Triangle>, Vec<Uv>) {
-    let length = points.len();
-    let mut vertices = vec![[0.; 3]; NUM_ICOSAHEDRON_VERTICES * length];
-    let mut triangles = vec![[0; 3]; NUM_ICOSAHEDRON_TRIANGLES * length];
-    let mut uvs = vec![[0.; 2]; NUM_ICOSAHEDRON_VERTICES * length];
-    points_to_icosahedrons_in_place(points, radius, &mut vertices, &mut triangles, &mut uvs);
-    (vertices, triangles, uvs)
+/// Returns: The vertices, the triangles, and the normals.
+#[cfg(feature = "obj")]
+pub fn from_obj<P>(path: P) -> (Vec<Vertex>, Vec<Triangle>, Vec<Vertex>)
+where
+    P: AsRef<std::path::Path> + std::fmt::Debug,
+{
+    let obj = &tobj::load_obj(path, &tobj::GPU_LOAD_OPTIONS).unwrap().0[0].mesh;
+    let vertices = obj
+        .positions
+        .chunks_exact(3)
+        .map(|v| [v[0], v[1], v[2]])
+        .collect::<Vec<Vertex>>();
+    let triangles = obj
+        .indices
+        .chunks_exact(3)
+        .map(|triangle| {
+            [
+                triangle[0] as usize,
+                triangle[1] as usize,
+                triangle[2] as usize,
+            ]
+        })
+        .collect::<Vec<Triangle>>();
+    let normals = obj
+        .normals
+        .chunks_exact(3)
+        .map(|normal| [normal[0], normal[1], normal[2]])
+        .collect::<Vec<Vertex>>();
+    (vertices, triangles, normals)
 }
 
-/// Returns the area of a triangle.
-/// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/90714a3b61dbc731d9e8dc4c4ca93c2ba1da5156/Assets/Script/VFXMeshBakingHelper.cs#L202
-fn get_triangle_area(p0: &Vertex, p1: &Vertex, p2: &Vertex) -> f32 {
-    0.5 * magnitude(&cross(&sub(p1, p0), &sub(p2, p0)))
+/// Get a point on a triangle.
+/// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
+fn set_point<T, U>(point: &mut T, u: f32, v: f32, vertices: &[T], triangle: &U)
+where
+    T: Vector3,
+    U: Vector3U,
+{
+    let t = f32::sqrt(v);
+    let v = u * t;
+    let u = (1.0 - u) * t;
+    let w = 1.0 - u - v;
+    // Set the point at `start_index_pooint` offset by 0..num_points.
+    *point = vertices[triangle.x()]
+        .mul(u)
+        .add(&vertices[triangle.y()].mul(v))
+        .add(&vertices[triangle.z()].mul(w));
 }
 
-// For add, sub, etc. see: glam::Vec3
-
-fn add(a: &Vertex, b: &Vertex) -> Vertex {
-    [a[0] + b[0], a[1] + b[1], a[2] + b[2]]
-}
-
-fn add_mut(a: &mut Vertex, b: &Vertex) {
-    a[0] += b[0];
-    a[1] += b[1];
-    a[2] += b[2];
-}
-
-fn sub(a: &Vertex, b: &Vertex) -> Vertex {
-    [a[0] - b[0], a[1] - b[1], a[2] - b[2]]
-}
-
-fn mul(v: &Vertex, m: f32) -> Vertex {
-    [v[0] * m, v[1] * m, v[2] * m]
-}
-
-fn mul_mut(v: &mut Vertex, m: f32) {
-    v[0] *= m;
-    v[1] *= m;
-    v[2] *= m;
-}
-
-fn cross(a: &Vertex, b: &Vertex) -> Vertex {
-    [
-        a[1] * b[2] - b[1] * a[2],
-        a[2] * b[0] - b[2] * a[0],
-        a[0] * b[1] - b[0] * a[1],
-    ]
-}
-
-fn dot(a: &Vertex, b: &Vertex) -> f32 {
-    (a[0] * b[0]) + (a[1] * b[1]) + (a[2] * b[2])
-}
-
-fn magnitude(v: &Vertex) -> f32 {
-    f32::sqrt(dot(v, v))
+/// Set the average normal of a triangle.
+fn set_normal<T, U>(normal: &mut T, normals: &[T], triangle: &U)
+where
+    T: Vector3,
+    U: Vector3U,
+{
+    *normal = normals[triangle.x()]
+        .add(&normals[triangle.y()])
+        .add(&normals[triangle.z()])
+        .div(3.)
 }
 
 #[cfg(test)]
 mod tests {
-    use tobj::{load_obj, GPU_LOAD_OPTIONS};
-
-    use crate::{
-        points_to_icosahedrons, sample_points_from_ppm, Triangle, Vertex,
-        NUM_ICOSAHEDRON_TRIANGLES, NUM_ICOSAHEDRON_VERTICES,
-    };
-
+    #[cfg(feature = "obj")]
     #[test]
     fn test_sample_points() {
-        let (vertices, triangles) = get_obj();
-        let points = sample_points_from_ppm(&vertices, &triangles, 0.015);
-        assert_eq!(points.len(), 831);
-    }
-
-    #[test]
-    fn test_icosahedra() {
-        let (vertices, triangles) = get_obj();
-        let points = sample_points_from_ppm(&vertices, &triangles, 0.015);
-        let (ico_vertices, ico_triangles, _) = points_to_icosahedrons(&points, 0.02);
-        let num_ico_vertices = ico_vertices.iter().flatten().count();
-        assert_eq!(ico_vertices.len(), points.len() * NUM_ICOSAHEDRON_VERTICES);
-        assert_eq!(
-            ico_triangles.len(),
-            points.len() * NUM_ICOSAHEDRON_TRIANGLES
-        );
-        ico_triangles
-            .iter()
-            .flatten()
-            .for_each(|i| assert!(*i < num_ico_vertices, "{} {}", i, num_ico_vertices));
-    }
-
-    fn get_obj() -> (Vec<Vertex>, Vec<Triangle>) {
-        let obj = &load_obj("tests/suzanne.obj", &GPU_LOAD_OPTIONS).unwrap().0[0].mesh;
-        let vertices = obj
-            .positions
-            .chunks_exact(3)
-            .map(|v| [v[0], v[1], v[2]])
-            .collect::<Vec<Vertex>>();
-        let triangles = obj
-            .indices
-            .chunks_exact(3)
-            .map(|triangle| {
-                [
-                    triangle[0] as usize,
-                    triangle[1] as usize,
-                    triangle[2] as usize,
-                ]
-            })
-            .collect::<Vec<Triangle>>();
-        (vertices, triangles)
+        let (vertices, triangles, normals) = super::from_obj("tests/suzanne.obj");
+        let (points, _) = super::sample_points_from_ppm(80., &vertices, &triangles, &normals);
+        assert_eq!(points.len(), 997);
     }
 }

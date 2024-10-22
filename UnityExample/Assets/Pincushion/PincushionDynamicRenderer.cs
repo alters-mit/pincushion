@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 
 namespace Pincushion
@@ -12,61 +13,99 @@ namespace Pincushion
     /// This is relatively inefficient, but I haven't found an alternative that is compatible with the built-in render pipeline.
     /// </summary>
     [RequireComponent(typeof(SkinnedMeshRenderer))]
-    public class PincushionDynamicRenderer : PincushionRenderer<SkinnedMeshRenderer>
+    public class PincushionDynamicRenderer : PincushionRenderer
     {
         /// <summary>
         /// The color of each point.
         /// </summary>
-        public Color color = Color.gray;
+        public Color pointsColor = Color.gray;
         /// <summary>
         /// The renderer. This is set on Awake().
         /// </summary>
         private SkinnedMeshRenderer skinnedMeshRenderer;
         /// <summary>
-        /// The points' material. This is set on Awake().
+        /// A cached array of indices of vertices, used to quickly re-sample positions.
         /// </summary>
-        private Material material;
+        private UIntPtr[] sampledTriangles;
+        /// <summary>
+        /// The MeshFilter that handles the sampled points.
+        /// </summary>
+        private MeshFilter sampledMeshFilter;
+        /// <summary>
+        /// The MeshRenderer that handles the sampled points.
+        /// </summary>
+        private MeshRenderer sampledMeshRenderer;
+        /// <summary>
+        /// This is used to re-sample points.
+        /// </summary>
+        private Mesh bakedMesh;
 
 
-        protected override Mesh GetMesh(SkinnedMeshRenderer meshContainer)
+        private void Awake()
         {
-            skinnedMeshRenderer = meshContainer;
-            
+            skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
+            bakedMesh = new Mesh();
+            Set();
+        }
+
+
+        public override void Set()
+        {
+            // Sample the triangles.
+            sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude);
             // Create the mesh.
-            Mesh mesh = Instantiate(skinnedMeshRenderer.sharedMesh);
-            Vector3[] points = mesh.GetSampledPoints(pointsPerM);
-            mesh.triangles = new int[points.Length * 3];
-            mesh.vertices = points;
+            Mesh mesh = new Mesh();
+            skinnedMeshRenderer.BakeMesh(bakedMesh);
+            // Deterministically set sampled points.
+            mesh.SetVerticesFromSampledTriangles(bakedMesh.vertices, bakedMesh.normals, sampledTriangles);
             mesh.SetPointTopology();
             
             // Set the material.
-            material = new Material(Shader.Find("Pincushion/DynamicPoints"));
-            material.SetColor("_Color", color); ;
+            Material material = new Material(Shader.Find("Pincushion/DynamicPoints"));
+            material.SetColor("_Color", pointsColor);
             material.SetFloat("_PointSize", pointRadius);
-            skinnedMeshRenderer.material = material;
-
-            return mesh;
+            if (occludeBackFacing)
+            {
+                material.EnableKeyword("_OCCLUDE_BACKFACING");   
+            }
+            
+            // Create the child object that will hold the sampled points.
+            GameObject go = new GameObject();
+            Transform t = go.transform;
+            t.parent = transform;
+            t.localPosition = Vector3.zero;
+            t.localRotation = Quaternion.identity;
+            // Set the mesh.
+            sampledMeshFilter = go.AddComponent<MeshFilter>();
+            sampledMeshFilter.mesh = mesh;
+            sampledMeshRenderer = go.AddComponent<MeshRenderer>();
+            sampledMeshRenderer.material = material;
+            
+            SetOriginalMeshVisibility(false);
         }
 
 
-        protected override void ReplaceMesh(SkinnedMeshRenderer meshContainer, Mesh mesh)
+        public override void SetOriginalMeshVisibility(bool visible)
         {
-            meshContainer.sharedMesh = mesh;
+            skinnedMeshRenderer.enabled = visible;
         }
 
 
-        protected override Renderer SetCreatedMesh(SkinnedMeshRenderer meshContainer)
+        public override void SetSampledMeshVisibility(bool visible)
         {
-            // Copy values from my renderer.
-            meshContainer.quality = skinnedMeshRenderer.quality;
-            meshContainer.bones = skinnedMeshRenderer.bones;
-            meshContainer.rootBone = skinnedMeshRenderer.rootBone;
-            meshContainer.updateWhenOffscreen = skinnedMeshRenderer.updateWhenOffscreen;
-            meshContainer.skinnedMotionVectors = skinnedMeshRenderer.skinnedMotionVectors;
-            meshContainer.forceMatrixRecalculationPerRender = skinnedMeshRenderer.forceMatrixRecalculationPerRender;
-            meshContainer.material = material;
+            sampledMeshRenderer.enabled = visible;
+        }
 
-            return meshContainer;
+
+        private void Update()
+        {
+            if (sampledMeshRenderer.enabled)
+            {
+                skinnedMeshRenderer.BakeMesh(bakedMesh);
+                // Set the positions of the points.
+                sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(bakedMesh.vertices, bakedMesh.normals, sampledTriangles);
+                sampledMeshFilter.mesh.SetPointTopology();           
+            }
         }
     }
 }

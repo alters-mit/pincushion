@@ -28,11 +28,47 @@ public unsafe partial class Ffi {
 }
 
 /// <summary>
+/// FFI-safe Vector3.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 12)]
+public unsafe struct Vec3_t {
+    public float x;
+
+    public float y;
+
+    public float z;
+}
+
+/// <summary>
 /// Same as [<c>Vec<T></c>][<c>rust::Vec</c>], but with guaranteed <c>#[repr(C)]</c> layout
 /// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 24)]
-public unsafe struct Vec_float_t {
-    public float * ptr;
+public unsafe struct Vec_Vec3_t {
+    public Vec3_t * ptr;
+
+    public UIntPtr len;
+
+    public UIntPtr cap;
+}
+
+/// <summary>
+/// FFI-safe Vector3Uint
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 24)]
+public unsafe struct Vec3U_t {
+    public UIntPtr x;
+
+    public UIntPtr y;
+
+    public UIntPtr z;
+}
+
+/// <summary>
+/// Same as [<c>Vec<T></c>][<c>rust::Vec</c>], but with guaranteed <c>#[repr(C)]</c> layout
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 24)]
+public unsafe struct Vec_Vec3U_t {
+    public Vec3U_t * ptr;
 
     public UIntPtr len;
 
@@ -43,8 +79,8 @@ public unsafe struct Vec_float_t {
 /// Same as [<c>Vec<T></c>][<c>rust::Vec</c>], but with guaranteed <c>#[repr(C)]</c> layout
 /// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 24)]
-public unsafe struct Vec_size_t {
-    public UIntPtr * ptr;
+public unsafe struct Vec_float_t {
+    public float * ptr;
 
     public UIntPtr len;
 
@@ -62,15 +98,15 @@ public unsafe partial class Ffi {
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     float get_areas (
-        Vec_float_t /*const*/ * vertices,
-        Vec_size_t /*const*/ * triangles,
+        Vec_Vec3_t /*const*/ * vertices,
+        Vec_Vec3U_t /*const*/ * triangles,
         Vec_float_t * areas);
 }
 
 public unsafe partial class Ffi {
     /// <summary>
     /// - <c>total_area</c>: The total area of the triangles in square meters. See: <c>get_areas(vertices, triangles)</c> and <c>get_areas_in_place(vertices, triangles, areas)</c>
-    /// - <c>points_per_m</c>: The number of points per square meter.
+    /// - <c>points_per_m</c>: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
     ///
     /// Returns: The number of points to be sampled.
     /// </summary>
@@ -82,51 +118,80 @@ public unsafe partial class Ffi {
 
 public unsafe partial class Ffi {
     /// <summary>
-    /// Sample random points in a mesh and generate a single mesh compose of icosahedrons.
+    /// Sample random points on the mesh.
     ///
-    /// - <c>vertices</c>: A flat vec of (x, y, z) vertices.
-    /// - <c>triangles</c>: A flat vec of three indices of vertices.
-    /// - <c>areas</c>: The area of each triangle. See: <c>get_areas(vertices, triangles, areas)</c>
-    /// - <c>total_area</c>: The total area.
-    /// - <c>radius</c>: The radius of each icosahedron.
+    /// - <c>total_area</c>: The total surface area of the mesh in square meters.
+    /// - <c>vertices</c>: (x, y, z) vertices.
+    /// - <c>triangles</c>: Indices of vertices comprising a triangle.
+    /// - <c>normals</c>: (x, y, z) normals.
+    /// - <c>areas</c>: A slice that will be filled with the areas of each triangle. This must be the same length as <c>triangles</c>.
     /// - <c>points</c>: A pre-defined slice of vertices that will be filled with points. The size can differ from <c>triangles</c> and <c>areas</c>.
-    /// - <c>ico_vertices</c> The vertices of *all* icosahedrons in the mesh. Expected size: <c>points.len() * 12</c>.
-    /// - <c>ico_triangles</c> The triangle indices of *all* icosahedrons in the mesh. Expected size: <c>points.len() * 20</c>.
-    /// - <c>ico_uvs</c> The UVs of *all* icosahedrons in the mesh. Expected size: <c>points.len() * 2</c>.
+    /// This will be filled with the sampled points.
+    /// This must be defined on the other side of the FFI boundary.
+    /// To get the expected size of <c>points</c>, call <c>get_areas(vertices, triangles, areas)</c> followed by <c>get_num_points(total_area, points_per_m)</c>
+    /// - <c>sampled_normals</c>: A pre-defined slice that will be filled with normals. The size must match that of <c>points</c>.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
-    void points_to_icosahedrons (
-        Vec_float_t /*const*/ * vertices,
-        Vec_size_t /*const*/ * triangles,
-        Vec_float_t /*const*/ * areas,
+    void sample_points (
         float total_area,
-        float radius,
-        Vec_float_t * points,
-        Vec_float_t * ico_vertices,
-        Vec_size_t * ico_triangles,
-        Vec_float_t * ico_uvs);
+        Vec_Vec3_t /*const*/ * vertices,
+        Vec_Vec3U_t /*const*/ * triangles,
+        Vec_Vec3_t /*const*/ * normals,
+        Vec_float_t /*const*/ * areas,
+        Vec_Vec3_t * points,
+        Vec_Vec3_t * sampled_normals);
 }
 
 public unsafe partial class Ffi {
     /// <summary>
-    /// Sample random points on the mesh.
+    /// Set the triangles at which points can be sampled.
+    /// This is useful for deformable meshes in situations where the positions will change but not the triangles we want to derive positions from.
     ///
-    /// - <c>vertices</c>: A flat vec of (x, y, z) vertices.
-    /// - <c>triangles</c>: A flat vec of three indices of vertices.
-    /// - <c>areas</c>: The area of each triangle. See: <c>get_areas(vertices, triangles, areas)</c>
-    /// - <c>total_area</c>: The total area.
-    /// - <c>points</c>: A pre-defined slice of vertices that will be filled with points. The size can differ from <c>triangles</c> and <c>areas</c>.
-    /// This will be filled with the sampled pointsc.
-    /// This must be defined on the other side of the FFI boundary.
-    /// To get the expected size of <c>points</c>, call <c>get_areas(vertices, triangles, areas)</c> followed by <c>get_num_points(total_area, points_per_m)</c>
+    /// - <c>total_area</c>: The total surface area of the mesh in square meters.
+    /// - <c>triangles</c>: Indices of vertices comprising a triangle.
+    /// - <c>areas</c>: A slice that will be filled with the areas of each triangle. This must be the same length as <c>triangles</c>.
+    /// - <c>sampled_triangles</c>: A pre-defined slice of triangles that will be set in this function. The size can differ from <c>triangles</c> and <c>areas</c> and must match the number of points that will be sampled.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
-    void sample_points (
-        Vec_float_t /*const*/ * vertices,
-        Vec_size_t /*const*/ * triangles,
-        Vec_float_t /*const*/ * areas,
+    void sample_triangles (
         float total_area,
-        Vec_float_t * points);
+        Vec_Vec3U_t /*const*/ * triangles,
+        Vec_float_t /*const*/ * areas,
+        Vec_Vec3U_t * sampled_triangles);
+}
+
+public unsafe partial class Ffi {
+    /// <summary>
+    /// Scale pre-calculated areas.
+    ///
+    /// - <c>areas</c>: A slice that will be filled with the areas of each triangle
+    /// - <c>scale</c>: The uniform scale of the mesh.
+    /// </summary>
+    [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
+    float scale_areas (
+        Vec_float_t * areas,
+        float scale);
+}
+
+public unsafe partial class Ffi {
+    /// <summary>
+    /// Given pre-sampled triangles, sample vertices.
+    /// The position of the vertex relative to the spatial area of the triangle is deterministic.
+    /// In contrast, points sampled via <c>sample_points</c> and <c>sample_points_ppm</c> will be at a random point on a sampled triangle.
+    ///
+    /// - <c>vertices</c>: (x, y, z) vertices.
+    /// - <c>normals</c>: (x, y, z) normals.
+    /// - <c>sampled_triangles</c>: Presampled triangles.
+    /// - <c>points</c>: A pre-defined slice of vertices that will be filled with points. The size must be the same as <c>sampled_triangles</c>.
+    /// - <c>sampled_normals</c>: A pre-defined slice of normal vectors per point in <c>points</c>.
+    /// </summary>
+    [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
+    void set_points_from_sampled_triangles (
+        Vec_Vec3_t /*const*/ * vertices,
+        Vec_Vec3_t /*const*/ * normals,
+        Vec_Vec3U_t * sampled_triangles,
+        Vec_Vec3_t * points,
+        Vec_Vec3_t * sampled_normals);
 }
 
 

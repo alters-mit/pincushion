@@ -1,2 +1,1 @@
-Sampling: 24μs
-Icosahedrons: 398μs
+Sampling: 64μs
