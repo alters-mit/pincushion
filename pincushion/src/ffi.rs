@@ -3,9 +3,9 @@
 use safer_ffi::ffi_export;
 
 use crate::{
-    get_areas_in_place, sample_points as sample_points_native, sample_triangles_in_place,
-    scale_areas as scale_areas_native,
+    set_area as set_area_native,
     set_points_from_sampled_triangles as set_points_from_sampled_triangles_native,
+    set_sampled_points, set_sampled_triangles,
     vecs::{Vector3, Vector3U},
 };
 
@@ -89,6 +89,7 @@ impl Vector3U for Vec3U {
     }
 }
 
+/// - `scale` The uniform scale of the mesh.
 /// - `vertices`: A flat vec of (x, y, z) vertices.
 /// - `triangles`: A flat vec of three indices of vertices.
 /// - `areas`: A vec that will be filled with the areas of each triangle in `triangles`.
@@ -96,21 +97,13 @@ impl Vector3U for Vec3U {
 ///
 /// Returns: The total area.
 #[ffi_export]
-pub fn get_areas(
+pub fn set_area(
+    scale: f32,
     vertices: &safer_ffi::Vec<Vec3>,
     triangles: &safer_ffi::Vec<Vec3U>,
     areas: &mut safer_ffi::Vec<f32>,
 ) -> f32 {
-    get_areas_in_place(vertices, triangles, areas)
-}
-
-/// Scale pre-calculated areas.
-///
-/// - `areas`: A slice that will be filled with the areas of each triangle
-/// - `scale`: The uniform scale of the mesh.
-#[ffi_export]
-pub fn scale_areas(areas: &mut safer_ffi::Vec<f32>, scale: f32) -> f32 {
-    scale_areas_native(areas, scale)
+    set_area_native(scale, vertices, triangles, areas)
 }
 
 /// Sample random points on the mesh.
@@ -135,7 +128,7 @@ pub fn sample_points(
     points: &mut safer_ffi::Vec<Vec3>,
     sampled_normals: &mut safer_ffi::Vec<Vec3>,
 ) {
-    sample_points_native(
+    set_sampled_points(
         total_area,
         vertices,
         triangles,
@@ -160,7 +153,7 @@ pub fn sample_triangles(
     areas: &safer_ffi::Vec<f32>,
     sampled_triangles: &mut safer_ffi::Vec<Vec3U>,
 ) {
-    sample_triangles_in_place(total_area, triangles, areas, sampled_triangles);
+    set_sampled_triangles(total_area, triangles, areas, sampled_triangles);
 }
 
 /// Given pre-sampled triangles, sample vertices.

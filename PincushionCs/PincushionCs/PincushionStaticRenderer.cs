@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 
 namespace Pincushion
@@ -94,12 +93,13 @@ namespace Pincushion
                 GameObject quad = new GameObject();
                 MeshFilter meshFilter = quad.AddComponent<MeshFilter>();
                 meshFilter.mesh = quadMesh;
-
-                // For some reason, we have to allocate the array rather than copying directly into mesh.normals.
-                Vector3[] normals = new Vector3[4];
-                // Copy the normals.
-                Array.Copy(sampledPoints.normals, i * 4, normals, 0, 4);
+                
                 // Set the normals.
+                Vector3[] normals = new Vector3[4];
+                for (int j = 0; j < 4; j++)
+                {
+                    normals[j] = sampledPoints.normals[i];
+                }
                 meshFilter.mesh.normals = normals;
                 
                 quad.AddComponent<MeshRenderer>().sharedMaterial = material;

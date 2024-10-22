@@ -3,7 +3,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use pincushion::{from_obj, sample_points_from_ppm, Triangle, Vertex};
+use pincushion::{from_obj, sample_points, Triangle, Vertex};
 
 pub fn main() {
     let (vertices, triangles, normals) = from_obj("tests/suzanne.obj");
@@ -21,6 +21,6 @@ pub fn main() {
 
 fn benchmark(vertices: &[Vertex], triangles: &[Triangle], normals: &[Vertex]) -> Duration {
     let t0 = Instant::now();
-    sample_points_from_ppm(80., vertices, triangles, normals);
+    sample_points(80., 1., vertices, triangles, normals);
     Instant::now() - t0
 }

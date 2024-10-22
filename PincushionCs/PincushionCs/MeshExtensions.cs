@@ -59,8 +59,7 @@ namespace Pincushion
                                 cap = areasLength
                             };
                             // Get the areas and the total area.
-                            Ffi.get_areas(&vertices, &triangles, &areasVec);
-                            float totalArea = Ffi.scale_areas(&areasVec, scale);
+                            float totalArea = Ffi.set_area(scale, &vertices, &triangles, &areasVec);
                             // Get the number of points.
                             int numPoints = (int)Ffi.get_num_points(totalArea, pointsPerM);
                             // Allocate the arrays.
@@ -142,9 +141,7 @@ namespace Pincushion
                                 cap = areasLength
                             };
                             // Get the areas and the total area.
-                            Ffi.get_areas(&vertices, &triangles, &areasVec);
-                            // Scale the areas.
-                            float totalArea = Ffi.scale_areas(&areasVec, scale);
+                            float totalArea = Ffi.set_area(scale, &vertices, &triangles, &areasVec);
                             // Get the number of points.
                             int numPoints = (int)Ffi.get_num_points(totalArea, pointsPerM);
                             // Allocate the array.

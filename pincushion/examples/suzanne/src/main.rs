@@ -3,7 +3,7 @@
 use macroquad::prelude::*;
 
 /// Add feature "obj" to enable `from_obj`.
-use pincushion::{from_obj, sample_points_from_ppm};
+use pincushion::{from_obj, sample_points};
 
 #[macroquad::main("3D")]
 async fn main() {
@@ -20,7 +20,7 @@ async fn main() {
         texture: None,
     };
     // Sample the points and convert to macroquad Vec3's.
-    let points = sample_points_from_ppm(0.15, &vertices, &triangles, &normals)
+    let points = sample_points(0.15, 1., &vertices, &triangles, &normals)
         .0
         .iter()
         .map(|point| vec3(point[0], point[1], point[2]))
