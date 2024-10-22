@@ -48,7 +48,8 @@ namespace Pincushion
             t.localScale = Vector3.one;
 
             // Sample the points.
-            SampledPoints sampledPoints = GetComponent<MeshFilter>().mesh.GetSampledPoints(pointsPerM);
+            SampledPoints sampledPoints = GetComponent<MeshFilter>().mesh.GetSampledPoints(
+                pointsPerM, transform.localScale.magnitude);
             
             // Get a quad.
             // Source: https://docs.unity3d.com/Manual/Example-CreatingaBillboardPlane.html
