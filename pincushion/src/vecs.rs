@@ -31,14 +31,18 @@ pub trait Vector3: Clone + Sized {
         )
     }
 
-    fn mul(&self, other: f32) -> Self {
-        Self::new(self.x() * other, self.y() * other, self.z() * other)
+    fn mul(&self, value: f32) -> Self {
+        Self::new(self.x() * value, self.y() * value, self.z() * value)
     }
 
-    fn mul_mut(&mut self, other: f32) {
-        *self.x_mut() *= other;
-        *self.y_mut() *= other;
-        *self.z_mut() *= other;
+    fn mul_mut(&mut self, value: f32) {
+        *self.x_mut() *= value;
+        *self.y_mut() *= value;
+        *self.z_mut() *= value;
+    }
+
+    fn div(&self, value: f32) -> Self {
+        Self::new(self.x() / value, self.y() / value, self.z() / value)
     }
 
     fn cross(&self, other: &Self) -> Self {

@@ -92,9 +92,15 @@ pub fn get_num_points(total_area: f32, points_per_m: f32) -> usize {
 /// - `points_per_m`: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
 /// - `vertices`:  (x, y, z) vertices.
 /// - `triangles`:Indices of vertices comprising a triangle.
+/// - `normals`: (x, y, z) normals.
 ///
-/// Returns: An vec of sampled points.
-pub fn sample_points_from_ppm<T, U>(points_per_m: f32, vertices: &[T], triangles: &[U]) -> Vec<T>
+/// Returns: An vec of sampled points and a vec of normals for each point.
+pub fn sample_points_from_ppm<T, U>(
+    points_per_m: f32,
+    vertices: &[T],
+    triangles: &[U],
+    normals: &[T],
+) -> (Vec<T>, Vec<T>)
 where
     T: Vector3,
     U: Vector3U,
@@ -102,23 +108,36 @@ where
     let (areas, total_area) = get_areas(vertices, triangles);
     let num_points = get_num_points(total_area, points_per_m);
     let mut points = vec![T::new(0., 0., 0.); num_points];
-    sample_points(total_area, vertices, triangles, &areas, &mut points);
-    points
+    let mut sampled_normals = points.clone();
+    sample_points(
+        total_area,
+        vertices,
+        triangles,
+        normals,
+        &areas,
+        &mut points,
+        &mut sampled_normals,
+    );
+    (points, sampled_normals)
 }
 
 /// Sample random points on the mesh.triangle_end_index
 ///
 /// - `total_area`: The total surface area of the mesh in square meters.
 /// - `vertices`: (x, y, z) vertices.
+/// - `normals`: (x, y, z) normals.
 /// - `triangles`: Indices of vertices comprising a triangle.
 /// - `areas`: A slice that will be filled with the areas of each triangle. This must be the same length as `triangles`.
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
+/// - `sampled_normals`: A pre-defined slice that will be filled with normals. This must be the same size as `points`.
 pub fn sample_points<T, U>(
     total_area: f32,
     vertices: &[T],
     triangles: &[U],
+    normals: &[T],
     areas: &[f32],
     points: &mut [T],
+    sampled_normals: &mut [T],
 ) where
     T: Vector3,
     U: Vector3U,
@@ -133,6 +152,17 @@ pub fn sample_points<T, U>(
     // The accumulated triangle area. This is used to set the end indices.
     let mut total_accumulated_area = 0.0;
     let range = Uniform::new(0., 1.);
+    let normal_points = if sampled_normals.len() == points.len() {
+        true
+    } else if sampled_normals.len() == points.len() * 4 {
+        false
+    } else {
+        panic!(
+            "Invalid length of normals. Vertices: {} Normals: {}",
+            normals.len(),
+            vertices.len()
+        );
+    };
     for (index, area) in areas.iter().enumerate() {
         // Add area.
         total_accumulated_area += *area;
@@ -148,14 +178,26 @@ pub fn sample_points<T, U>(
                 } else {
                     &triangles[rng.gen_range(start_index_triangle..=index)]
                 };
+                let point_index = start_index_point + i;
                 // Get a random point on that triangle.
                 set_point(
-                    &mut points[start_index_point + i],
+                    &mut points[point_index],
                     rng.sample(range),
                     rng.sample(range),
                     vertices,
                     triangle,
                 );
+                // Set the normal.
+                if normal_points {
+                    set_normal(&mut sampled_normals[point_index], normals, triangle);
+                }
+                // Set the normals for a quad.
+                else {
+                    let normal_index = point_index * 4;
+                    (0..4).for_each(|i| {
+                        set_normal(&mut sampled_normals[normal_index + i], normals, triangle)
+                    });
+                }
             }
             // Start adding points at the offset.
             start_index_point += num_points;
@@ -245,21 +287,26 @@ where
 /// In constrast, points sampled via `sample_points` and `sample_points_ppm` will be at a random point on a sampled triangle.
 ///
 /// - `vertices`: (x, y, z) vertices.
+/// - `normals`: (x, y, z) normals.
 /// - `sampled_triangles`: Presampled triangles.
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size must be the same as `sampled_triangles`.
+/// - `sampled_normals`: A pre-defined slice of normal vectors per point in `points`.
 pub fn set_points_from_sampled_triangles<T, U>(
     vertices: &[T],
+    normals: &[T],
     sampled_triangles: &[U],
     points: &mut [T],
+    sampled_normals: &mut [T],
 ) where
     T: Vector3,
     U: Vector3U,
 {
     points
         .iter_mut()
-        .zip(sampled_triangles)
-        .for_each(|(point, triangle)| {
+        .zip(sampled_triangles.iter().zip(sampled_normals.iter_mut()))
+        .for_each(|(point, (triangle, normal))| {
             set_point(point, 0.5, 0.5, vertices, triangle);
+            set_normal(normal, normals, triangle);
         });
 }
 
@@ -314,13 +361,25 @@ where
         .add(&vertices[triangle.z()].mul(w));
 }
 
+/// Set the average normal of a triangle.
+fn set_normal<T, U>(normal: &mut T, normals: &[T], triangle: &U)
+where
+    T: Vector3,
+    U: Vector3U,
+{
+    *normal = normals[triangle.x()]
+        .add(&normals[triangle.y()])
+        .add(&normals[triangle.z()])
+        .div(3.)
+}
+
 #[cfg(test)]
 mod tests {
     #[cfg(feature = "obj")]
     #[test]
     fn test_sample_points() {
-        let (vertices, triangles, _) = super::from_obj("tests/suzanne.obj");
-        let points = super::sample_points_from_ppm(80., &vertices, &triangles);
+        let (vertices, triangles, normals) = super::from_obj("tests/suzanne.obj");
+        let (points, _) = super::sample_points_from_ppm(80., &vertices, &triangles, &normals);
         assert_eq!(points.len(), 997);
     }
 }

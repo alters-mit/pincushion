@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 
 namespace Pincushion
@@ -15,6 +16,11 @@ namespace Pincushion
         /// The points will be rendered with this material.
         /// </summary>
         public Material material;
+        /// <summary>
+        /// If true, points will always render at the same size, regardless of distance.
+        /// If false, scale the points normally. 
+        /// </summary>
+        public bool keepConstantScaling = false;
         /// <summary>
         /// The parent of the points.
         /// </summary>
@@ -42,7 +48,8 @@ namespace Pincushion
             t.localScale = Vector3.one;
 
             // Sample the points.
-            Vector3[] points = GetComponent<MeshFilter>().mesh.GetSampledPoints(pointsPerM);
+            SampledPoints sampledPoints = GetComponent<MeshFilter>().mesh.GetSampledPoints(
+                pointsPerM, transform.localScale.magnitude);
             
             // Get a quad.
             // Source: https://docs.unity3d.com/Manual/Example-CreatingaBillboardPlane.html
@@ -60,13 +67,8 @@ namespace Pincushion
                 0, 2, 1,
                 2, 3, 1
             };
-            quadMesh.normals = new[]
-            {
-                Vector3.forward,
-                Vector3.forward,
-                Vector3.forward,
-                Vector3.forward,
-            };
+            // This gets set per-mesh.
+            quadMesh.normals = new Vector3[4];
             quadMesh.uv = new [] 
             {
                 new Vector2(0, 0),
@@ -75,17 +77,37 @@ namespace Pincushion
                 new Vector2(1, 1)
             };
 
-            // Create game objects.
-            for (int i = 0; i < points.Length; i++)
+            if (occludeBackFacing)
             {
-                GameObject quad = new GameObject();
-                quad.AddComponent<MeshFilter>().sharedMesh = quadMesh;
-                quad.AddComponent<MeshRenderer>().sharedMaterial = material;
+                material.EnableKeyword("_OCCLUDE_BACKFACING");   
+            }
 
+            if (keepConstantScaling)
+            {
+                material.SetInt("_KeepConstantScaling", 1);
+            }
+
+            // Create game objects.
+            for (int i = 0; i < sampledPoints.points.Length; i++)
+            {
+                // Set the mesh.
+                GameObject quad = new GameObject();
+                MeshFilter meshFilter = quad.AddComponent<MeshFilter>();
+                meshFilter.mesh = quadMesh;
+
+                // For some reason, we have to allocate the array rather than copying directly into mesh.normals.
+                Vector3[] normals = new Vector3[4];
+                // Copy the normals.
+                Array.Copy(sampledPoints.normals, i * 4, normals, 0, 4);
+                // Set the normals.
+                meshFilter.mesh.normals = normals;
+                
+                quad.AddComponent<MeshRenderer>().sharedMaterial = material;
+                
                 // Set the transform of the quad.
                 Transform q = quad.transform;
                 q.parent = t;
-                q.localPosition = points[i];
+                q.localPosition = sampledPoints.points[i];
                 q.localRotation = Quaternion.identity;
                 q.localScale = Vector3.one;
             }

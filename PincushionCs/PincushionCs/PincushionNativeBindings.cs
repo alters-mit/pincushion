@@ -123,19 +123,23 @@ public unsafe partial class Ffi {
     /// - <c>total_area</c>: The total surface area of the mesh in square meters.
     /// - <c>vertices</c>: (x, y, z) vertices.
     /// - <c>triangles</c>: Indices of vertices comprising a triangle.
+    /// - <c>normals</c>: (x, y, z) normals.
     /// - <c>areas</c>: A slice that will be filled with the areas of each triangle. This must be the same length as <c>triangles</c>.
     /// - <c>points</c>: A pre-defined slice of vertices that will be filled with points. The size can differ from <c>triangles</c> and <c>areas</c>.
     /// This will be filled with the sampled points.
     /// This must be defined on the other side of the FFI boundary.
     /// To get the expected size of <c>points</c>, call <c>get_areas(vertices, triangles, areas)</c> followed by <c>get_num_points(total_area, points_per_m)</c>
+    /// - <c>sampled_normals</c>: A pre-defined slice that will be filled with normals. The size must match that of <c>points</c>.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void sample_points (
         float total_area,
         Vec_Vec3_t /*const*/ * vertices,
         Vec_Vec3U_t /*const*/ * triangles,
+        Vec_Vec3_t /*const*/ * normals,
         Vec_float_t /*const*/ * areas,
-        Vec_Vec3_t * points);
+        Vec_Vec3_t * points,
+        Vec_Vec3_t * sampled_normals);
 }
 
 public unsafe partial class Ffi {
@@ -176,14 +180,18 @@ public unsafe partial class Ffi {
     /// In contrast, points sampled via <c>sample_points</c> and <c>sample_points_ppm</c> will be at a random point on a sampled triangle.
     ///
     /// - <c>vertices</c>: (x, y, z) vertices.
+    /// - <c>normals</c>: (x, y, z) normals.
     /// - <c>sampled_triangles</c>: Presampled triangles.
     /// - <c>points</c>: A pre-defined slice of vertices that will be filled with points. The size must be the same as <c>sampled_triangles</c>.
+    /// - <c>sampled_normals</c>: A pre-defined slice of normal vectors per point in <c>points</c>.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void set_points_from_sampled_triangles (
         Vec_Vec3_t /*const*/ * vertices,
+        Vec_Vec3_t /*const*/ * normals,
         Vec_Vec3U_t * sampled_triangles,
-        Vec_Vec3_t * points);
+        Vec_Vec3_t * points,
+        Vec_Vec3_t * sampled_normals);
 }
 
 

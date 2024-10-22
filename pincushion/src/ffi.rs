@@ -118,20 +118,32 @@ pub fn scale_areas(areas: &mut safer_ffi::Vec<f32>, scale: f32) -> f32 {
 /// - `total_area`: The total surface area of the mesh in square meters.
 /// - `vertices`: (x, y, z) vertices.
 /// - `triangles`: Indices of vertices comprising a triangle.
+/// - `normals`: (x, y, z) normals.
 /// - `areas`: A slice that will be filled with the areas of each triangle. This must be the same length as `triangles`.
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
 ///   This will be filled with the sampled points.
 ///   This must be defined on the other side of the FFI boundary.
 ///   To get the expected size of `points`, call `get_areas(vertices, triangles, areas)` followed by `get_num_points(total_area, points_per_m)`
+/// - `sampled_normals`: A pre-defined slice that will be filled with normals. The size must match that of `points`.
 #[ffi_export]
 pub fn sample_points(
     total_area: f32,
     vertices: &safer_ffi::Vec<Vec3>,
     triangles: &safer_ffi::Vec<Vec3U>,
+    normals: &safer_ffi::Vec<Vec3>,
     areas: &safer_ffi::Vec<f32>,
     points: &mut safer_ffi::Vec<Vec3>,
+    sampled_normals: &mut safer_ffi::Vec<Vec3>,
 ) {
-    sample_points_native(total_area, vertices, triangles, areas, points);
+    sample_points_native(
+        total_area,
+        vertices,
+        triangles,
+        normals,
+        areas,
+        points,
+        sampled_normals,
+    );
 }
 
 /// Set the triangles at which points can be sampled.
@@ -156,13 +168,23 @@ pub fn sample_triangles(
 /// In contrast, points sampled via `sample_points` and `sample_points_ppm` will be at a random point on a sampled triangle.
 ///
 /// - `vertices`: (x, y, z) vertices.
+/// - `normals`: (x, y, z) normals.
 /// - `sampled_triangles`: Presampled triangles.
 /// - `points`: A pre-defined slice of vertices that will be filled with points. The size must be the same as `sampled_triangles`.
+/// - `sampled_normals`: A pre-defined slice of normal vectors per point in `points`.
 #[ffi_export]
 pub fn set_points_from_sampled_triangles(
     vertices: &safer_ffi::Vec<Vec3>,
+    normals: &safer_ffi::Vec<Vec3>,
     sampled_triangles: &mut safer_ffi::Vec<Vec3U>,
     points: &mut safer_ffi::Vec<Vec3>,
+    sampled_normals: &mut safer_ffi::Vec<Vec3>,
 ) {
-    set_points_from_sampled_triangles_native(vertices, sampled_triangles, points);
+    set_points_from_sampled_triangles_native(
+        vertices,
+        normals,
+        sampled_triangles,
+        points,
+        sampled_normals,
+    );
 }
