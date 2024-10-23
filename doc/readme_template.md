@@ -23,7 +23,7 @@ This repo has three components:
 
 To sample points on a MeshRenderer, add a `PincushionMeshRenderer` component:
 
-![A Pincushion Mesh Renderer in the Inspector window](mesh_renderer.png)
+![A Pincushion Mesh Renderer in the Inspector window](doc/mesh_renderer.png)
 
 | Parameter | Description |
 | --- | --- |
@@ -35,7 +35,7 @@ To sample points on a MeshRenderer, add a `PincushionMeshRenderer` component:
 
 To sample points on a SkinnedMeshRenderer, add a `PincushionSkinnedMeshRenderer` component:
 
-![A Pincushion Skinned Mesh Renderer in the Inspector window](skinned_mesh_renderer.png)
+![A Pincushion Skinned Mesh Renderer in the Inspector window](doc/skinned_mesh_renderer.png)
 
 | Parameter | Description |
 | --- | --- |

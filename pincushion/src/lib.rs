@@ -10,7 +10,7 @@
 //!
 //! Documentation for Unity/C# can be found [here](https://github.com/alters-mit/pincushion).
 //!
-#![doc = include_str!("../../readme_rs.md")]
+#![doc = include_str!("../../doc/readme_rs.md")]
 
 use rand::{distributions::Uniform, thread_rng, Rng};
 
