@@ -7,7 +7,7 @@ description = "Uniformly sample points on a mesh. Includes FFI-safe functions fo
 
 [dependencies]
 rand = "0.8.5"
-safer-ffi = { version = "0.1.13", optional = true }
+safer-ffi = "0.1.13"
 tobj = { version = "4.0.0", optional = true }
 
 [dev-dependencies]
@@ -17,8 +17,6 @@ macroquad = "0.4.13"
 crate-type = ["lib", "cdylib"]
 
 [features]
-default = ["ffi"]
-ffi = ["dep:safer-ffi"]
 obj = ["dep:tobj"]
 cs = ["safer-ffi/headers"]
 
