@@ -11,7 +11,7 @@ namespace Pincushion
         /// <summary>
         /// The number of points per square meter.
         /// </summary>
-        public float pointsPerM = 0.015f;
+        public float pointsPerM = 80f;
         /// <summary>
         /// The radius of each point in meters.
         /// </summary>

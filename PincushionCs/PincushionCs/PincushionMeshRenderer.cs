@@ -9,7 +9,7 @@ namespace Pincushion
     /// </summary>
     [RequireComponent(typeof(MeshFilter))]
     [RequireComponent(typeof(Renderer))]
-    public class PincushionStaticRenderer : PincushionRenderer
+    public class PincushionMeshRenderer : PincushionRenderer
     {
         /// <summary>
         /// The points will be rendered with this material.

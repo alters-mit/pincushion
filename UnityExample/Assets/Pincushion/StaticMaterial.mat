@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: StaticMaterial
   m_Shader: {fileID: 4800000, guid: 1cefb780e2c4bb44d83dc1855e289369, type: 3}
-  m_ShaderKeywords: _ALPHABLEND_ON _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+  m_ShaderKeywords: _ALPHABLEND_ON _OCCLUDE_BACKFACING _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
   m_LightmapFlags: 0
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -81,7 +81,7 @@ Material:
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _KeepConstantScaling: 0
+    - _KeepConstantScaling: 1
     - _LightingEnabled: 0
     - _Metallic: 0.758
     - _Mode: 4

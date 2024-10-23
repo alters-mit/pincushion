@@ -13,7 +13,7 @@ namespace Pincushion
     /// This is relatively inefficient, but I haven't found an alternative that is compatible with the built-in render pipeline.
     /// </summary>
     [RequireComponent(typeof(SkinnedMeshRenderer))]
-    public class PincushionDynamicRenderer : PincushionRenderer
+    public class PincushionSkinnedMeshRenderer : PincushionRenderer
     {
         /// <summary>
         /// The color of each point.

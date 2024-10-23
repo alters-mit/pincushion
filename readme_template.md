@@ -21,24 +21,27 @@ This repo has three components:
 
 ### 1. Sample points
 
-To sample points on a MeshRenderer, add a `PincushionStaticRenderer` component:
+To sample points on a MeshRenderer, add a `PincushionMeshRenderer` component:
 
-![A Pincushion Static Renderer in the Inspector window](static_renderer.png)
+![A Pincushion Mesh Renderer in the Inspector window](mesh_renderer.png)
 
 | Parameter | Description |
 | --- | --- |
 | Points Per M | The number of sampled points per square meter on the mesh surface. |
 | Point Radius | The radius of each point in meters. |
+| Occlude Back Facing | If true, occlude back-facing points. |
 | Material | The material used to render each point. |
+| Keep Constant Scaling | If false, every point will render at the same size. |
 
-To sample points on a SkinnedMeshRenderer, add a `PincushionDynamicRenderer` component:
+To sample points on a SkinnedMeshRenderer, add a `PincushionSkinnedMeshRenderer` component:
 
-![A Pincushion Dynamic Renderer in the Inspector window](dynamic_renderer.png)
+![A Pincushion Skinned Mesh Renderer in the Inspector window](skinned_mesh_renderer.png)
 
 | Parameter | Description |
 | --- | --- |
 | Points Per M | The number of sampled points per square meter on the mesh surface. |
 | Point Radius | The radius of each point in meters. |
+| Occlude Back Facing | If true, occlude back-facing points. |
 | Color | The color of each point. |
 
 ### 2. Show/hide the original/sampled mesh
