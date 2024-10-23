@@ -4,6 +4,7 @@ use safer_ffi::derive_ReprC;
 use crate::{
     get_num_points,
     vecs::{Triangle, Vertex},
+    Area,
 };
 
 /// A mesh has vertices, triangles, and normals.
@@ -29,25 +30,28 @@ impl Mesh {
 
     /// - `scale`: The uniform scale of the mesh.
     ///
-    /// Returns: the area of each triangle and the total surface area of the mesh in square meters.
-    pub fn get_area(&self, scale: f32) -> (Vec<f32>, f32) {
-        let mut areas = vec![0.0; self.triangles.len()];
-        let total_area = self.set_area(scale, &mut areas);
-        (areas, total_area)
+    /// Returns: The `Area` of the mesh.
+    pub fn get_area(&self, scale: f32) -> Area {
+        let mut area = Area {
+            total_area: 0.,
+            areas: vec![0.0; self.triangles.len()].into(),
+        };
+        self.set_area(scale, &mut area);
+        area
     }
 
     /// Set a pre-allocated slice of areas on the mesh.
     ///
     /// - `scale`: The uniform scale of the mesh.
-    /// - `areas`: The surface area of each triangle in square meters. This must be the same length as `triangles`.
+    /// - `area`: The area of the mesh.
     ///
     /// Returns: The total surface area of the mesh in square meters.
-    pub fn set_area(&self, scale: f32, areas: &mut [f32]) -> f32 {
-        let mut total_area = 0.;
+    pub fn set_area(&self, scale: f32, area: &mut Area) {
+        area.total_area = 0.;
         self.triangles
             .iter()
-            .zip(areas.iter_mut())
-            .for_each(|(triangle, area)| {
+            .zip(area.areas.iter_mut())
+            .for_each(|(triangle, ar)| {
                 // Get this triangle's area.
                 let a = Vertex::get_triangle_area(
                     &self.vertices[triangle.a],
@@ -55,10 +59,9 @@ impl Mesh {
                     &self.vertices[triangle.c],
                 ) * scale;
                 // Add to the total.
-                total_area += a;
-                *area = a;
+                area.total_area += a;
+                *ar = a;
             });
-        total_area
     }
 
     /// Sample points on a mesh, given a density of points.
@@ -68,34 +71,27 @@ impl Mesh {
     ///
     /// Returns: An vec of sampled points and a vec of normals for each point.
     pub fn sample_points(&self, points_per_m: f32, scale: f32) -> (Vec<Vertex>, Vec<Vertex>) {
-        let (areas, total_area) = self.get_area(scale);
-        let num_points = get_num_points(total_area, points_per_m);
+        let area = self.get_area(scale);
+        let num_points = get_num_points(area.total_area, points_per_m);
         let mut sampled_points = vec![Vertex::default(); num_points];
         let mut sampled_normals = sampled_points.clone();
-        self.set_sampled_points(
-            total_area,
-            &areas,
-            &mut sampled_points,
-            &mut sampled_normals,
-        );
+        self.set_sampled_points(&area, &mut sampled_points, &mut sampled_normals);
         (sampled_points, sampled_normals)
     }
 
     /// Fill pre-allocated slices with sampled points and normals.
     ///
-    /// - `total_area`: The total surface area of the mesh in square meters.
-    /// - `areas`: A slice that will be filled with the areas of each triangle. This must be the same length as `triangles`.
+    /// - `area`: The area of the mesh.
     /// - `sampled_points`: (x, y, z) sampled points. The size can differ from `triangles` and `areas`.
     /// - `sampled_normals`: Normal directional vectors, one per sampled point. This must be the same size as `points`.
     pub fn set_sampled_points(
         &self,
-        total_area: f32,
-        areas: &[f32],
+        area: &Area,
         sampled_points: &mut [Vertex],
         sampled_normals: &mut [Vertex],
     ) {
         // The area per point is used to uniformly sample the points.
-        let area_per_point = total_area / sampled_points.len() as f32;
+        let area_per_point = area.total_area / sampled_points.len() as f32;
         let mut rng = thread_rng();
         // When sampling points, start at this index.
         let mut start_index_point = 0;
@@ -104,7 +100,7 @@ impl Mesh {
         // The accumulated triangle area. This is used to set the end indices.
         let mut total_accumulated_area = 0.0;
         let range = Uniform::new(0., 1.);
-        for (index, area) in areas.iter().enumerate() {
+        for (index, area) in area.areas.iter().enumerate() {
             // Add area.
             total_accumulated_area += *area;
             // We have enough area.
@@ -143,36 +139,24 @@ impl Mesh {
     /// Get the triangles at which points can be sampled.
     /// This is useful for deformable meshes in situations where the positions will change but not the triangles we want to derive positions from.
     ///
-    /// - `total_area`: The total surface area of the mesh in square meters.
     /// - `points_per_m`: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
-    /// - `areas`: A slice that will be filled with the areas of each triangle. This must be the same length as `triangles`.
+    /// - `area`: The `Area` of the mesh.
     ///
     /// Returns: The sampled triangles.
-    pub fn sample_triangles(
-        &self,
-        total_area: f32,
-        points_per_m: f32,
-        areas: &[f32],
-    ) -> Vec<Triangle> {
-        let mut samples = vec![Triangle::default(); get_num_points(total_area, points_per_m)];
-        self.set_sampled_triangles(total_area, areas, &mut samples);
+    pub fn sample_triangles(&self, points_per_m: f32, area: &Area) -> Vec<Triangle> {
+        let mut samples = vec![Triangle::default(); get_num_points(area.total_area, points_per_m)];
+        self.set_sampled_triangles(area, &mut samples);
         samples
     }
 
     /// Set a pre-allocated slice of triangles at which points can be sampled.
     /// This is useful for deformable meshes in situations where the positions will change but not the triangles we want to derive positions from.
     ///
-    /// - `total_area`: The total surface area of the mesh in square meters.
-    /// - `areas`: The area of each triangle in square meters.
+    /// - `area`: The `Area` of the mesh.
     /// - `sampled_triangles`: A pre-defined slice of triangles that will be set in this function. The size can differ from `triangles` and `areas` and must match the number of points that will be sampled.
-    pub fn set_sampled_triangles(
-        &self,
-        total_area: f32,
-        areas: &[f32],
-        sampled_triangles: &mut [Triangle],
-    ) {
+    pub fn set_sampled_triangles(&self, area: &Area, sampled_triangles: &mut [Triangle]) {
         // The area per point is used to uniformly sample the points.
-        let area_per_point = total_area / sampled_triangles.len() as f32;
+        let area_per_point = area.total_area / sampled_triangles.len() as f32;
         let mut rng = thread_rng();
         // When sampling points, start at this index.
         let mut start_index_point = 0;
@@ -180,7 +164,7 @@ impl Mesh {
         let mut start_index_triangle = 0;
         // The accumulated triangle area. This is used to set the end indices.
         let mut total_accumulated_area = 0.0;
-        for (index, area) in areas.iter().enumerate() {
+        for (index, area) in area.areas.iter().enumerate() {
             // Add area.
             total_accumulated_area += *area;
             // We have enough area.

@@ -12,8 +12,10 @@
 //!
 #![doc = include_str!("../../doc/readme_rs.md")]
 
-pub use mesh::Mesh;
 use safer_ffi::ffi_export;
+
+pub use area::Area;
+pub use mesh::Mesh;
 pub use vecs::*;
 
 #[cfg(feature = "cs")]
@@ -21,6 +23,7 @@ pub mod cs;
 
 pub mod ffi;
 
+pub mod area;
 pub mod mesh;
 pub mod vecs;
 
