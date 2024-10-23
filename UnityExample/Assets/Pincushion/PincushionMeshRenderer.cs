@@ -52,6 +52,7 @@ namespace Pincushion
             points.AddComponent<MeshFilter>().mesh = mesh;
             
             // Set the material.
+            material.SetFloat("_PointSize", pointRadius);
             if (occludeBackFacing)
             {
                 material.EnableKeyword("_OCCLUDE_BACKFACING");   

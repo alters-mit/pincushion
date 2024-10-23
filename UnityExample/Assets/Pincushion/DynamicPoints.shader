@@ -104,11 +104,10 @@
 				float3 objectScale = float3(length(scaleX), length(scaleY), length(scaleZ));
 				float avgScale = (objectScale.x + objectScale.y + objectScale.z) / 3.0;
 				float relativeScaler = 0.1 * distanceToCam; // 0.1 is an arbitrary constant
-				relativeScaler /= avgScale; 
-				float particleSize = _PointSize * relativeScaler;
+				relativeScaler /= avgScale;
 
-				right *= particleSize;
-				up *= particleSize;
+				right *= relativeScaler;
+				up *= relativeScaler;
 
 				#endif
 
@@ -156,7 +155,7 @@
 
 			half4 frag(g2f i) : SV_Target
 			{
-				return tex2D(_MainTex, float2(i.uv)) * i.color;
+				return tex2D(_MainTex, float2(i.uv));
 			}
 		
 		ENDCG
