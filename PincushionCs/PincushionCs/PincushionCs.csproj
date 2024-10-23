@@ -53,10 +53,10 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="PincushionDynamicRenderer.cs" />
+        <Compile Include="PincushionSkinnedMeshRenderer.cs" />
         <Compile Include="MeshExtensions.cs" />
         <Compile Include="PincushionNativeBindings.cs" />
-        <Compile Include="PincushionStaticRenderer.cs" />
+        <Compile Include="PincushionMeshRenderer.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="PincushionRenderer.cs" />
         <Compile Include="SampledPoints.cs" />

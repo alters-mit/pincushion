@@ -27,7 +27,6 @@ namespace Pincushion
             UIntPtr areasLength = (UIntPtr)numTriangles;
             unsafe
             {
-                // All `fixed` statements are boilerplate C#-to-Rust declarations.
                 fixed (Vector3* verticesPointer = mesh.vertices, normalsPointer = mesh.normals)
                 {
                     Vec_Vec3_t vertices = new Vec_Vec3_t
