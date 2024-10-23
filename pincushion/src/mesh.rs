@@ -249,19 +249,7 @@ impl Mesh {
             .collect::<Vec<Vertex>>();
         Self::new(vertices, triangles, normals)
     }
-
-    /// Fill a pre-allocated `Mesh` with quads derived from sampled points.
-    ///
-    /// - `size`: The size of one side of each quadf in meters.
-    /// - `sampled_points`: The (x, y, z) points, which have already been sampled.
-    pub(crate) fn set_sampled_quads(&mut self, size: f32, sampled_points: &[Vertex]) {
-        let half_size = size * 0.5;
-        sampled_points
-            .iter()
-            .enumerate()
-            .for_each(|(index, point)| self.set_quad(index, half_size, point));
-    }
-
+    
     /// Get a point on a triangle.
     /// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
     fn set_point(&self, point: &mut Vertex, u: f32, v: f32, triangle: &Triangle) {
@@ -282,44 +270,6 @@ impl Mesh {
             .add(&self.normals[triangle.b])
             .add(&self.normals[triangle.c])
             .div(3.)
-    }
-
-    /// Convert a point to a quad. The quad will be stored within this mesh.
-    fn set_quad(&mut self, index: usize, half_size: f32, point: &Vertex) {
-        // Set each vertex by offsetting from `half_size`.
-        let vertex_index = index * 4;
-        self.vertices[vertex_index] = Vertex {
-            x: -half_size + point.x,
-            y: -half_size + point.y,
-            z: point.z,
-        };
-        self.vertices[vertex_index + 1] = Vertex {
-            x: half_size + point.x,
-            y: -half_size + point.y,
-            z: point.z,
-        };
-        self.vertices[vertex_index + 2] = Vertex {
-            x: -half_size + point.x,
-            y: half_size + point.y,
-            z: point.z,
-        };
-        self.vertices[vertex_index + 3] = Vertex {
-            x: half_size + point.x,
-            y: half_size + point.y,
-            z: point.z,
-        };
-        // Set each triangle on the quad.
-        let triangle_index = index * 2;
-        self.triangles[triangle_index] = Triangle {
-            a: vertex_index,
-            b: vertex_index + 2,
-            c: vertex_index + 1,
-        };
-        self.triangles[triangle_index + 1] = Triangle {
-            a: vertex_index + 2,
-            b: vertex_index + 3,
-            c: vertex_index + 1,
-        };
     }
 }
 
