@@ -53,6 +53,7 @@
   </PropertyGroup>
   <ItemGroup>
      <Compile Include="Assets\Pincushion\PincushionRenderer.cs" />
+     <Compile Include="Assets\Test\PincushionMeshRendererTest.cs" />
      <Compile Include="Assets\Pincushion\PincushionNativeBindings.cs" />
      <Compile Include="Assets\Pincushion\SampledPoints.cs" />
      <Compile Include="Assets\Pincushion\PincushionSkinnedMeshRenderer.cs" />
