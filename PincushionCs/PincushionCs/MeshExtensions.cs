@@ -16,7 +16,7 @@ namespace Pincushion
         /// <param name="mesh">(this)</param>
         /// <param name="pointsPerM">The number of points per square meter.</param>
         /// <param name="scale">The uniform scale of the mesh.</param>
-        public static SampledPoints GetSampledPoints(this Mesh mesh, float pointsPerM, float scale) 
+        public static Mesh GetSampledMesh(this Mesh mesh, float pointsPerM, float scale) 
         {
             // Get the casted indices.
             UIntPtr[] indices = Array.ConvertAll(mesh.triangles, intToUIntPtr);
@@ -75,12 +75,12 @@ namespace Pincushion
                             // Get the number of points.
                             int numPoints = (int)Ffi.get_num_points(areaT.total_area, pointsPerM);
                             // Allocate the arrays.
-                            Vector3[] points = new Vector3[numPoints];
-                            Vector3[] sampledNormals = new Vector3[numPoints * 4];
+                            Vector3[] sampledPoints = new Vector3[numPoints];
+                            Vector3[] sampledNormals = new Vector3[numPoints];
                             UIntPtr pointsLength = (UIntPtr)numPoints;
                             UIntPtr sampledNormalsLength = (UIntPtr)sampledNormals.Length;
                             // Sample the points.
-                            fixed (Vector3* pointsPtr = points, sampledNormalsPtr = sampledNormals) 
+                            fixed (Vector3* pointsPtr = sampledPoints, sampledNormalsPtr = sampledNormals) 
                             {
                                 Vec_Vertex_t pointsV = new Vec_Vertex_t
                                 {
@@ -95,11 +95,13 @@ namespace Pincushion
                                     cap = sampledNormalsLength
                                 };
                                 Ffi.sample_points(&meshT, &areaT,  &pointsV, &sampledNormalsV);
-                                return new SampledPoints
-                                {
-                                    points = points,
-                                    normals = sampledNormals,
-                                };
+
+                                Mesh sampledMesh = new Mesh();
+                                sampledMesh.vertices = sampledPoints;
+                                sampledMesh.normals = sampledNormals;
+                                sampledMesh.triangles = new int[sampledMesh.vertices.Length * 6];
+                                sampledMesh.SetPointTopology();
+                                return sampledMesh;
                             }
                         }
                     }

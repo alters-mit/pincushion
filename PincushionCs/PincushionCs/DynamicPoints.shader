@@ -1,5 +1,6 @@
 ﻿Shader "Pincushion/DynamicPoints" {
 	Properties {
+		_MainTex ("Albedo (RGB)", 2D) = "white" {}
 		_Color ("Color", Color) = (0.9, 0.9, 0.9, 1)
 		_PointSize("Point Size", Float) = 0.02
 	}
@@ -16,10 +17,12 @@
 			#pragma geometry geom
             #include "UnityCG.cginc"
 			#pragma multi_compile _ _OCCLUDE_BACKFACING
+			#pragma multi_compile _ _CONSTANT_SCALING
 
 			half4 _Color;
 			half _PointSize;
-			fixed4 noColor = fixed4(0, 0, 0, 0);
+			sampler2D _MainTex;
+			float4 _MainTex_ST;
 
 			struct appdata
 			{
@@ -39,6 +42,9 @@
 			{
 			    float4 position : SV_POSITION;
 				float4 color: COLOR;
+				float2 uv : TEXCOORD0;
+				float distanceToCam : TEXCOORD1;
+				float2 screenPos : TEXCOORD2;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
@@ -63,7 +69,7 @@
 				}
 				else
 				{
-					o.color = noColor;
+					o.color = float4(0, 0, 0, 0);
 				}
 
 				#else
@@ -75,68 +81,82 @@
                 return o;
             }
 
-			// Original Source: https://github.com/keijiro/Pcx/blob/master/Packages/jp.keijiro.pcx/Runtime/Shaders/Disk.cginc
-			[maxvertexcount(36)]
-			void geom(point v2g input[1], inout TriangleStream<g2f> outStream)
+			[maxvertexcount(4)]
+			void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 			{
-				float4 origin = input[0].position;
-				float2 extent = abs(UNITY_MATRIX_P._11_22 * _PointSize);
-				// Copy the basic information.
-			    g2f o;
+				float3 camPos = _WorldSpaceCameraPos;
+				float distanceToCam = distance(mul(unity_ObjectToWorld, p[0].position), camPos);
 
+				// ----------------------------
+				float4 screenPosFull = ComputeScreenPos(UnityObjectToClipPos(p[0].position));
+				float2 screenPos = screenPosFull.xy / screenPosFull.w;
+				
+				float3 right = normalize(UNITY_MATRIX_IT_MV[0].xyz) * _PointSize;
+				float3 up = normalize(UNITY_MATRIX_IT_MV[1].xyz) * _PointSize;
+				// Adjust point size based on parameters.
+
+				#if _CONSTANT_SCALING
+				
+				// Counter eventual rescaling of the renderer by computing average scale.
+				float3 scaleX = unity_ObjectToWorld[0].xyz;
+				float3 scaleY = unity_ObjectToWorld[1].xyz;
+				float3 scaleZ = unity_ObjectToWorld[2].xyz;
+				float3 objectScale = float3(length(scaleX), length(scaleY), length(scaleZ));
+				float avgScale = (objectScale.x + objectScale.y + objectScale.z) / 3.0;
+				float relativeScaler = 0.1 * distanceToCam; // 0.1 is an arbitrary constant
+				relativeScaler /= avgScale; 
+				float particleSize = _PointSize * relativeScaler;
+
+				right *= particleSize;
+				up *= particleSize;
+
+				#endif
+
+				// Define the four vertices for the billboard in world space
+				float4 v[4];
+				v[0] = float4(p[0].position + right - up, 1.0f);
+				v[1] = float4(p[0].position + right + up, 1.0f);
+				v[2] = float4(p[0].position - right - up, 1.0f);
+				v[3] = float4(p[0].position - right + up, 1.0f);
+
+				// Define g2f for each vertex
+				g2f pIn;
 				// set all values in the g2f o to 0.0
-				UNITY_INITIALIZE_OUTPUT(g2f, o);
+				UNITY_INITIALIZE_OUTPUT(g2f, pIn);
 				// setup the instanced id to be accessed
-				UNITY_SETUP_INSTANCE_ID(input[0]);
+				UNITY_SETUP_INSTANCE_ID(p[0]);
 				// copy instance id in the v2f i[0] to the g2f o
-				UNITY_TRANSFER_INSTANCE_ID(input[0], o);
-				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+				UNITY_TRANSFER_INSTANCE_ID(p[0], pIn);
+				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(pIn);
 
-				o.position = input[0].position;
-				o.color = input[0].color;
+				pIn.position = UnityObjectToClipPos(v[0]);
+				pIn.uv = float2(1.0f, 0.0f);
+				pIn.distanceToCam = distanceToCam;
+				pIn.screenPos = screenPos;
+				triStream.Append(pIn);
 
-			    // Determine the number of slices based on the radius of the
-			    // point on the screen.
-			    float radius = extent.y / origin.w * _ScreenParams.y;
-			    uint slices = min((radius + 1) / 5, 4) + 2;
+				pIn.position = UnityObjectToClipPos(v[1]);
+				pIn.uv = float2(1.0f, 1.0f);
+				pIn.distanceToCam = distanceToCam;
+				pIn.screenPos = screenPos;
+				triStream.Append(pIn);
 
-			    // Slightly enlarge quad points to compensate area reduction.
-			    // Hopefully this line would be complied without branch.
-			    if (slices == 2)
-			    {
-				    extent *= 1.2;
-			    }
+				pIn.position = UnityObjectToClipPos(v[2]);
+				pIn.uv = float2(0.0f, 0.0f);
+				pIn.distanceToCam = distanceToCam;
+				pIn.screenPos = screenPos;
+				triStream.Append(pIn);
 
-			    // Top vertex
-			    o.position.y = origin.y + extent.y;
-			    o.position.xzw = origin.xzw;
-			    outStream.Append(o);
-
-				UNITY_LOOP for (uint i = 1; i < slices; i++)
-			    {
-			        float sn, cs;
-			        sincos(UNITY_PI / slices * i, sn, cs);
-
-			        // Right side vertex
-			        o.position.xy = origin.xy + extent * float2(sn, cs);
-			        outStream.Append(o);
-
-			        // Left side vertex
-			        o.position.x = origin.x - extent.x * sn;
-			        outStream.Append(o);
-			    }
-
-			    // Bottom vertex
-			    o.position.x = origin.x;
-			    o.position.y = origin.y - extent.y;
-			    outStream.Append(o);
-
-			    outStream.RestartStrip();
+				pIn.position = UnityObjectToClipPos(v[3]);
+				pIn.uv = float2(0.0f, 1.0f);
+				pIn.distanceToCam = distanceToCam;
+				pIn.screenPos = screenPos;
+				triStream.Append(pIn);
 			}
 
 			half4 frag(g2f i) : SV_Target
 			{
-				return i.color;
+				return tex2D(_MainTex, float2(i.uv)) * i.color;
 			}
 		
 		ENDCG
