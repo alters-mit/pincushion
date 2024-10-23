@@ -15,7 +15,7 @@ pub fn main() {
         .as_micros()
         / num_iterations as u128;
     let text = format!("Sampling: {}μs", dt);
-    write("../benchmark.txt", &text).unwrap();
+    write("../doc/benchmark.txt", &text).unwrap();
     println!("{}", text);
 }
 
