@@ -93,7 +93,7 @@
 				#if _CONSTANT_SCALING
 				
 				// 0.1 is an arbitrary constant.
-				float distanceToCam = distance(mul(unity_ObjectToWorld, p[0].position), _WorldSpaceCameraPos) * 0.1;
+				float distanceToCam = distance(mul(unity_ObjectToWorld, p[0].position), _WorldSpaceCameraPos);
 
 				#else
 

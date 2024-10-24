@@ -12,9 +12,13 @@ namespace Pincushion
     public class PincushionMeshRenderer : PincushionRenderer
     {
         /// <summary>
-        /// The points will be rendered with this material.
+        /// The color of each point.
         /// </summary>
-        public Material material;
+        public Color color = Color.white;
+        /// <summary>
+        /// Use this texture to render each point.
+        /// </summary>
+        public Texture2D texture;
         /// <summary>
         /// If true, points will always render at the same size, regardless of distance.
         /// If false, scale the points normally. 
@@ -59,8 +63,11 @@ namespace Pincushion
             Mesh mesh = GetComponent<MeshFilter>().mesh.GetSampledMesh(
                 pointsPerM, transform.localScale.magnitude);
             points.AddComponent<MeshFilter>().mesh = mesh;
-            
-            // Set the material.
+
+            // Create the material.
+            Material material = new Material(Shader.Find("Pincushion/Pincushion"));
+            material.SetColor("_Color", color);
+            material.SetTexture("_MainTex", texture);
             material.SetFloat("_PointSize", pointRadius);
             if (occludeBackFacing)
             {
