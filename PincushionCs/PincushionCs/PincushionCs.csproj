@@ -65,9 +65,7 @@
       <None Include="packages.config" />
     </ItemGroup>
     <ItemGroup>
-      <Content Include="DynamicPoints.shader" />
       <Content Include="Pincushion.shader" />
-      <Content Include="StaticPoints.shader" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

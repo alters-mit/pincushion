@@ -39,6 +39,14 @@ namespace Pincushion
         /// </summary>
         public bool scalePointsPerMByCameraDistance;
         /// <summary>
+        /// Toggles whether to show the original mesh on awake.
+        /// </summary>
+        public bool showOriginalMesh;
+        /// <summary>
+        /// Toggles whether to show the sampled mesh on awake.
+        /// </summary>
+        public bool showSampledMesh = true;
+        /// <summary>
         /// The object that renders the points.
         /// </summary>
         protected GameObject points;
@@ -48,6 +56,8 @@ namespace Pincushion
         {
             Initialize();
             Set();
+            SetOriginalMeshVisibility(showOriginalMesh);
+            SetSampledMeshVisibility(showSampledMesh);
         }
 
 
