@@ -47,8 +47,6 @@
 			    float4 position : SV_POSITION;
 				float4 color: COLOR;
 				float2 uv : TEXCOORD0;
-				float distanceToCam : TEXCOORD1;
-				float2 screenPos : TEXCOORD2;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
@@ -88,12 +86,6 @@
 			[maxvertexcount(4)]
 			void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 			{
-				float distanceToCam = distance(mul(unity_ObjectToWorld, p[0].position), _WorldSpaceCameraPos);
-
-				// ----------------------------
-				float4 screenPosFull = ComputeScreenPos(UnityObjectToClipPos(p[0].position));
-				float2 screenPos = screenPosFull.xy / screenPosFull.w;
-				
 				float3 right = normalize(UNITY_MATRIX_IT_MV[0].xyz) * _PointSize;
 				float3 up = normalize(UNITY_MATRIX_IT_MV[1].xyz) * _PointSize;
 				// Adjust point size based on parameters.
@@ -101,6 +93,7 @@
 				#if _CONSTANT_SCALING
 				
 				// Counter eventual rescaling of the renderer by computing average scale.
+				float distanceToCam = distance(mul(unity_ObjectToWorld, p[0].position), _WorldSpaceCameraPos);
 				float3 scaleX = unity_ObjectToWorld[0].xyz;
 				float3 scaleY = unity_ObjectToWorld[1].xyz;
 				float3 scaleZ = unity_ObjectToWorld[2].xyz;
@@ -130,31 +123,25 @@
 				// copy instance id in the v2f i[0] to the g2f o
 				UNITY_TRANSFER_INSTANCE_ID(p[0], pIn);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(pIn);
-
-				pIn.color = p[0].color;
-
+				
 				pIn.position = UnityObjectToClipPos(v[0]);
-				pIn.uv = float2(1.0f, 0.0f);
-				pIn.distanceToCam = distanceToCam;
-				pIn.screenPos = screenPos;
+				pIn.uv = float2(1.0f, 0.0f);;
+				pIn.color = p[0].color;
 				triStream.Append(pIn);
 
 				pIn.position = UnityObjectToClipPos(v[1]);
 				pIn.uv = float2(1.0f, 1.0f);
-				pIn.distanceToCam = distanceToCam;
-				pIn.screenPos = screenPos;
+				pIn.color = p[0].color;
 				triStream.Append(pIn);
 
 				pIn.position = UnityObjectToClipPos(v[2]);
 				pIn.uv = float2(0.0f, 0.0f);
-				pIn.distanceToCam = distanceToCam;
-				pIn.screenPos = screenPos;
+				pIn.color = p[0].color;
 				triStream.Append(pIn);
 
 				pIn.position = UnityObjectToClipPos(v[3]);
 				pIn.uv = float2(0.0f, 1.0f);
-				pIn.distanceToCam = distanceToCam;
-				pIn.screenPos = screenPos;
+				pIn.color = p[0].color;
 				triStream.Append(pIn);
 			}
 
