@@ -41,7 +41,7 @@ namespace Pincushion
         /// <summary>
         /// Toggles whether to show the original mesh on awake.
         /// </summary>
-        public bool showOriginalMesh = false;
+        public bool showOriginalMesh;
         /// <summary>
         /// Toggles whether to show the sampled mesh on awake.
         /// </summary>
