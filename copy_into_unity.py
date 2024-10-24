@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     # Copy the C# and shader files.
     cs_root = Path('PincushionCs/PincushionCs').resolve()
-    suffixes = ['.cs', '.shader']
+    suffixes = ['.cs', '.shader', '.png']
     for src in cs_root.iterdir():
         if not src.is_file() or src.suffix not in suffixes:
             continue

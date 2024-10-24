@@ -1,9 +1,9 @@
-/// Add feature "obj" to enable `from_obj`.
-use pincushion::{from_obj, sample_points};
+use pincushion::Mesh;
 
 fn main() {
-    let (vertices, triangles, normals) = from_obj("tests/suzanne.obj");
-    let points_per_m = 0.15;
+    // Add feature "obj" to enable `from_obj`.
+    let mesh = Mesh::from_obj("tests/suzanne.obj");
+    let points_per_m = 80.;
     let scale = 1.;
-    let _ = sample_points(points_per_m, scale, &vertices, &triangles, &normals);
+    let _ = mesh.sample_points(points_per_m, scale);
 }

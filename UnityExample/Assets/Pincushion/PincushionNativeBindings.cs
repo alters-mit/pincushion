@@ -40,11 +40,8 @@ public unsafe partial class Ffi {
         float points_per_m);
 }
 
-/// <summary>
-/// FFI-safe Vector3.
-/// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 12)]
-public unsafe struct Vec3_t {
+public unsafe struct Vertex_t {
     public float x;
 
     public float y;
@@ -56,36 +53,54 @@ public unsafe struct Vec3_t {
 /// Same as [<c>Vec<T></c>][<c>rust::Vec</c>], but with guaranteed <c>#[repr(C)]</c> layout
 /// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 24)]
-public unsafe struct Vec_Vec3_t {
-    public Vec3_t * ptr;
+public unsafe struct Vec_Vertex_t {
+    public Vertex_t * ptr;
 
     public UIntPtr len;
 
     public UIntPtr cap;
 }
 
-/// <summary>
-/// FFI-safe Vector3Uint
-/// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 24)]
-public unsafe struct Vec3U_t {
-    public UIntPtr x;
+public unsafe struct Triangle_t {
+    public UIntPtr a;
 
-    public UIntPtr y;
+    public UIntPtr b;
 
-    public UIntPtr z;
+    public UIntPtr c;
 }
 
 /// <summary>
 /// Same as [<c>Vec<T></c>][<c>rust::Vec</c>], but with guaranteed <c>#[repr(C)]</c> layout
 /// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 24)]
-public unsafe struct Vec_Vec3U_t {
-    public Vec3U_t * ptr;
+public unsafe struct Vec_Triangle_t {
+    public Triangle_t * ptr;
 
     public UIntPtr len;
 
     public UIntPtr cap;
+}
+
+/// <summary>
+/// A mesh has vertices, triangles, and normals.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 72)]
+public unsafe struct Mesh_t {
+    /// <summary>
+    /// The (x, y, z) vertices of the mesh.
+    /// </summary>
+    public Vec_Vertex_t vertices;
+
+    /// <summary>
+    /// (x, y, z) groups of indices of <c>vertices</c>, comprising triangles.
+    /// </summary>
+    public Vec_Triangle_t triangles;
+
+    /// <summary>
+    /// (x, y, z) normal directional vectors.
+    /// </summary>
+    public Vec_Vertex_t normals;
 }
 
 /// <summary>
@@ -100,30 +115,37 @@ public unsafe struct Vec_float_t {
     public UIntPtr cap;
 }
 
+/// <summary>
+/// The surface area of a mesh and of its triangles.
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 32)]
+public unsafe struct Area_t {
+    /// <summary>
+    /// The total surface area of the mesh in square meters.
+    /// </summary>
+    public float total_area;
+
+    /// <summary>
+    /// The area of each triangle in the mesh in square meters.
+    /// </summary>
+    public Vec_float_t areas;
+}
+
 public unsafe partial class Ffi {
     /// <summary>
     /// Sample random points on the mesh.
     ///
-    /// - <c>total_area</c>: The total surface area of the mesh in square meters.
-    /// - <c>vertices</c>: (x, y, z) vertices.
-    /// - <c>triangles</c>: Indices of vertices comprising a triangle.
-    /// - <c>normals</c>: (x, y, z) normals.
-    /// - <c>areas</c>: A slice that will be filled with the areas of each triangle. This must be the same length as <c>triangles</c>.
-    /// - <c>points</c>: A pre-defined slice of vertices that will be filled with points. The size can differ from <c>triangles</c> and <c>areas</c>.
-    /// This will be filled with the sampled points.
-    /// This must be defined on the other side of the FFI boundary.
-    /// To get the expected size of <c>points</c>, call <c>get_areas(vertices, triangles, areas)</c> followed by <c>get_num_points(total_area, points_per_m)</c>
+    /// - <c>mesh</c> The source mesh.
+    /// - <c>area</c>: The <c>Area</c> of the mesh.
+    /// - <c>sampled_points</c>: A pre-defined slice of vertices that will be filled with points. The size can differ from <c>triangles</c> and <c>areas</c>.
     /// - <c>sampled_normals</c>: A pre-defined slice that will be filled with normals. The size must match that of <c>points</c>.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void sample_points (
-        float total_area,
-        Vec_Vec3_t /*const*/ * vertices,
-        Vec_Vec3U_t /*const*/ * triangles,
-        Vec_Vec3_t /*const*/ * normals,
-        Vec_float_t /*const*/ * areas,
-        Vec_Vec3_t * points,
-        Vec_Vec3_t * sampled_normals);
+        Mesh_t /*const*/ * mesh,
+        Area_t /*const*/ * area,
+        Vec_Vertex_t * sampled_points,
+        Vec_Vertex_t * sampled_normals);
 }
 
 public unsafe partial class Ffi {
@@ -131,56 +153,42 @@ public unsafe partial class Ffi {
     /// Set the triangles at which points can be sampled.
     /// This is useful for deformable meshes in situations where the positions will change but not the triangles we want to derive positions from.
     ///
-    /// - <c>total_area</c>: The total surface area of the mesh in square meters.
-    /// - <c>triangles</c>: Indices of vertices comprising a triangle.
-    /// - <c>areas</c>: A slice that will be filled with the areas of each triangle. This must be the same length as <c>triangles</c>.
-    /// - <c>sampled_triangles</c>: A pre-defined slice of triangles that will be set in this function. The size can differ from <c>triangles</c> and <c>areas</c> and must match the number of points that will be sampled.
+    /// - <c>mesh</c> The source mesh.
+    /// - <c>area</c>: The <c>Area</c> of the mesh.
+    /// - <c>sampled_triangles</c>: The triangles that will be sampled.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void sample_triangles (
-        float total_area,
-        Vec_Vec3U_t /*const*/ * triangles,
-        Vec_float_t /*const*/ * areas,
-        Vec_Vec3U_t * sampled_triangles);
+        Mesh_t /*const*/ * mesh,
+        Area_t /*const*/ * area,
+        Vec_Triangle_t * sampled_triangles);
 }
 
 public unsafe partial class Ffi {
     /// <summary>
+    /// - <c>mesh</c> The source mesh.
     /// - <c>scale</c> The uniform scale of the mesh.
-    /// - <c>vertices</c>: A flat vec of (x, y, z) vertices.
-    /// - <c>triangles</c>: A flat vec of three indices of vertices.
-    /// - <c>areas</c>: A vec that will be filled with the areas of each triangle in <c>triangles</c>.
-    /// This must be the same length as <c>triangles.len() / 3</c>.
-    ///
-    /// Returns: The total area.
+    /// - <c>area</c>: The <c>Area</c> of the mesh.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
-    float set_area (
+    void set_area (
+        Mesh_t /*const*/ * mesh,
         float scale,
-        Vec_Vec3_t /*const*/ * vertices,
-        Vec_Vec3U_t /*const*/ * triangles,
-        Vec_float_t * areas);
+        Area_t * area);
 }
 
 public unsafe partial class Ffi {
     /// <summary>
     /// Given pre-sampled triangles, sample vertices.
     /// The position of the vertex relative to the spatial area of the triangle is deterministic.
-    /// In contrast, points sampled via <c>sample_points</c> and <c>sample_points_ppm</c> will be at a random point on a sampled triangle.
     ///
-    /// - <c>vertices</c>: (x, y, z) vertices.
-    /// - <c>normals</c>: (x, y, z) normals.
-    /// - <c>sampled_triangles</c>: Presampled triangles.
-    /// - <c>points</c>: A pre-defined slice of vertices that will be filled with points. The size must be the same as <c>sampled_triangles</c>.
-    /// - <c>sampled_normals</c>: A pre-defined slice of normal vectors per point in <c>points</c>.
+    /// - <c>mesh</c> The source mesh.
+    /// - <c>sampled_mesh</c>: The sampled mesh, which contains pre-sampled triangles.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void set_points_from_sampled_triangles (
-        Vec_Vec3_t /*const*/ * vertices,
-        Vec_Vec3_t /*const*/ * normals,
-        Vec_Vec3U_t * sampled_triangles,
-        Vec_Vec3_t * points,
-        Vec_Vec3_t * sampled_normals);
+        Mesh_t /*const*/ * mesh,
+        Mesh_t * sampled_mesh);
 }
 
 

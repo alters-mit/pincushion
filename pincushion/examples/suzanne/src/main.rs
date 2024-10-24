@@ -3,16 +3,23 @@
 use macroquad::prelude::*;
 
 /// Add feature "obj" to enable `from_obj`.
-use pincushion::{from_obj, sample_points};
+use pincushion::Mesh as PincushionMesh;
 
 #[macroquad::main("3D")]
 async fn main() {
-    let (vertices, triangles, normals) = from_obj("tests/suzanne.obj");
-    let macroquad_vertices = vertices
+    // Add feature "obj" to enable `from_obj`.
+    let pincushion_mesh = PincushionMesh::from_obj("tests/suzanne.obj");
+    let macroquad_vertices = pincushion_mesh
+        .vertices
         .iter()
-        .map(|v| Vertex::new(v[0], v[1], v[2], 0.0, 0.0, PURPLE))
+        .map(|v| Vertex::new(v.x, v.y, v.z, 0.0, 0.0, PURPLE))
         .collect();
-    let macroquad_indices = triangles.iter().flatten().map(|t| *t as u16).collect();
+    let macroquad_indices = pincushion_mesh
+        .triangles
+        .iter()
+        .map(|t| [t.a as u16, t.b as u16, t.c as u16])
+        .flatten()
+        .collect();
     // Create the mesh.
     let mesh = Mesh {
         vertices: macroquad_vertices,
@@ -20,10 +27,11 @@ async fn main() {
         texture: None,
     };
     // Sample the points and convert to macroquad Vec3's.
-    let points = sample_points(0.15, 1., &vertices, &triangles, &normals)
+    let points = pincushion_mesh
+        .sample_points(30., 1.)
         .0
         .iter()
-        .map(|point| vec3(point[0], point[1], point[2]))
+        .map(|point| vec3(point.x, point.y, point.z))
         .collect::<Vec<Vec3>>();
 
     loop {

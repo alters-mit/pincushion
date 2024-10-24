@@ -3,14 +3,14 @@ use std::{
     time::{Duration, Instant},
 };
 
-use pincushion::{from_obj, sample_points, Triangle, Vertex};
+use pincushion::Mesh;
 
 pub fn main() {
-    let (vertices, triangles, normals) = from_obj("tests/suzanne.obj");
+    let mesh = Mesh::from_obj("tests/suzanne.obj");
     // Run the benchmark many times and average the result.
     let num_iterations = 1000;
     let dt = (0..num_iterations)
-        .map(|_| benchmark(&vertices, &triangles, &normals))
+        .map(|_| benchmark(&mesh))
         .sum::<Duration>()
         .as_micros()
         / num_iterations as u128;
@@ -19,8 +19,8 @@ pub fn main() {
     println!("{}", text);
 }
 
-fn benchmark(vertices: &[Vertex], triangles: &[Triangle], normals: &[Vertex]) -> Duration {
+fn benchmark(mesh: &Mesh) -> Duration {
     let t0 = Instant::now();
-    sample_points(80., 1., vertices, triangles, normals);
+    mesh.sample_points(80., 1.);
     Instant::now() - t0
 }

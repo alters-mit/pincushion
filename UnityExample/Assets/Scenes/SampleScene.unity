@@ -319,8 +319,10 @@ MonoBehaviour:
   pointsPerM: 80
   pointRadius: 0.02
   occludeBackFacing: 1
-  material: {fileID: 2100000, guid: 560bb61f0b2d0164eb3a34ffe56a8698, type: 2}
-  keepConstantScaling: 0
+  color: {r: 1, g: 1, b: 1, a: 1}
+  texture: {fileID: 2800000, guid: f75919db7bb0d3c409be280d4ae6f3e8, type: 3}
+  constantScaling: 0
+  scalePointsPerMByCameraDistance: 0
 --- !u!1001 &1347204012
 PrefabInstance:
   m_ObjectHideFlags: 0

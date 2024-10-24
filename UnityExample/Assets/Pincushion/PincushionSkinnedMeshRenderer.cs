@@ -16,10 +16,6 @@ namespace Pincushion
     public class PincushionSkinnedMeshRenderer : PincushionRenderer
     {
         /// <summary>
-        /// The color of each point.
-        /// </summary>
-        public Color pointsColor = Color.gray;
-        /// <summary>
         /// The renderer. This is set on Awake().
         /// </summary>
         private SkinnedMeshRenderer skinnedMeshRenderer;
@@ -39,17 +35,22 @@ namespace Pincushion
         /// This is used to re-sample points.
         /// </summary>
         private Mesh bakedMesh;
-
-
-        private void Awake()
+        
+        
+        public override void SetOriginalMeshVisibility(bool visible)
+        {
+            skinnedMeshRenderer.enabled = visible;
+        }
+        
+        
+        protected override void Initialize()
         {
             skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
             bakedMesh = new Mesh();
-            Set();
         }
 
 
-        public override void Set()
+        protected override void SetMesh()
         {
             // Sample the triangles.
             sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude);
@@ -57,43 +58,13 @@ namespace Pincushion
             Mesh mesh = new Mesh();
             skinnedMeshRenderer.BakeMesh(bakedMesh);
             // Deterministically set sampled points.
-            mesh.SetVerticesFromSampledTriangles(bakedMesh.vertices, bakedMesh.normals, sampledTriangles);
+            mesh.SetVerticesFromSampledTriangles(bakedMesh, sampledTriangles);
             mesh.SetPointTopology();
-            
-            // Set the material.
-            Material material = new Material(Shader.Find("Pincushion/DynamicPoints"));
-            material.SetColor("_Color", pointsColor);
-            material.SetFloat("_PointSize", pointRadius);
-            if (occludeBackFacing)
-            {
-                material.EnableKeyword("_OCCLUDE_BACKFACING");   
-            }
-            
-            // Create the child object that will hold the sampled points.
-            GameObject go = new GameObject();
-            Transform t = go.transform;
-            t.parent = transform;
-            t.localPosition = Vector3.zero;
-            t.localRotation = Quaternion.identity;
             // Set the mesh.
-            sampledMeshFilter = go.AddComponent<MeshFilter>();
+            sampledMeshFilter = points.AddComponent<MeshFilter>();
             sampledMeshFilter.mesh = mesh;
-            sampledMeshRenderer = go.AddComponent<MeshRenderer>();
-            sampledMeshRenderer.material = material;
-            
-            SetOriginalMeshVisibility(false);
-        }
-
-
-        public override void SetOriginalMeshVisibility(bool visible)
-        {
-            skinnedMeshRenderer.enabled = visible;
-        }
-
-
-        public override void SetSampledMeshVisibility(bool visible)
-        {
-            sampledMeshRenderer.enabled = visible;
+            sampledMeshRenderer = points.AddComponent<MeshRenderer>();
+            sampledMeshRenderer.material = GetMaterial();
         }
 
 
@@ -103,7 +74,7 @@ namespace Pincushion
             {
                 skinnedMeshRenderer.BakeMesh(bakedMesh);
                 // Set the positions of the points.
-                sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(bakedMesh.vertices, bakedMesh.normals, sampledTriangles);
+                sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(bakedMesh, sampledTriangles);
                 sampledMeshFilter.mesh.SetPointTopology();           
             }
         }
