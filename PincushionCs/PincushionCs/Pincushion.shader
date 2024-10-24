@@ -86,26 +86,31 @@
 			[maxvertexcount(4)]
 			void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 			{
-				float3 right = normalize(UNITY_MATRIX_IT_MV[0].xyz) * _PointSize;
-				float3 up = normalize(UNITY_MATRIX_IT_MV[1].xyz) * _PointSize;
+				float3 right = normalize(UNITY_MATRIX_IT_MV[0].xyz);
+				float3 up = normalize(UNITY_MATRIX_IT_MV[1].xyz);
 				// Adjust point size based on parameters.
 
 				#if _CONSTANT_SCALING
 				
-				// Counter eventual rescaling of the renderer by computing average scale.
+				// 0.1 is an arbitrary constant.
 				float distanceToCam = distance(mul(unity_ObjectToWorld, p[0].position), _WorldSpaceCameraPos);
+
+				#else
+
+				float distanceToCam = 1;
+
+				#endif
+
+				// Counter eventual rescaling of the renderer by computing average scale.
 				float3 scaleX = unity_ObjectToWorld[0].xyz;
 				float3 scaleY = unity_ObjectToWorld[1].xyz;
 				float3 scaleZ = unity_ObjectToWorld[2].xyz;
 				float3 objectScale = float3(length(scaleX), length(scaleY), length(scaleZ));
-				float avgScale = (objectScale.x + objectScale.y + objectScale.z) / 3.0;
-				float relativeScaler = 0.1 * distanceToCam; // 0.1 is an arbitrary constant
-				relativeScaler /= avgScale;
+				float averageScale = (objectScale.x + objectScale.y + objectScale.z) / 3.0;
 
-				right *= relativeScaler;
-				up *= relativeScaler;
-
-				#endif
+				float scale = distanceToCam / averageScale; 
+				right *= _PointSize * scale;
+				up *= _PointSize * scale;
 
 				// Define the four vertices for the billboard in world space
 				float4 v[4];
