@@ -4,8 +4,8 @@
 namespace Pincushion
 {
     /// <summary>
-    /// Generate sampled points.
-    /// Create a new mesh composed of multiple quads, one per sampled point, that are then statically batched.
+    /// Sample points on a MeshRenderer and convert it into a mesh.
+    /// The mesh is sampled exactly once unless manually requested via Set().
     /// </summary>
     [RequireComponent(typeof(MeshFilter))]
     [RequireComponent(typeof(Renderer))]

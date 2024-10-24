@@ -1,6 +1,6 @@
 # Pincushion
 
-![Suzanne test mesh with a bunch of points on her face](suzanne.png)
+![Suzanne test mesh with a bunch of points on her face](doc/suzanne.png)
 
 Uniformly sample points on a mesh. 
 
@@ -21,49 +21,48 @@ This repo has three components:
 
 ### 1. Sample points
 
-To sample points on a MeshRenderer, add a `PincushionMeshRenderer` component:
+Pincushion offers two types of PincushionRenderers:
 
-![A Pincushion Mesh Renderer in the Inspector window](doc/mesh_renderer.png)
+1. **`PincushionMeshRenderer`** samples a preexisting `MeshFilter` + `MeshRenderer` exactly once. *This is very performant.* When points are sampled, they are randomly jostled, for spice.
+2. **`PincushionSkinnedMeshRenderer`** samples a preexisting `SkinnedMeshRenderer`. *This is less performant* because points need to be re-sampled per-frame. 
 
 | Parameter | Description |
 | --- | --- |
+| Color | The color of each point. |
+| Texture | The texture of each point. |
 | Points Per M | The number of sampled points per square meter on the mesh surface. |
 | Point Radius | The radius of each point in meters. |
 | Occlude Back Facing | If true, occlude back-facing points. |
-| Material | The material used to render each point. |
-| Keep Constant Scaling | If false, every point will render at the same size. |
+| Constant Scaling | If true, every point will render at the same size. |
+| Scale Points Per M By Camera | If true, scale the number of points by the object's initial distance from the camera. |
+| Show Original Mesh | If true, show the original mesh on Awake() |
+| Show Sampled Mesh | If true, show the sampled mesh on Awake() |
 
 To sample points on a SkinnedMeshRenderer, add a `PincushionSkinnedMeshRenderer` component:
-
-![A Pincushion Skinned Mesh Renderer in the Inspector window](doc/skinned_mesh_renderer.png)
-
-| Parameter | Description |
-| --- | --- |
-| Points Per M | The number of sampled points per square meter on the mesh surface. |
-| Point Radius | The radius of each point in meters. |
-| Occlude Back Facing | If true, occlude back-facing points. |
-| Color | The color of each point. |
 
 ### 2. Show/hide the original/sampled mesh
 
 Assuming you haven't chosen `Replace` for your creation mode (which doesn't create a new object), you can show/hide the original mesh or new mesh:
 
 1. `PincushionRenderer pr = gameObject.GetComponent<PincushionRenderer>()`
-2. To show/hide the original object: `pr.SetOriginalMeshVisibility(show)` where `show` is a boolean.
-3. To show/hide the the new object: `pr.SetSampledMeshVisibility(show)` where `show` is a boolean.
+2. To show/hide the original object: `pr.SetOriginalMeshVisibility(show)`
+3. To show/hide the the new object: `pr.SetSampledMeshVisibility(show)`
 
-### 3. How it works
 
-There are two methods of rendering sampled points because there is an efficient way to render points if we know that the mesh can't deform (i.e. if it is rendered via a MeshRenderer).
+### 3. How to resample
 
-- MeshRenderers are sampled exactly once and then rendered as a mesh composed of multiple quads, one at each sampled point.
-- SkinnedMeshRenderers are sampled exactly once and rendered using a geometry shader.
+```
+PincushionRenderer pr = gameObject.GetComponent<PincushionRenderer>();
+pr.Set();
+```
 
 ## Usage (Rust)
 
 Pincushion can alternatively be used in a native Rust context.
 
 To add `pinchusion` to your project: `cargo add pincushion`.
+
+Documentation for the Rust codebase can be found on [docs.rs](https://docs.rs/pincushion/latest/pincushion/).
 
 ### Example Usage
 
@@ -105,14 +104,12 @@ The library will be located in `target/release/`
 
 ### Example
 
-To run the example: `cargo run --example suzanne`
+To run the example: `cargo run --example suzanne --featueres obj`
 
 ### Benchmarks
 
-To run the benchmark: `cargo bench benchmark`
+To run the benchmark: `cargo bench benchmark --features obj`
 
 Results:
 
 Sampling: 70μs
-
-Documentation for the Rust codebase can be found on [docs.rs](https://docs.rs/pincushion/latest/pincushion/).

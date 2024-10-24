@@ -23,11 +23,11 @@ The library will be located in `target/release/`
 
 ### Example
 
-To run the example: `cargo run --example suzanne`
+To run the example: `cargo run --example suzanne --featueres obj`
 
 ### Benchmarks
 
-To run the benchmark: `cargo bench benchmark`
+To run the benchmark: `cargo bench benchmark --features obj`
 
 Results:
 

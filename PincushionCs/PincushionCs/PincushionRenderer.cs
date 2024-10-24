@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 
 namespace Pincushion
@@ -87,9 +86,15 @@ namespace Pincushion
         }
 
 
+        /// <summary>
+        /// Initialize on Awake().
+        /// </summary>
         protected abstract void Initialize();
 
 
+        /// <summary>
+        /// Sample points, create the sampled mesh, and set the material.
+        /// </summary>
         protected abstract void SetMesh();
 
         
@@ -110,6 +115,10 @@ namespace Pincushion
         }
 
 
+        /// <summary>
+        /// Returns the material used to render the sampled mesh.
+        /// </summary>
+        /// <returns></returns>
         protected Material GetMaterial()
         {
             Material material = new Material(Shader.Find("Pincushion/Pincushion"));

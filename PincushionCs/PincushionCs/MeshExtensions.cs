@@ -201,8 +201,7 @@ namespace Pincushion
         /// The sampled points will be vertices on this mesh.
         /// </summary>
         /// <param name="mesh">(this)</param>
-        /// <param name="originalVertices">The vertices of the original mesh.</param>
-        /// <param name="originalNormals">The normals of the original mesh.</param>
+        /// <param name="originalMesh">The original (source) mesh.</param>
         /// <param name="sampledTriangles">The pre-sampled triangles.</param>
         public static void SetVerticesFromSampledTriangles(this Mesh mesh, Mesh originalMesh, UIntPtr[] sampledTriangles)
         {
