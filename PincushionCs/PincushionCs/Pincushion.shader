@@ -1,4 +1,4 @@
-﻿Shader "Pincushion/DynamicPoints" {
+﻿Shader "Pincushion/Pincushion" {
 	Properties {
 		_MainTex ("Albedo (RGB)", 2D) = "white" {}
 		_Color ("Color", Color) = (0.9, 0.9, 0.9, 1)
@@ -11,13 +11,15 @@
 		Pass 
 		{
 			CGPROGRAM
-		
+
+			#pragma target 2.5
 			#pragma vertex vert
             #pragma fragment frag
 			#pragma geometry geom
-            #include "UnityCG.cginc"
 			#pragma multi_compile _ _OCCLUDE_BACKFACING
 			#pragma multi_compile _ _CONSTANT_SCALING
+
+			#include "UnityCG.cginc"
 
 			half4 _Color;
 			half _PointSize;
@@ -84,8 +86,7 @@
 			[maxvertexcount(4)]
 			void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 			{
-				float3 camPos = _WorldSpaceCameraPos;
-				float distanceToCam = distance(mul(unity_ObjectToWorld, p[0].position), camPos);
+				float distanceToCam = distance(mul(unity_ObjectToWorld, p[0].position), _WorldSpaceCameraPos);
 
 				// ----------------------------
 				float4 screenPosFull = ComputeScreenPos(UnityObjectToClipPos(p[0].position));
@@ -127,6 +128,8 @@
 				// copy instance id in the v2f i[0] to the g2f o
 				UNITY_TRANSFER_INSTANCE_ID(p[0], pIn);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(pIn);
+
+				pIn.color = p[0].color;
 
 				pIn.position = UnityObjectToClipPos(v[0]);
 				pIn.uv = float2(1.0f, 0.0f);
