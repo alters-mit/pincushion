@@ -19,7 +19,11 @@ namespace Pincushion
         /// If true, points will always render at the same size, regardless of distance.
         /// If false, scale the points normally. 
         /// </summary>
-        public bool keepConstantScaling = false;
+        public bool constantScaling;
+        /// <summary>
+        /// Increase the number of points on closer objects. 
+        /// </summary>
+        public bool scalePointsPerMByCameraDistance;
         /// <summary>
         /// The parent of the points.
         /// </summary>
@@ -46,6 +50,11 @@ namespace Pincushion
             t.localRotation = Quaternion.identity;
             t.localScale = Vector3.one;
 
+            if (scalePointsPerMByCameraDistance)
+            {
+                pointsPerM *= 1f / (0.1f * Vector3.Distance(Camera.main.transform.position, transform.position));
+            }
+
             // Sample the points.
             Mesh mesh = GetComponent<MeshFilter>().mesh.GetSampledMesh(
                 pointsPerM, transform.localScale.magnitude);
@@ -57,7 +66,7 @@ namespace Pincushion
             {
                 material.EnableKeyword("_OCCLUDE_BACKFACING");   
             }
-            if (keepConstantScaling)
+            if (constantScaling)
             {
                 material.EnableKeyword("_CONSTANT_SCALING");   
             }
