@@ -5,8 +5,10 @@
 		_PointSize("Point Size", Float) = 0.02
 	}
 	SubShader {
-		Tags { "RenderType"="Opaque" }
-		Cull Off
+			Tags{ "Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent" "DisableBatching" = "True" }
+			Blend SrcAlpha OneMinusSrcAlpha
+			ZWrite Off
+			Cull Off
 		
 		Pass 
 		{
