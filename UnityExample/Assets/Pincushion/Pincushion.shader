@@ -44,7 +44,7 @@
 
 			struct g2f
 			{
-			    float4 position : SV_POSITION;
+			    float4 position : POSITION;
 				float4 color: COLOR;
 				float2 uv : TEXCOORD0;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -61,7 +61,7 @@
 				// copy instance id in the appdata v to the v2g o
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				
-                o.position = UnityObjectToClipPos(v.vertex);
+                o.position = v.vertex;
 
 				#if _OCCLUDE_BACKFACING
 
