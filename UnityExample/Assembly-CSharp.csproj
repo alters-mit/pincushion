@@ -53,12 +53,12 @@
   </PropertyGroup>
   <ItemGroup>
      <Compile Include="Assets\Pincushion\PincushionSkinnedMeshRenderer.cs" />
+     <Compile Include="Assets\Pincushion\PincushionOcclusionMode.cs" />
      <Compile Include="Assets\Pincushion\PincushionRenderer.cs" />
      <Compile Include="Assets\Pincushion\PincushionMeshRenderer.cs" />
      <Compile Include="Assets\Test\DesertScene\Scripts\CamelMovement.cs" />
      <Compile Include="Assets\Pincushion\MeshExtensions.cs" />
      <Compile Include="Assets\Pincushion\PincushionNativeBindings.cs" />
-     <Compile Include="Assets\Pincushion\PincushionOcclusionMode.cs" />
      <None Include="Assets\Pincushion\Pincushion.shader" />
      <None Include="Assets\Pincushion\Occluder.shader" />
  <Reference Include="UnityEngine">

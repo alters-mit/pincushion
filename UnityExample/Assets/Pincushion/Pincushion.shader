@@ -7,9 +7,7 @@
 	SubShader {
 			Tags{ "Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent" "DisableBatching" = "True" }
 			Blend SrcAlpha OneMinusSrcAlpha
-		ZTest Always
-		ZWrite Off
-		Blend One One
+			ZWrite Off
 			Cull Off
 		
 		Pass 
