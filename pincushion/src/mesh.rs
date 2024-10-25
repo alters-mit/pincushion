@@ -1,8 +1,12 @@
-use rand::{distributions::Uniform, thread_rng, Rng};
+use rand::distributions::Uniform;
 use safer_ffi::derive_ReprC;
 
 use crate::{
     get_num_points,
+    sampler::{
+        point_sampler::PointSampler, sample_normal, sample_point,
+        triangle_sampler::TriangleSampler, Sampler,
+    },
     vecs::{Triangle, Vertex},
     Area,
 };
@@ -90,50 +94,16 @@ impl Mesh {
         sampled_points: &mut [Vertex],
         sampled_normals: &mut [Vertex],
     ) {
-        // The area per point is used to uniformly sample the points.
-        let area_per_point = area.total_area / sampled_points.len() as f32;
-        let mut rng = thread_rng();
-        // When sampling points, start at this index.
-        let mut start_index_point = 0;
-        // When choosing trandom triangles, start at this index.
-        let mut start_index_triangle = 0;
-        // The accumulated triangle area. This is used to set the end indices.
-        let mut total_accumulated_area = 0.0;
         let range = Uniform::new(0., 1.);
-        for (index, area) in area.areas.iter().enumerate() {
-            // Add area.
-            total_accumulated_area += *area;
-            // We have enough area.
-            if total_accumulated_area >= area_per_point {
-                // Derive how many points we can fit in the accumulated area.
-                let num_points = (total_accumulated_area / area_per_point) as usize;
-                // Sample some points.
-                for i in 0..num_points {
-                    // Get a random triangle, bounded by the start index and the current index in `areas`.
-                    let triangle = if start_index_point == index {
-                        &self.triangles[start_index_point]
-                    } else {
-                        &self.triangles[rng.gen_range(start_index_triangle..=index)]
-                    };
-                    let point_index = start_index_point + i;
-                    // Get a random point on that triangle.
-                    self.set_point(
-                        &mut sampled_points[point_index],
-                        rng.sample(range),
-                        rng.sample(range),
-                        triangle,
-                    );
-                    // Set the normal.
-                    self.set_normal(&mut sampled_normals[point_index], triangle);
-                }
-                // Start adding points at the offset.
-                start_index_point += num_points;
-                // Reset the accumulated area.
-                total_accumulated_area = 0.0;
-                // Increment to the next starting triangle.
-                start_index_triangle = index + 1;
-            }
-        }
+        let num_points = sampled_points.len();
+        let mut sampler = PointSampler {
+            vertices: &self.vertices,
+            normals: &self.normals,
+            sampled_points,
+            sampled_normals,
+            range: &range,
+        };
+        sampler.sample_points(area, num_points, &self.triangles);
     }
 
     /// Get the triangles at which points can be sampled.
@@ -155,39 +125,9 @@ impl Mesh {
     /// - `area`: The `Area` of the mesh.
     /// - `sampled_triangles`: A pre-defined slice of triangles that will be set in this function. The size can differ from `triangles` and `areas` and must match the number of points that will be sampled.
     pub fn set_sampled_triangles(&self, area: &Area, sampled_triangles: &mut [Triangle]) {
-        // The area per point is used to uniformly sample the points.
-        let area_per_point = area.total_area / sampled_triangles.len() as f32;
-        let mut rng = thread_rng();
-        // When sampling points, start at this index.
-        let mut start_index_point = 0;
-        // When choosing trandom triangles, start at this index.
-        let mut start_index_triangle = 0;
-        // The accumulated triangle area. This is used to set the end indices.
-        let mut total_accumulated_area = 0.0;
-        for (index, area) in area.areas.iter().enumerate() {
-            // Add area.
-            total_accumulated_area += *area;
-            // We have enough area.
-            if total_accumulated_area >= area_per_point {
-                // Derive how many points we can fit in the accumulated area.
-                let num_points = (total_accumulated_area / area_per_point) as usize;
-                // Sample some points.
-                for i in 0..num_points {
-                    // Get a random triangle, bounded by the start index and the current index in `areas`.
-                    sampled_triangles[start_index_point + i] = if start_index_point == index {
-                        self.triangles[start_index_point]
-                    } else {
-                        self.triangles[rng.gen_range(start_index_triangle..=index)]
-                    };
-                }
-                // Start adding points at the offset.
-                start_index_point += num_points;
-                // Reset the accumulated area.
-                total_accumulated_area = 0.0;
-                // Increment to the next starting triangle.
-                start_index_triangle = index + 1;
-            }
-        }
+        let num_points = sampled_triangles.len();
+        let mut sampler = TriangleSampler { sampled_triangles };
+        sampler.sample_points(area, num_points, &self.triangles);
     }
 
     /// Given pre-sampled triangles, sample vertices.
@@ -206,8 +146,8 @@ impl Mesh {
                     .zip(sampled_mesh.normals.iter_mut()),
             )
             .for_each(|(point, (triangle, normal))| {
-                self.set_point(point, 0.5, 0.5, triangle);
-                self.set_normal(normal, triangle);
+                sample_point(point, 0.5, 0.5, triangle, &self.vertices);
+                sample_normal(normal, triangle, &self.normals);
             });
     }
 
@@ -248,28 +188,6 @@ impl Mesh {
             })
             .collect::<Vec<Vertex>>();
         Self::new(vertices, triangles, normals)
-    }
-    
-    /// Get a point on a triangle.
-    /// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
-    fn set_point(&self, point: &mut Vertex, u: f32, v: f32, triangle: &Triangle) {
-        let t = f32::sqrt(v);
-        let v = u * t;
-        let u = (1.0 - u) * t;
-        let w = 1.0 - u - v;
-        // Set the point at `start_index_pooint` offset by 0..num_points.
-        *point = self.vertices[triangle.a]
-            .mul(u)
-            .add(&self.vertices[triangle.b].mul(v))
-            .add(&self.vertices[triangle.c].mul(w));
-    }
-
-    /// Set the average normal of a triangle.
-    fn set_normal(&self, normal: &mut Vertex, triangle: &Triangle) {
-        *normal = self.normals[triangle.a]
-            .add(&self.normals[triangle.b])
-            .add(&self.normals[triangle.c])
-            .div(3.)
     }
 }
 

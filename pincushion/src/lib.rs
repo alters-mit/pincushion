@@ -23,9 +23,10 @@ pub mod cs;
 
 pub mod ffi;
 
-pub mod area;
-pub mod mesh;
-pub mod vecs;
+mod area;
+mod mesh;
+mod sampler;
+mod vecs;
 
 /// - `total_area`: The total area of the triangles in square meters. See: `get_areas(vertices, triangles)` and `get_areas_in_place(vertices, triangles, areas)`
 /// - `points_per_m`: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
