@@ -25,10 +25,6 @@ namespace Pincushion
         /// </summary>
         public float pointRadius = 0.02f;
         /// <summary>
-        /// If true, hide points facing away from the camera.
-        /// </summary>
-        public bool occludeBackFacing = true;
-        /// <summary>
         /// If true, points will always render at the same size, regardless of distance.
         /// If false, scale the points normally. 
         /// </summary>
@@ -46,14 +42,38 @@ namespace Pincushion
         /// </summary>
         public bool showSampledMesh = true;
         /// <summary>
+        /// This controls what gets occluded and what occludes.
+        /// </summary>
+        public PincushionOcclusionMode occlusionMode = PincushionOcclusionMode.Backfacing;
+        /// <summary>
+        /// If occlusionMode == SourceMesh, set the original mesh to this color.
+        /// </summary>
+        public Color occluderColor = Color.black;
+        /// <summary>
         /// The object that renders the points.
         /// </summary>
         protected GameObject points;
+        /// <summary>
+        /// The original mesh's original materials. This is used when toggling visibility.
+        /// </summary>
+        private Material[] originalMaterials;
+        /// <summary>
+        /// The occluder material for the original mesh.
+        /// </summary>
+        private Material occluderMaterial;
+        /// <summary>
+        /// The renderer component.
+        /// </summary>
+        private Renderer myRenderer;
 
 
         private void Awake()
         {
+            myRenderer = GetComponent<Renderer>();
+            originalMaterials = myRenderer.materials;
             Initialize();
+            occluderMaterial = new Material(Shader.Find("Pincushion/Occluder"));
+            occluderMaterial.SetColor("_Color", occluderColor);
             Set();
             SetOriginalMeshVisibility(showOriginalMesh);
             SetSampledMeshVisibility(showSampledMesh);
@@ -87,22 +107,29 @@ namespace Pincushion
 
 
         /// <summary>
-        /// Initialize on Awake().
-        /// </summary>
-        protected abstract void Initialize();
-
-
-        /// <summary>
-        /// Sample points, create the sampled mesh, and set the material.
-        /// </summary>
-        protected abstract void SetMesh();
-
-        
-        /// <summary>
         /// Toggle the visibility of the original mesh.
         /// </summary>
         /// <param name="visible">If true, the mesh will be visible.</param>
-        public abstract void SetOriginalMeshVisibility(bool visible);
+        public void SetOriginalMeshVisibility(bool visible)
+        {
+            if (occlusionMode == PincushionOcclusionMode.SourceMesh)
+            {
+                // We need to show the original mesh in order for it to act as an occluder.
+                myRenderer.enabled = true;
+                if (visible)
+                {
+                    myRenderer.materials = originalMaterials;
+                }
+                else
+                {
+                    myRenderer.material = occluderMaterial;
+                }           
+            }
+            else
+            {
+                myRenderer.enabled = visible;
+            }
+        }
         
         
         /// <summary>
@@ -113,6 +140,18 @@ namespace Pincushion
         {
             points.SetActive(visible);
         }
+        
+        
+        /// <summary>
+        /// Initialize on Awake().
+        /// </summary>
+        protected abstract void Initialize();
+
+
+        /// <summary>
+        /// Sample points, create the sampled mesh, and set the material.
+        /// </summary>
+        protected abstract void SetMesh();
 
 
         /// <summary>
@@ -125,7 +164,7 @@ namespace Pincushion
             material.SetColor("_Color", color);
             material.SetTexture("_MainTex", texture);
             material.SetFloat("_PointSize", pointRadius);
-            if (occludeBackFacing)
+            if (occlusionMode == PincushionOcclusionMode.Backfacing || occlusionMode == PincushionOcclusionMode.SourceMesh)
             {
                 material.EnableKeyword("_OCCLUDE_BACKFACING");   
             }

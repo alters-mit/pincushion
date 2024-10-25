@@ -5,12 +5,14 @@ using UnityEngine;
 namespace Pincushion
 {
     /// <summary>
-    /// Sample points on a SkinnedMeshRenderer. Use a shader to move the points when the underlying rig moves.
+    /// Sample points on a SkinnedMeshRenderer and convert it into a mesh.
     ///
-    /// This component samples points exactly once.
-    /// It's therefore not suitable for a mesh that is expected to deform by an extreme degree.
-    /// Points are rendered using a geometry shader.
-    /// This is relatively inefficient, but I haven't found an alternative that is compatible with the built-in render pipeline.
+    /// On Set() and Awake(), the *triangles* of the mesh are sampled.
+    ///
+    /// Per-frame, bake the SkinnedMeshRenderer mesh and use the baked mesh and the cached triangles to resample the points.
+    ///
+    /// For the sake of performance, when points are sampled, they will always be in the center of the sampled triangles.
+    /// This is in contrast to PincushionMeshRenderer, in which points are jostled randomly within their sampled triangles.
     /// </summary>
     [RequireComponent(typeof(SkinnedMeshRenderer))]
     public class PincushionSkinnedMeshRenderer : PincushionRenderer
@@ -35,12 +37,6 @@ namespace Pincushion
         /// This is used to re-sample points.
         /// </summary>
         private Mesh bakedMesh;
-        
-        
-        public override void SetOriginalMeshVisibility(bool visible)
-        {
-            skinnedMeshRenderer.enabled = visible;
-        }
         
         
         protected override void Initialize()

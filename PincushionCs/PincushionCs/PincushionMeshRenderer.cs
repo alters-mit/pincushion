@@ -11,21 +11,8 @@ namespace Pincushion
     [RequireComponent(typeof(Renderer))]
     public class PincushionMeshRenderer : PincushionRenderer
     {
-        /// <summary>
-        /// My MeshRenderer.
-        /// </summary>
-        private MeshRenderer mr;
-        
-        
-        public override void SetOriginalMeshVisibility(bool visible)
-        {
-            mr.enabled = visible;
-        }
-
-        
         protected override void Initialize()
         {
-            mr = GetComponent<MeshRenderer>();
         }
 
 

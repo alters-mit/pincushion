@@ -58,7 +58,9 @@
      <Compile Include="Assets\Test\DesertScene\Scripts\CamelMovement.cs" />
      <Compile Include="Assets\Pincushion\MeshExtensions.cs" />
      <Compile Include="Assets\Pincushion\PincushionNativeBindings.cs" />
+     <Compile Include="Assets\Pincushion\PincushionOcclusionMode.cs" />
      <None Include="Assets\Pincushion\Pincushion.shader" />
+     <None Include="Assets\Pincushion\Occluder.shader" />
  <Reference Include="UnityEngine">
  <HintPath>C:/Program Files/Unity/Hub/Editor/2020.3.24f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
  </Reference>

@@ -39,12 +39,6 @@ namespace Pincushion
         private Mesh bakedMesh;
         
         
-        public override void SetOriginalMeshVisibility(bool visible)
-        {
-            skinnedMeshRenderer.enabled = visible;
-        }
-        
-        
         protected override void Initialize()
         {
             skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
