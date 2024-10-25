@@ -32,13 +32,19 @@ Pincushion offers two types of PincushionRenderers:
 | Texture | The texture of each point. |
 | Points Per M | The number of sampled points per square meter on the mesh surface. |
 | Point Radius | The radius of each point in meters. |
-| Occlude Back Facing | If true, occlude back-facing points. |
 | Constant Scaling | If true, every point will render at the same size. |
 | Scale Points Per M By Camera | If true, scale the number of points by the object's initial distance from the camera. |
+| Occlusion Mode | This controls what gets occluded and what occludes. |
 | Show Original Mesh | If true, show the original mesh on Awake() |
 | Show Sampled Mesh | If true, show the sampled mesh on Awake() |
 
-To sample points on a SkinnedMeshRenderer, add a `PincushionSkinnedMeshRenderer` component:
+Occlusion Modes:
+
+| Value | Description | 
+| --- | --- |
+| None | No occlusion other than points occluding points. |
+| Backfacing | Don't draw points facing away from the camera. |
+| SourceMesh | Don't draw points facing away from the camera.<br>Source meshes will become solid colors and occlude points. |
 
 ### 2. Show/hide the original/sampled mesh
 
