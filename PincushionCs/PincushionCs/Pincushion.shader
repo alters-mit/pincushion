@@ -5,7 +5,7 @@
 		_PointSize("Point Size", Float) = 0.02
 	}
 	SubShader {
-			Tags{ "Queue" = "Overlay" "IgnoreProjector" = "True" "RenderType" = "Transparent" "DisableBatching" = "True" }
+			Tags{ "Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent" "DisableBatching" = "True" }
 			Blend SrcAlpha OneMinusSrcAlpha
 			ZWrite Off
 			Cull Off

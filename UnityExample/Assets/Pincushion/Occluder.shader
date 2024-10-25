@@ -6,8 +6,7 @@
 	}
 	SubShader
 	{
-		Tags { "RenderType" = "Opaque" "Queue" = "Background" }
-		ZTest Always
+		Tags { "RenderType" = "Opaque" }
 		LOD 100
 
 		Pass
