@@ -94,7 +94,7 @@ namespace Pincushion
             Vector3 s = transform.localScale;
             t.localScale = new Vector3(1 / s.x, 1 / s.y, 1 / s.z);
             
-            pointsPerM *= transform.localScale.magnitude;
+            pointsPerM *= s.magnitude;
             
             // Scale the number of points.
             if (scalePointsPerMByCameraDistance)
@@ -164,7 +164,8 @@ namespace Pincushion
             material.SetColor("_Color", color);
             material.SetTexture("_MainTex", texture);
             material.SetFloat("_PointSize", pointRadius);
-            if (occlusionMode == PincushionOcclusionMode.Backfacing || occlusionMode == PincushionOcclusionMode.SourceMesh)
+            if (occlusionMode == PincushionOcclusionMode.Backfacing ||
+                occlusionMode == PincushionOcclusionMode.SourceMesh)
             {
                 material.EnableKeyword("_OCCLUDE_BACKFACING");   
             }
