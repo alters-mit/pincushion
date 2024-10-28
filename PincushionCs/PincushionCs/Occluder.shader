@@ -51,7 +51,7 @@
 				return o;
 			}
 			
-			float4 frag (v2f i) : SV_Target
+			half4 frag (v2f i) : SV_Target
 			{
 				return _Color;
 			}
