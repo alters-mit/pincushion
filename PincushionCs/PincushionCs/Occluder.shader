@@ -37,8 +37,11 @@
 			{
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
-				float3 viewDir = normalize(UNITY_MATRIX_IT_MV[2].xyz);
-				if (dot(viewDir, v.normal) > 0) {
+				// Source: https://discussions.unity.com/t/camera-forward-vector-in-shader/32664/4
+				half3 normal = UnityObjectToWorldNormal(v.normal);
+				half3 worldVert = mul(unity_ObjectToWorld, v.vertex);
+				half3 viewDir = _WorldSpaceCameraPos - worldVert;
+				if (dot(viewDir, normal) > 0) {
 					o.normal = v.normal;
 				}
 				else
