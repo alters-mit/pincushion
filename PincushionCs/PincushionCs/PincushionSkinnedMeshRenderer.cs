@@ -43,6 +43,11 @@ namespace Pincushion
         {
             skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
             bakedMesh = new Mesh();
+            
+            // Set the mesh.
+            sampledMeshFilter = points.AddComponent<MeshFilter>();
+            sampledMeshRenderer = points.AddComponent<MeshRenderer>();
+            sampledMeshRenderer.material = GetMaterial();
         }
 
 
@@ -52,15 +57,10 @@ namespace Pincushion
             sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude);
             // Create the mesh.
             Mesh mesh = new Mesh();
-            skinnedMeshRenderer.BakeMesh(bakedMesh);
-            // Deterministically set sampled points.
-            mesh.SetVerticesFromSampledTriangles(bakedMesh, sampledTriangles);
-            mesh.SetPointTopology();
-            // Set the mesh.
-            sampledMeshFilter = points.AddComponent<MeshFilter>();
+            mesh.vertices = new Vector3[sampledTriangles.Length / 3];
+            mesh.normals = new Vector3[sampledTriangles.Length / 3];
+            mesh.triangles = new int[sampledTriangles.Length];
             sampledMeshFilter.mesh = mesh;
-            sampledMeshRenderer = points.AddComponent<MeshRenderer>();
-            sampledMeshRenderer.material = GetMaterial();
         }
 
 

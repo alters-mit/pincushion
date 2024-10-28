@@ -65,7 +65,6 @@ pub(crate) fn sample_point(
     triangle: &Triangle,
     vertices: &[Vertex],
 ) {
-    // Set the point at `start_index_pooint` offset by 0..num_points.
     *point = vertices[triangle.a]
         .mul(u)
         .add(&vertices[triangle.b].mul(v))

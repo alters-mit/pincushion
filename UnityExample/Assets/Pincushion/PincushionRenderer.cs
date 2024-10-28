@@ -71,20 +71,9 @@ namespace Pincushion
         {
             myRenderer = GetComponent<Renderer>();
             originalMaterials = myRenderer.materials;
-            Initialize();
             occluderMaterial = new Material(Shader.Find("Pincushion/Occluder"));
             occluderMaterial.SetColor("_Color", occluderColor);
-            Set();
-            SetOriginalMeshVisibility(showOriginalMesh);
-            SetSampledMeshVisibility(showSampledMesh);
-        }
-
-
-        /// <summary>
-        /// Sample points and set the mesh(es).
-        /// </summary>
-        public void Set()
-        {
+            
             // Create the points object.
             points = new GameObject();
             Transform t = points.transform;
@@ -94,7 +83,23 @@ namespace Pincushion
             Vector3 s = transform.localScale;
             t.localScale = new Vector3(1 / s.x, 1 / s.y, 1 / s.z);
             
-            pointsPerM *= s.magnitude;
+            Initialize();
+            
+            Set(pointsPerM);
+            
+            SetOriginalMeshVisibility(showOriginalMesh);
+            SetSampledMeshVisibility(showSampledMesh);
+        }
+
+
+        /// <summary>
+        /// Sample points and set the mesh(es).
+        /// </summary>
+        /// <param name="ppm">The number of points per square meter.</param>
+        public void Set(float ppm)
+        {
+            Vector3 s = transform.localScale;
+            pointsPerM = ppm * s.magnitude;
             
             // Scale the number of points.
             if (scalePointsPerMByCameraDistance)
