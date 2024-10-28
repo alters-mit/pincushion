@@ -61,13 +61,10 @@ pub(crate) fn sample_point(
     point: &mut Vertex,
     u: f32,
     v: f32,
+    w: f32,
     triangle: &Triangle,
     vertices: &[Vertex],
-) {
-    let t = f32::sqrt(v);
-    let v = u * t;
-    let u = (1.0 - u) * t;
-    let w = 1.0 - u - v;
+) {    
     // Set the point at `start_index_pooint` offset by 0..num_points.
     *point = vertices[triangle.a]
         .mul(u)

@@ -21,10 +21,17 @@ impl<'mesh> Sampler for PointSampler<'mesh> {
         _: usize,
         rng: &mut ThreadRng,
     ) {
+        // Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
+        let t = f32::sqrt(rng.sample(self.range));
+        let u = 1. - t;
+        let v = (1. - rng.sample(self.range)) * t;
+        let w = 1. - u - v;
+
         sample_point(
             &mut self.sampled_points[point_index],
-            rng.sample(self.range),
-            rng.sample(self.range),
+            u,
+            v, 
+            w,
             &triangle,
             &self.vertices,
         );

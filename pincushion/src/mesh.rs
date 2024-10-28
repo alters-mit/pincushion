@@ -136,6 +136,12 @@ impl Mesh {
     ///
     /// - `sampled_mesh`: The mesh with the sampled points, triangles, and normals.
     pub fn set_presampled_mesh(&self, sampled_mesh: &mut Mesh) {
+        // Hardcode the U, V, W parameters.
+        const T: f32 = 0.7071067811865476;
+        const U: f32 = 1. - T;
+        const V: f32 = (1. - 0.5) * T;
+        const W: f32 = 1. - U - V;
+
         sampled_mesh
             .vertices
             .iter_mut()
@@ -146,7 +152,7 @@ impl Mesh {
                     .zip(sampled_mesh.normals.iter_mut()),
             )
             .for_each(|(point, (triangle, normal))| {
-                sample_point(point, 0.5, 0.5, triangle, &self.vertices);
+                sample_point(point, U, V, W, triangle, &self.vertices);
                 sample_normal(normal, triangle, &self.normals);
             });
     }
