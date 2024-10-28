@@ -140,7 +140,7 @@ impl Mesh {
     pub fn set_presampled_mesh(&self, sampled_mesh: &mut Mesh) {
         // Hardcode the U, V, W parameters.
         const U: f32 = 1. - FRAC_1_SQRT_2;
-        const V: f32 = (1. - 0.5) * FRAC_1_SQRT_2;
+        const V: f32 = 0.5 * FRAC_1_SQRT_2;
         const W: f32 = 1. - U - V;
 
         sampled_mesh
