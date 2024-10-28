@@ -5,7 +5,7 @@
 		_PointSize("Point Size", Float) = 0.02
 	}
 	SubShader {
-			Tags{ "Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent" "DisableBatching" = "True" }
+			Tags{ "Queue" = "Overlay" "IgnoreProjector" = "True" "RenderType" = "Transparent" "DisableBatching" = "True" }
 			Blend SrcAlpha OneMinusSrcAlpha
 			ZWrite Off
 			Cull Off
@@ -65,8 +65,11 @@
 
 				#if _OCCLUDE_BACKFACING
 
-				float3 viewDir = UNITY_MATRIX_IT_MV[2].xyz;
-				if (dot(viewDir, v.normal) > 0) {
+				// Source: https://discussions.unity.com/t/camera-forward-vector-in-shader/32664/4
+				half3 normal = UnityObjectToWorldNormal(v.normal);
+				half3 worldVert = mul(unity_ObjectToWorld, v.vertex);
+				half3 viewDir = _WorldSpaceCameraPos - worldVert;
+				if (dot(viewDir, normal) > 0) {
 					o.color = _Color;
 				}
 				else
