@@ -16,6 +16,7 @@ This repo has three components:
 2. Within this repo, `cd pincushion` and `cargo build --release`
 3. Copy the library into your Unity Project. It's located in: `pincushion/target/release/`
 4. Copy the `PincushionCs/` folder into your Unity project.
+5. Project Settings -> Player -> Allow 'unsafe'  Code
 
 ## Usage (Unity)
 
