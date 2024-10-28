@@ -6,7 +6,7 @@
 	}
 	SubShader
 	{
-		Tags { "RenderType" = "Background" }
+		Tags { "Queue" = "Background" "RenderType" = "Opaque" }
 		Cull Front
 		LOD 100
 
