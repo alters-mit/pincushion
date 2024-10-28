@@ -30,10 +30,10 @@ impl<'mesh> Sampler for PointSampler<'mesh> {
         sample_point(
             &mut self.sampled_points[point_index],
             u,
-            v, 
+            v,
             w,
-            &triangle,
-            &self.vertices,
+            triangle,
+            self.vertices,
         );
         sample_normal(
             &mut self.sampled_normals[point_index],

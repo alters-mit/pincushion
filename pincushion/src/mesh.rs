@@ -1,3 +1,5 @@
+use std::f32::consts::FRAC_1_SQRT_2;
+
 use rand::distributions::Uniform;
 use safer_ffi::derive_ReprC;
 
@@ -137,9 +139,8 @@ impl Mesh {
     /// - `sampled_mesh`: The mesh with the sampled points, triangles, and normals.
     pub fn set_presampled_mesh(&self, sampled_mesh: &mut Mesh) {
         // Hardcode the U, V, W parameters.
-        const T: f32 = 0.7071067811865476;
-        const U: f32 = 1. - T;
-        const V: f32 = (1. - 0.5) * T;
+        const U: f32 = 1. - FRAC_1_SQRT_2;
+        const V: f32 = (1. - 0.5) * FRAC_1_SQRT_2;
         const W: f32 = 1. - U - V;
 
         sampled_mesh
