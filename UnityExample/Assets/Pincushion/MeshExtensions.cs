@@ -272,9 +272,8 @@ namespace Pincushion
                     }
                 }
             }
-            mesh.vertices = points;
-            mesh.normals = normals;
-            mesh.triangles = new int[sampledTriangles.Length];
+            mesh.SetVertices(points);
+            mesh.SetNormals(normals);
         }
 
 
