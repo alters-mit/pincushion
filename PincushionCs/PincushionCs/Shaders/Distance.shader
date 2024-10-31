@@ -1,9 +1,4 @@
 ﻿Shader "Pincushion/Distance" {
-	Properties
-	{
-		_MaxDistance ("Maximum distance",Float) = 1000
-	}
-	
 	SubShader {
 		Tags { "Queue" = "Background" "RenderType"="Opaque" }
 		
@@ -33,7 +28,7 @@
 			{
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
-				o.distance = distance(mul(unity_ObjectToWorld, v.vertex), _WorldSpaceCameraPos) / _MaxDistance;
+				o.distance = distance(mul(unity_ObjectToWorld, v.vertex), _WorldSpaceCameraPos);
 				return o;
 			}
 			

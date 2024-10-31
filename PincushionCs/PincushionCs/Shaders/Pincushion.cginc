@@ -59,10 +59,3 @@ inline g2f start_g2f(in v2g i, out float distanceToCamera, out float4 v[4])
 	UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 	return o;
 }
-
-
-float get_depth(float4 v)
-{
-	float4 o = v * 0.5;
-	o.xy = float2(o.x, o.y*_ProjectionParams.x) + o.w;    
-}
