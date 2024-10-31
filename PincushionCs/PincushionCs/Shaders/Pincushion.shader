@@ -21,6 +21,8 @@
 			#pragma multi_compile _ _OCCLUDE_BACKFACING
 			#pragma multi_compile _ _CONSTANT_SCALING
 
+			#include "UnityCG.cginc"
+
 			struct appdata
 			{
 			    float4 vertex : POSITION;
@@ -45,7 +47,6 @@
 			};
 			
 			#include "Pincushion.cginc"
-			#include "UnityCG.cginc"
 
 			v2g vert (appdata v)
             {

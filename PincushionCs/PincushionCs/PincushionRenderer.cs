@@ -18,25 +18,6 @@ namespace Pincushion
         private Renderer myRenderer;
 
 
-        private void Awake()
-        {
-            myRenderer = GetComponent<Renderer>();
-
-            // Create the points object.
-            points = new GameObject();
-            Transform t = points.transform;
-            t.parent = transform;
-            t.localPosition = Vector3.zero;
-            t.localRotation = Quaternion.identity;
-            Vector3 s = transform.localScale;
-            t.localScale = new Vector3(1 / s.x, 1 / s.y, 1 / s.z);
-            
-            Initialize();
-            
-            Sample();
-        }
-
-
         /// <summary>
         /// Sample points and set the mesh(es).
         /// </summary>
@@ -74,12 +55,28 @@ namespace Pincushion
         {
             points.SetActive(visible);
         }
-        
-        
+
+
         /// <summary>
-        /// Initialize on Awake().
+        /// Initialize the renderer. This is called by PincushionManager.
         /// </summary>
-        protected abstract void Initialize();
+        public virtual void Initialize()
+        {
+            myRenderer = GetComponent<Renderer>();
+
+            // Create the points object.
+            points = new GameObject();
+            Transform t = points.transform;
+            t.parent = transform;
+            t.localPosition = Vector3.zero;
+            t.localRotation = Quaternion.identity;
+            Vector3 s = transform.localScale;
+            t.localScale = new Vector3(1 / s.x, 1 / s.y, 1 / s.z);
+            
+            // Set the layers.
+            myRenderer.gameObject.layer = PincushionManager.sourceMeshesLayer;
+            points.gameObject.layer = PincushionManager.sampledMeshesLayer;
+        }
 
 
         /// <summary>

@@ -39,8 +39,10 @@ namespace Pincushion
         private Mesh bakedMesh;
         
         
-        protected override void Initialize()
+        public override void Initialize()
         {
+            base.Initialize();
+            
             skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
             bakedMesh = new Mesh();
             

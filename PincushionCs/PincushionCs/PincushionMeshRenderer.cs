@@ -11,11 +11,6 @@ namespace Pincushion
     [RequireComponent(typeof(Renderer))]
     public class PincushionMeshRenderer : PincushionRenderer
     {
-        protected override void Initialize()
-        {
-        }
-
-
         protected override void SampleMesh(float pointsPerM, PincushionManager instance)
         {
             // Sample the points.

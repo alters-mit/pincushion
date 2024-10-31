@@ -11,19 +11,14 @@ namespace Pincushion
     [RequireComponent(typeof(Renderer))]
     public class PincushionMeshRenderer : PincushionRenderer
     {
-        protected override void Initialize()
-        {
-        }
-
-
-        protected override void SetMesh()
+        protected override void SampleMesh(float pointsPerM, PincushionManager instance)
         {
             // Sample the points.
             Mesh mesh = GetComponent<MeshFilter>().mesh.GetSampledMesh(
                 pointsPerM, transform.localScale.magnitude);
             points.AddComponent<MeshFilter>().mesh = mesh;
-            // Create and set the material.
-            points.AddComponent<MeshRenderer>().material = GetMaterial();
+            // Set the material.
+            points.AddComponent<MeshRenderer>().sharedMaterial = instance.material;
         }
     }
 }
