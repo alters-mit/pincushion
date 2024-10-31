@@ -25,9 +25,10 @@ if __name__ == "__main__":
 
     # Copy the C# and shader files.
     cs_root = Path('PincushionCs/PincushionCs').resolve()
-    suffixes = ['.cs', '.shader', '.png']
-    for src in cs_root.iterdir():
-        if not src.is_file() or src.suffix not in suffixes:
-            continue
-        dst = f'{unity_root}{src.name}'
-        copy(src.as_posix(), dst)
+    shader_root = cs_root.joinpath('Shaders')
+    for src_root, unity_folder in zip([cs_root, shader_root], ['', 'Shaders']):
+        for src in src_root.iterdir():
+            if not src.is_file():
+                continue
+            dst = f'{unity_root}{unity_folder}/{src.name}'
+            copy(src.as_posix(), dst)
