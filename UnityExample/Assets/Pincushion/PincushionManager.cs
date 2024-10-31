@@ -86,7 +86,7 @@ namespace Pincushion
                 // Set the render texture.
                 if (rt == null)
                 {
-                    rt = new RenderTexture(Screen.width, Screen.height, 32, GraphicsFormat.R32_SFloat);
+                    rt = new RenderTexture(Screen.width, Screen.height, 16, RenderTextureFormat.RFloat);
                 }
                 
                 // Set the distance camera.
@@ -106,7 +106,6 @@ namespace Pincushion
                 }
                 
                 SetShader();
-                Shader.SetGlobalTexture("_PincushionDistanceTex", rt);
 
                 // Set the culling masks.
                 mainCamera.cullingMask = sampledMeshesCullingMask;
@@ -114,6 +113,8 @@ namespace Pincushion
                 
                 // Set the main camera's replacement shader.
                 mainCamera.SetReplacementShader(Shader.Find("Pincushion/PincushionReplacement"), "");
+                
+                Shader.SetGlobalTexture("_PincushionDistanceTex", rt);
             }
             else
             {
@@ -185,11 +186,6 @@ namespace Pincushion
             {
                 Shader.EnableKeyword("_CONSTANT_SCALING");
             }  
-        }
-
-        private void Update()
-        {
-            Shader.SetGlobalTexture("_PincushionDistanceTex", rt);
         }
 
 

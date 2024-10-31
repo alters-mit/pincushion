@@ -1,8 +1,13 @@
 ﻿Shader "Pincushion/PincushionReplacement"
 {
+	Properties
+	{
+		_PincushionDistanceTex("Depth (R)", 2D) = "black" {}
+	}
+	
 	SubShader
 	{
-		Tags { "Queue" = "Overlay" "IgnoreProjector" = "True" "RenderType" = "Transparent" "DisableBatching" = "True" }
+		Tags { "Queue" = "Transparent" "IgnoreProjector" = "True" "RenderType" = "Transparent" "DisableBatching" = "True" }
 		Blend SrcAlpha OneMinusSrcAlpha
 		ZWrite Off
 		Cull Off
@@ -89,7 +94,7 @@
 				triStream.Append(pIn);
 			}
 
-			half4 frag(g2f i) : SV_Target
+			float4 frag(g2f i) : SV_Target
 			{
 				// Sample the distance texture and compare to the vertex's distance.
 				if (i.distance + 0.01 > tex2D(_PincushionDistanceTex, i.distanceUv).r)

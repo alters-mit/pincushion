@@ -1,6 +1,6 @@
 ﻿Shader "Pincushion/Distance" {
 	SubShader {
-		Tags { "Queue" = "Background" "RenderType"="Opaque" }
+		Tags { "Queue" = "Background" "RenderType" = "Opaque" }
 		
 		ZWrite On
 		
@@ -12,8 +12,6 @@
 			#pragma fragment frag
 
 			#include "UnityCG.cginc"
-
-			float _MaxDistance;
 
 			struct appdata
 			{
@@ -36,7 +34,7 @@
 			
 			float4 frag(v2f i) : SV_Target
 			{
-				return i.distance;
+				return float4(i.distance, i.distance, i.distance, 1);
 			}
 			
 			ENDCG
