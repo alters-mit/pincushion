@@ -101,6 +101,8 @@ namespace Pincushion
                     distanceCamera = distanceCameraObject.AddComponent<Camera>();
                     // Copy parameters.
                     distanceCamera.CopyFrom(mainCamera);
+                    distanceCamera.SetReplacementShader(Shader.Find("Pincushion/Distance"), "");
+                    Shader.SetGlobalTexture("_PincushionDistanceTex", rt);
                     // Render to the texture.
                     distanceCamera.targetTexture = rt;
                 }
@@ -113,8 +115,6 @@ namespace Pincushion
                 
                 // Set the main camera's replacement shader.
                 mainCamera.SetReplacementShader(Shader.Find("Pincushion/PincushionReplacement"), "");
-                
-                Shader.SetGlobalTexture("_PincushionDistanceTex", rt);
             }
             else
             {
