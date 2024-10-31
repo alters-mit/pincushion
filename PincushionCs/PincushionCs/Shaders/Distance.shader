@@ -34,7 +34,7 @@
 			
 			float4 frag(v2f i) : SV_Target
 			{
-				return i.distance;
+				return i.distance / 100;
 			}
 			
 			ENDCG

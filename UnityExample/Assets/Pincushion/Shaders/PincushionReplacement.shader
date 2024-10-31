@@ -92,7 +92,7 @@
 			half4 frag(g2f i) : SV_Target
 			{
 				// Sample the distance texture and compare to the vertex's distance.
-				if (i.distance + 0.01 < tex2D(_PincushionDistanceTex, i.distanceUv).r * 100.3)
+				if (i.distance + 0.01 > tex2D(_PincushionDistanceTex, i.distanceUv).r * 100.3)
 				{
 					return tex2D(_PincushionMainTex, i.uv) * _PincushionColor;
 				}
