@@ -86,7 +86,7 @@ namespace Pincushion
                 // Set the render texture.
                 if (rt == null)
                 {
-                    rt = new RenderTexture(Screen.width, Screen.height, 16, RenderTextureFormat.RFloat);
+                    rt = new RenderTexture(Screen.width, Screen.height, 32, RenderTextureFormat.DefaultHDR);
                 }
                 
                 // Set the distance camera.
