@@ -43,6 +43,7 @@ namespace Pincushion
         public Material material;
         public static int sourceMeshesLayer;
         public static int sampledMeshesLayer;
+        [SerializeField]
         private Material replacementMaterial;
         private Camera mainCamera;
         private Camera distanceCamera;
@@ -106,11 +107,12 @@ namespace Pincushion
                 if (replacementMaterial == null)
                 {
                     replacementMaterial = new Material(Shader.Find("Pincushion/PincushionReplacement"));
-                    SetMaterial(replacementMaterial);
                     // Set the distance texture.
                     replacementMaterial.SetTexture("_DistanceTex", rt);
                 }
                 
+                SetMaterial(replacementMaterial);
+
                 // Set the culling masks.
                 mainCamera.cullingMask = sampledMeshesCullingMask;
                 distanceCamera.cullingMask = sourceMeshesCullingMask;
@@ -118,7 +120,7 @@ namespace Pincushion
                 // Set the render material.
                 CommandBuffer cb = new CommandBuffer();
                 cb.Blit(null, BuiltinRenderTextureType.CurrentActive, replacementMaterial);
-                mainCamera.AddCommandBuffer(CameraEvent.AfterForwardOpaque, cb);
+                mainCamera.AddCommandBuffer(CameraEvent.AfterEverything, cb);
             }
             else
             {

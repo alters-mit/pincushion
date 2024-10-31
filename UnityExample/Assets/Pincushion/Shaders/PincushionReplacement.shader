@@ -99,9 +99,9 @@
 			half4 frag(g2f i) : SV_Target
 			{
 				// Sample the distance texture and compare to the vertex's distance.
-				if (i.distance >= tex2D(_DistanceTex, float2(i.distanceUv)).r + 0.01)
+				if (i.distance < tex2D(_DistanceTex, float2(i.distanceUv)).r + 0.01)
 				{
-					return float4(0, 0, 0, 0);
+					return float4(1, 0, 0, 1);
 				}
 				return tex2D(_MainTex, float2(i.uv)) * _Color;
 			}
