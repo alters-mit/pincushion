@@ -1,6 +1,6 @@
 ﻿Shader "Pincushion/Distance" {
 	SubShader {
-		Tags { "RenderType"="Opaque" }
+		Tags { "Queue" = "Background" "RenderType"="Opaque" }
 		
 		Pass 
 		{
@@ -32,7 +32,7 @@
 			
 			float4 frag(v2f i) : SV_Target
 			{
-				return i.distance;
+				return float4(i.distance, i.distance, i.distance, 1);
 			}
 			
 			ENDCG

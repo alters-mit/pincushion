@@ -1,8 +1,6 @@
-﻿#include "UnityCG.cginc"
-
-half4 _Color;
-half _PointSize;
-sampler2D _MainTex;
+﻿uniform half4 _PincushionColor;
+uniform half _PincushionPointSize;
+uniform sampler2D _PincushionMainTex;
 
 inline void start_v2g(in appdata v, out v2g o)
 {
@@ -21,7 +19,7 @@ inline g2f start_g2f(in v2g i, out float distanceToCamera, out float4 v[4])
 	float3 right = normalize(UNITY_MATRIX_IT_MV[0].xyz);
 	float3 up = normalize(UNITY_MATRIX_IT_MV[1].xyz);
 	
-	distanceToCamera = distance(mul(unity_ObjectToWorld, i.vertex), _WorldSpaceCameraPos);
+	distanceToCamera = length(_WorldSpaceCameraPos - UnityObjectToClipPos(i.vertex));
 
 	#if _CONSTANT_SCALING
 	
@@ -42,8 +40,8 @@ inline g2f start_g2f(in v2g i, out float distanceToCamera, out float4 v[4])
 	float averageScale = (objectScale.x + objectScale.y + objectScale.z) / 3.0;
 
 	scale /= averageScale;
-	right *= _PointSize * scale;
-	up *= _PointSize * scale;
+	right *= _PincushionPointSize * scale;
+	up *= _PincushionPointSize * scale;
 
 	// Define the four vertices for the billboard in world space
 	v[0] = float4(i.vertex + right - up, 1.0f);

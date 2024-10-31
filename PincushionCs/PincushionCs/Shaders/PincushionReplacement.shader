@@ -1,12 +1,8 @@
 ﻿Shader "Pincushion/PincushionReplacement"
 {
-	Properties
-	{
-		_DistanceTex ("Distance", 2D) = "white" {}
-	}
 	SubShader
 	{
-		Tags{ "Queue" = "Overlay" "IgnoreProjector" = "True" "RenderType" = "Transparent" "DisableBatching" = "True" }
+		Tags { "Queue" = "Overlay" "IgnoreProjector" = "True" "RenderType" = "Transparent" "DisableBatching" = "True" }
 		Blend SrcAlpha OneMinusSrcAlpha
 		ZWrite Off
 		Cull Off
@@ -21,7 +17,7 @@
 			#pragma geometry geom
 			#pragma multi_compile _ _CONSTANT_SCALING
 
-			sampler2D _DistanceTex;
+			uniform sampler2D _PincushionDistanceTex;
 
 			#include "UnityCG.cginc"
 
@@ -43,10 +39,10 @@
 			struct g2f
 			{
 			    float4 vertex : POSITION;
-				// The point texture UV.
-				float2 uv : TEXCOORD0;
 				// The distance texture UV.
-				float2 distanceUv : TEXCOORD1;
+				float2 distanceUv : TEXCOORD0;
+				// The point texture UV.
+				float2 uv : TEXCOORD1;
 				// The actual distance.
 				float distance: TEXCOORD2;
 				UNITY_VERTEX_INPUT_INSTANCE_ID
@@ -99,11 +95,11 @@
 			half4 frag(g2f i) : SV_Target
 			{
 				// Sample the distance texture and compare to the vertex's distance.
-				if (i.distance < tex2D(_DistanceTex, float2(i.distanceUv)).r + 0.01)
+				if (i.distance > tex2D(_PincushionDistanceTex, i.distanceUv).a)
 				{
-					return float4(1, 0, 0, 1);
+					return tex2D(_PincushionMainTex, i.uv) * _PincushionColor;
 				}
-				return tex2D(_MainTex, float2(i.uv)) * _Color;
+				return float4(1, 0, 0, 1);
 			}
 			
 			ENDCG

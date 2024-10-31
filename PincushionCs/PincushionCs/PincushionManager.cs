@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using UnityEngine.Experimental.Rendering;
 using UnityEngine.Rendering;
 
 
@@ -43,12 +45,11 @@ namespace Pincushion
         public Material material;
         public static int sourceMeshesLayer;
         public static int sampledMeshesLayer;
-        [SerializeField]
-        private Material replacementMaterial;
         private Camera mainCamera;
         private Camera distanceCamera;
         private int sourceMeshesCullingMask;
         private int sampledMeshesCullingMask;
+        [SerializeField]
         private RenderTexture rt;
         private static PincushionManager _instance;
         public static PincushionManager Instance
@@ -104,32 +105,27 @@ namespace Pincushion
                     distanceCamera.targetTexture = rt;
                 }
                 
-                if (replacementMaterial == null)
-                {
-                    replacementMaterial = new Material(Shader.Find("Pincushion/PincushionReplacement"));
-                    // Set the distance texture.
-                    replacementMaterial.SetTexture("_DistanceTex", rt);
-                }
-                
-                SetMaterial(replacementMaterial);
+                SetShader();
+                Shader.SetGlobalTexture("_PincushionDistanceTex", rt);
 
                 // Set the culling masks.
                 mainCamera.cullingMask = sampledMeshesCullingMask;
                 distanceCamera.cullingMask = sourceMeshesCullingMask;
                 
-                // Set the render material.
-                CommandBuffer cb = new CommandBuffer();
-                cb.Blit(null, BuiltinRenderTextureType.CurrentActive, replacementMaterial);
-                mainCamera.AddCommandBuffer(CameraEvent.AfterEverything, cb);
+                // Set the main camera's replacement shader.
+                mainCamera.SetReplacementShader(Shader.Find("Pincushion/PincushionReplacement"), "");
             }
             else
             {
                 // Prepare the Pincushion shader.
-                material = new Material(Shader.Find("Pincushion/Pincushion"));
-                SetMaterial(material);
+                if (material == null)
+                {
+                    material = new Material(Shader.Find("Pincushion/Pincushion"));          
+                }
+                SetShader();
                 if (occlusionMode == PincushionOcclusionMode.Backfacing)
                 {
-                    material.EnableKeyword("_OCCLUDE_BACKFACING");   
+                    Shader.EnableKeyword("_OCCLUDE_BACKFACING");   
                 }
 
                 // Hide the distance camera.
@@ -139,7 +135,8 @@ namespace Pincushion
                 }
                 // Set the main camera to see everything.
                 mainCamera.cullingMask = ~0;
-                mainCamera.RemoveAllCommandBuffers();
+                // Remove the replacement shader.
+                mainCamera.ResetReplacementShader();
             }
 
             // Get all renderers in the scene, including inactive ones.
@@ -176,20 +173,23 @@ namespace Pincushion
             Sample();
         }
 
-
         /// <summary>
-        /// Set the values of a Pincushion material.
+        /// Set the global shader values.
         /// </summary>
-        /// <param name="m">The material.</param>
-        private void SetMaterial(Material m)
+        private void SetShader()
         {
-            m.SetColor("_Color", color);
-            m.SetTexture("_MainTex", texture);
-            m.SetFloat("_PointSize", pointRadius);
+            Shader.SetGlobalColor("_PincushionColor", color);
+            Shader.SetGlobalTexture("_PincushionMainTex", texture);
+            Shader.SetGlobalFloat("_PincushionPointSize", pointRadius);
             if (constantScaling)
             {
-                m.EnableKeyword("_CONSTANT_SCALING");   
+                Shader.EnableKeyword("_CONSTANT_SCALING");
             }  
+        }
+
+        private void Update()
+        {
+            Shader.SetGlobalTexture("_PincushionDistanceTex", rt);
         }
 
 

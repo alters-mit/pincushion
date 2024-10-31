@@ -60,7 +60,7 @@
 				half3 worldVert = mul(unity_ObjectToWorld, v.vertex);
 				half3 viewDir = _WorldSpaceCameraPos - worldVert;
 				if (dot(viewDir, normal) > 0) {
-					o.color = _Color;
+					o.color = _PincushionColor;
 				}
 				else
 				{
@@ -69,7 +69,7 @@
 
 				#else
 
-				o.color = _Color;
+				o.color = _PincushionColor;
 
 				#endif
 				
@@ -106,7 +106,7 @@
 
 			half4 frag(g2f i) : SV_Target
 			{
-				return tex2D(_MainTex, float2(i.uv)) * i.color;
+				return tex2D(_PincushionMainTex, i.uv) * i.color;
 			}
 		
 		ENDCG
