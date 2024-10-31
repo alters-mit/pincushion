@@ -36,6 +36,14 @@ namespace Pincushion
         /// </summary>
         public PincushionOcclusionMode occlusionMode = PincushionOcclusionMode.Behind;
         /// <summary>
+        /// All source mesh objects will be set to this layer.
+        /// </summary>
+        public string sourceMeshesLayerName = "Default";
+        /// <summary>
+        /// All sampled mesh objects will be set to this layer.
+        /// </summary>
+        public string sampledMeshesLayerName = "TransparentFX";
+        /// <summary>
         /// Set the objects to this material.
         /// </summary>
         [HideInInspector]
@@ -156,8 +164,8 @@ namespace Pincushion
         private void Awake()
         {
             // Set the layers. For now, we're using the names of some default layers.
-            sourceMeshesLayer = LayerMask.NameToLayer("Default");
-            sampledMeshesLayer = LayerMask.NameToLayer("TransparentFX");
+            sourceMeshesLayer = LayerMask.NameToLayer(sourceMeshesLayerName);
+            sampledMeshesLayer = LayerMask.NameToLayer(sampledMeshesLayerName);
             sourceMeshesCullingMask = 1 << sourceMeshesLayer;
             sampledMeshesCullingMask = 1 << sampledMeshesLayer;
             
