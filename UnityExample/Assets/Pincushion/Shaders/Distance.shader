@@ -2,6 +2,8 @@
 	SubShader {
 		Tags { "Queue" = "Background" "RenderType"="Opaque" }
 		
+		ZWrite On
+		
 		Pass 
 		{
 			CGPROGRAM
@@ -34,7 +36,7 @@
 			
 			float4 frag(v2f i) : SV_Target
 			{
-				return i.distance / 100;
+				return i.distance;
 			}
 			
 			ENDCG
