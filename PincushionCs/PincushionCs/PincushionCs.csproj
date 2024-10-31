@@ -53,6 +53,7 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="PincushionManager.cs" />
         <Compile Include="PincushionOcclusionMode.cs" />
         <Compile Include="PincushionSkinnedMeshRenderer.cs" />
         <Compile Include="MeshExtensions.cs" />
@@ -65,6 +66,7 @@
       <None Include="packages.config" />
     </ItemGroup>
     <ItemGroup>
+      <Content Include="Resources\pincushion_point.png" />
       <Content Include="Shaders\Distance.shader" />
       <Content Include="Shaders\Pincushion.shader" />
       <Content Include="Shaders\PincushionReplacement.shader" />

@@ -9,58 +9,13 @@ namespace Pincushion
     public abstract class PincushionRenderer : MonoBehaviour
     {
         /// <summary>
-        /// The color of each point.
-        /// </summary>
-        public Color color = Color.white;
-        /// <summary>
         /// Use this texture to render each point.
         /// </summary>
         public Texture2D texture;
         /// <summary>
-        /// The number of points per square meter.
-        /// </summary>
-        public float pointsPerM = 80f;
-        /// <summary>
-        /// The radius of each point in meters.
-        /// </summary>
-        public float pointRadius = 0.02f;
-        /// <summary>
-        /// If true, points will always render at the same size, regardless of distance.
-        /// If false, scale the points normally. 
-        /// </summary>
-        public bool constantScaling;
-        /// <summary>
-        /// Increase the number of points on closer objects. 
-        /// </summary>
-        public bool scalePointsPerMByCameraDistance;
-        /// <summary>
-        /// Toggles whether to show the original mesh on awake.
-        /// </summary>
-        public bool showOriginalMesh;
-        /// <summary>
-        /// Toggles whether to show the sampled mesh on awake.
-        /// </summary>
-        public bool showSampledMesh = true;
-        /// <summary>
-        /// This controls what gets occluded and what occludes.
-        /// </summary>
-        public PincushionOcclusionMode occlusionMode = PincushionOcclusionMode.Backfacing;
-        /// <summary>
-        /// If occlusionMode == SourceMesh, set the original mesh to this color.
-        /// </summary>
-        public Color occluderColor = Color.black;
-        /// <summary>
         /// The object that renders the points.
         /// </summary>
         protected GameObject points;
-        /// <summary>
-        /// The original mesh's original materials. This is used when toggling visibility.
-        /// </summary>
-        private Material[] originalMaterials;
-        /// <summary>
-        /// The occluder material for the original mesh.
-        /// </summary>
-        private Material occluderMaterial;
         /// <summary>
         /// The renderer component.
         /// </summary>
@@ -70,10 +25,7 @@ namespace Pincushion
         private void Awake()
         {
             myRenderer = GetComponent<Renderer>();
-            originalMaterials = myRenderer.materials;
-            occluderMaterial = new Material(Shader.Find("Pincushion/Occluder"));
-            occluderMaterial.SetColor("_Color", occluderColor);
-            
+
             // Create the points object.
             points = new GameObject();
             Transform t = points.transform;
@@ -85,29 +37,26 @@ namespace Pincushion
             
             Initialize();
             
-            Set(pointsPerM);
-            
-            SetOriginalMeshVisibility(showOriginalMesh);
-            SetSampledMeshVisibility(showSampledMesh);
+            Sample();
         }
 
 
         /// <summary>
         /// Sample points and set the mesh(es).
         /// </summary>
-        /// <param name="ppm">The number of points per square meter.</param>
-        public void Set(float ppm)
+        public void Sample()
         {
             Vector3 s = transform.localScale;
-            pointsPerM = ppm * s.magnitude;
+            PincushionManager instance = PincushionManager.Instance;
+            float pointsPerM = instance.pointsPerM * s.magnitude;
             
             // Scale the number of points.
-            if (scalePointsPerMByCameraDistance)
+            if (instance.scalePointsPerMByCameraDistance)
             {
                 pointsPerM *= 1f / (0.1f * Vector3.Distance(Camera.main.transform.position, transform.position));
             }
             
-            SetMesh();
+            SampleMesh(pointsPerM, instance);
         }
 
 
@@ -117,23 +66,7 @@ namespace Pincushion
         /// <param name="visible">If true, the mesh will be visible.</param>
         public void SetOriginalMeshVisibility(bool visible)
         {
-            if (occlusionMode == PincushionOcclusionMode.SourceMesh)
-            {
-                // We need to show the original mesh in order for it to act as an occluder.
-                myRenderer.enabled = true;
-                if (visible)
-                {
-                    myRenderer.materials = originalMaterials;
-                }
-                else
-                {
-                    myRenderer.material = occluderMaterial;
-                }           
-            }
-            else
-            {
-                myRenderer.enabled = visible;
-            }
+            myRenderer.enabled = visible;
         }
         
         
@@ -156,29 +89,6 @@ namespace Pincushion
         /// <summary>
         /// Sample points, create the sampled mesh, and set the material.
         /// </summary>
-        protected abstract void SetMesh();
-
-
-        /// <summary>
-        /// Returns the material used to render the sampled mesh.
-        /// </summary>
-        /// <returns></returns>
-        protected Material GetMaterial()
-        {
-            Material material = new Material(Shader.Find("Pincushion/Pincushion"));
-            material.SetColor("_Color", color);
-            material.SetTexture("_MainTex", texture);
-            material.SetFloat("_PointSize", pointRadius);
-            if (occlusionMode == PincushionOcclusionMode.Backfacing ||
-                occlusionMode == PincushionOcclusionMode.SourceMesh)
-            {
-                material.EnableKeyword("_OCCLUDE_BACKFACING");   
-            }
-            if (constantScaling)
-            {
-                material.EnableKeyword("_CONSTANT_SCALING");   
-            }
-            return material;
-        }
+        protected abstract void SampleMesh(float pointsPerM, PincushionManager instance);
     }
 }

@@ -47,12 +47,12 @@ namespace Pincushion
             // Set the mesh.
             sampledMeshFilter = points.AddComponent<MeshFilter>();
             sampledMeshRenderer = points.AddComponent<MeshRenderer>();
-            sampledMeshRenderer.material = GetMaterial();
         }
 
 
-        protected override void SetMesh()
+        protected override void SampleMesh(float pointsPerM, PincushionManager instance)
         {
+            sampledMeshRenderer.sharedMaterial = instance.material;
             // Sample the triangles.
             sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude);
             // Create the mesh.
