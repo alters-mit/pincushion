@@ -9,10 +9,6 @@ namespace Pincushion
     public abstract class PincushionRenderer : MonoBehaviour
     {
         /// <summary>
-        /// Use this texture to render each point.
-        /// </summary>
-        public Texture2D texture;
-        /// <summary>
         /// The object that renders the points.
         /// </summary>
         protected GameObject points;

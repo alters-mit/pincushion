@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using UnityEngine.Rendering;
+
 
 namespace Pincushion
 {
@@ -47,6 +49,15 @@ namespace Pincushion
         /// </summary>
         [HideInInspector]
         public Material material;
+
+        private Material replacementMaterial;
+        private Camera mainCamera;
+        private Camera distanceCamera;
+        private int sourceMeshesLayer;
+        private int sampledMeshesLayer;
+        private int sourceMeshesCullingMask;
+        private int sampledMeshesCullingMask;
+        private RenderTexture rt;
         private static PincushionManager _instance;
         public static PincushionManager Instance
         {
@@ -73,30 +84,117 @@ namespace Pincushion
             {
                 // Prepare the distance shader.
                 material = new Material(Shader.Find("Pincushion/Distance"));
+                // Prepare the Pincushion replacement shader.
+                if (mainCamera == null)
+                {
+                    mainCamera = Camera.main;
+                }
+                
+                // Set the render texture.
+                if (rt == null)
+                {
+                    rt = new RenderTexture(Screen.width, Screen.height, 16, RenderTextureFormat.RFloat);
+                }
+                
+                // Set the distance camera.
+                if (distanceCamera == null)
+                {
+                    GameObject distanceCameraObject = new GameObject();
+                    Transform distanceCameraTransform = distanceCameraObject.transform;
+                    distanceCameraTransform.parent = mainCamera.transform;
+                    distanceCameraTransform.localPosition = Vector3.zero;
+                    distanceCameraTransform.localRotation = Quaternion.identity;
+                    distanceCameraTransform.localScale = Vector3.one;
+                    distanceCamera = distanceCameraObject.AddComponent<Camera>();
+                    // Copy parameters.
+                    distanceCamera.CopyFrom(mainCamera);
+                    // Render to the texture.
+                    distanceCamera.targetTexture = rt;
+                }
+                
+                if (replacementMaterial == null)
+                {
+                    replacementMaterial = new Material(Shader.Find("Pincushion/PincushionReplacement"));
+                    SetMaterial(replacementMaterial);
+                    // Set the distance texture.
+                    replacementMaterial.SetTexture("_DistanceTex", rt);
+                }
+                
+                // Set the culling masks.
+                mainCamera.cullingMask = sampledMeshesCullingMask;
+                distanceCamera.cullingMask = sourceMeshesCullingMask;
+                
+                // Set the render material.
+                CommandBuffer cb = new CommandBuffer();
+                cb.Blit(null, BuiltinRenderTextureType.CurrentActive, replacementMaterial);
+                mainCamera.AddCommandBuffer(CameraEvent.AfterForwardOpaque, cb);
             }
             else
             {
+                // Prepare the Pincushion shader.
                 material = new Material(Shader.Find("Pincushion/Pincushion"));
-                material.SetColor("_Color", color);
-                material.SetTexture("_MainTex", texture);
-                material.SetFloat("_PointSize", pointRadius);
+                SetMaterial(replacementMaterial);
                 if (occlusionMode == PincushionOcclusionMode.Backfacing)
                 {
                     material.EnableKeyword("_OCCLUDE_BACKFACING");   
                 }
-                if (constantScaling)
+
+                // Hide the distance camera.
+                if (distanceCamera != null)
                 {
-                    material.EnableKeyword("_CONSTANT_SCALING");   
-                }          
+                    distanceCamera.enabled = false;
+                }
+                // Set the main camera to see everything.
+                mainCamera.cullingMask = ~0;
+                mainCamera.RemoveAllCommandBuffers();
             }
 
             // Get all renderers in the scene, including inactive ones.
             PincushionRenderer[] pincushions = FindObjectsOfType<PincushionRenderer>(true);
-            // Set visibility.
             for (int i = 0; i < pincushions.Length; i++)
             {
+                // Sample the mesh and apply rendering settings.
+                pincushions[i].Sample();
+                // Set visibility.
                 pincushions[i].SetOriginalMeshVisibility(showOriginalMeshes);
                 pincushions[i].SetSampledMeshVisibility(showSampledMeshes);
+            }
+        }
+
+
+        private void Awake()
+        {
+            // Set the layers. For now, we're using the names of some default layers.
+            sourceMeshesLayer = LayerMask.NameToLayer("Default");
+            sampledMeshesLayer = LayerMask.NameToLayer("Transparent FX");
+            sourceMeshesCullingMask = ~(1 << sourceMeshesLayer);
+            sampledMeshesCullingMask = ~(1 << sampledMeshesLayer);
+            // Initialize Pincushion.
+            Sample();
+        }
+
+
+        /// <summary>
+        /// Set the values of a Pincushion material.
+        /// </summary>
+        /// <param name="m">The material.</param>
+        private void SetMaterial(Material m)
+        {
+            m.SetColor("_Color", color);
+            m.SetTexture("_MainTex", texture);
+            m.SetFloat("_PointSize", pointRadius);
+            if (constantScaling)
+            {
+                m.EnableKeyword("_CONSTANT_SCALING");   
+            }  
+        }
+
+
+        private void OnDestroy()
+        {
+            if (rt)
+            {
+                rt.Release();
             }
         }
     }
