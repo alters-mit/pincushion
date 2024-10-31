@@ -1,4 +1,9 @@
 ﻿Shader "Pincushion/Distance" {
+	Properties
+	{
+		_MaxDistance ("Maximum distance",Float) = 1000
+	}
+	
 	SubShader {
 		Tags { "Queue" = "Background" "RenderType"="Opaque" }
 		
@@ -10,6 +15,8 @@
 			#pragma fragment frag
 
 			#include "UnityCG.cginc"
+
+			float _MaxDistance;
 
 			struct appdata
 			{
@@ -26,13 +33,13 @@
 			{
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
-				o.distance = distance(_WorldSpaceCameraPos, o.vertex);
+				o.distance = distance(mul(unity_ObjectToWorld, v.vertex), _WorldSpaceCameraPos) / _MaxDistance;
 				return o;
 			}
 			
 			float4 frag(v2f i) : SV_Target
 			{
-				return float4(i.distance, i.distance, i.distance, 1);
+				return i.distance;
 			}
 			
 			ENDCG

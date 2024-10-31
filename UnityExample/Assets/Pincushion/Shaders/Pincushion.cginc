@@ -19,7 +19,7 @@ inline g2f start_g2f(in v2g i, out float distanceToCamera, out float4 v[4])
 	float3 right = normalize(UNITY_MATRIX_IT_MV[0].xyz);
 	float3 up = normalize(UNITY_MATRIX_IT_MV[1].xyz);
 	
-	distanceToCamera = length(_WorldSpaceCameraPos - UnityObjectToClipPos(i.vertex));
+	distanceToCamera = abs(length(_WorldSpaceCameraPos - UnityObjectToClipPos(i.vertex)));
 
 	#if _CONSTANT_SCALING
 	
