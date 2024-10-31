@@ -1,7 +1,4 @@
-﻿using System;
-using UnityEngine;
-using UnityEngine.Experimental.Rendering;
-using UnityEngine.Rendering;
+﻿using UnityEngine;
 
 
 namespace Pincushion
@@ -101,6 +98,7 @@ namespace Pincushion
                     distanceCamera = distanceCameraObject.AddComponent<Camera>();
                     // Copy parameters.
                     distanceCamera.CopyFrom(mainCamera);
+                    // Set the replacement shader.
                     distanceCamera.SetReplacementShader(Shader.Find("Pincushion/Distance"), "");
                     Shader.SetGlobalTexture("_PincushionDistanceTex", rt);
                     // Render to the texture.
