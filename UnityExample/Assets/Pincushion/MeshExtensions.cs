@@ -205,7 +205,8 @@ namespace Pincushion
         /// <param name="sampledPoints">The pre-calculated sampled points.</param>
         /// <param name="sampledNormals">The pre-calculated sampled normals.</param>
         /// <param name="sampledTriangles">The pre-sampled triangles.</param>
-        public static void SetVerticesFromSampledTriangles(this Mesh mesh, Mesh sourceMesh, UIntPtr[] sourceTriangles, Vector3[] sampledPoints, Vector3[] sampledNormals,  UIntPtr[] sampledTriangles)
+        public static void SetVerticesFromSampledTriangles(this Mesh mesh, Mesh sourceMesh, UIntPtr[] sourceTriangles,
+            Vector3[] sampledPoints, Vector3[] sampledNormals,  UIntPtr[] sampledTriangles)
         {
             UIntPtr pointsLength = (UIntPtr)sampledPoints.Length;
             UIntPtr sourceMeshVerticesLength = (UIntPtr)sourceMesh.vertices.Length;
