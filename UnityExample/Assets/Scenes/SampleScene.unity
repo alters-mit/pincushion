@@ -221,13 +221,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b85ed196132d8664ebfa9dd5e76f4d32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mainCamera: {fileID: 963194227}
+  setBackgroundColor: 1
+  backgroundColor: {r: 0, g: 0, b: 0, a: 1}
+  renderMode: 4
+  sourceMeshesLayerName: Default
+  sampledMeshesLayerName: TransparentFX
   texture: {fileID: 0}
+  color: {r: 1, g: 1, b: 1, a: 1}
   pointsPerM: 80
   pointRadius: 0.02
   constantScaling: 0
   scalePointsPerMByCameraDistance: 0
-  color: {r: 1, g: 1, b: 1, a: 1}
-  occlusionMode: 3
   material: {fileID: 0}
 --- !u!4 &209450894
 Transform:

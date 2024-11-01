@@ -7,7 +7,7 @@ namespace Pincushion
     /// <summary>
     /// Sample points on a SkinnedMeshRenderer and convert it into a mesh.
     ///
-    /// On Set() and Awake(), the *triangles* of the mesh are sampled.
+    /// Initially, the *triangles* of the mesh are sampled.
     ///
     /// Per-frame, bake the SkinnedMeshRenderer mesh and use the baked mesh and the cached triangles to resample the points.
     ///
@@ -22,7 +22,11 @@ namespace Pincushion
         /// </summary>
         private SkinnedMeshRenderer skinnedMeshRenderer;
         /// <summary>
-        /// A cached array of indices of vertices, used to quickly re-sample positions.
+        /// A cached array of triangles from the source mesh.
+        /// </summary>
+        private UIntPtr[] sourceTriangles;
+        /// <summary>
+        /// A cached array of triangles, used to quickly re-sample positions.
         /// </summary>
         private UIntPtr[] sampledTriangles;
         /// <summary>
@@ -54,7 +58,8 @@ namespace Pincushion
         {
             sampledMeshRenderer.sharedMaterial = instance.material;
             // Sample the triangles.
-            sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude);
+            sourceTriangles = skinnedMeshRenderer.sharedMesh.GetTriangles();
+            sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude, sourceTriangles);
             // Create the mesh.
             Mesh mesh = new Mesh();
             mesh.vertices = new Vector3[sampledTriangles.Length / 3];
@@ -70,7 +75,7 @@ namespace Pincushion
             {
                 skinnedMeshRenderer.BakeMesh(bakedMesh);
                 // Set the positions of the points.
-                sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(bakedMesh, sampledTriangles);
+                sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(bakedMesh, sourceTriangles, sampledTriangles);
                 sampledMeshFilter.mesh.SetPointTopology();           
             }
         }

@@ -207,7 +207,8 @@ namespace Pincushion
 
             // Decide which meshes to render.
             bool showSourceMeshes = renderMode == PincushionRenderMode.DoNot || 
-                                    renderMode == PincushionRenderMode.WithSourceMeshes;
+                                    renderMode == PincushionRenderMode.WithSourceMeshes ||
+                                    renderMode == PincushionRenderMode.OccludeBehind;
             bool showSampledMeshes = renderMode != PincushionRenderMode.DoNot;
             // Find the pincushions, including those that are inactive.
             PincushionRenderer[] pincushions = FindObjectsOfType<PincushionRenderer>(true);
