@@ -26,6 +26,14 @@ namespace Pincushion
         /// </summary>
         private UIntPtr[] sourceTriangles;
         /// <summary>
+        /// A cached array of points, used to quickly re-sample positions.
+        /// </summary>
+        private Vector3[] sampledPoints;
+        /// <summary>
+        /// A cached array of normals, used to quickly re-sample positions.
+        /// </summary>
+        private Vector3[] sampledNormals;
+        /// <summary>
         /// A cached array of triangles, used to quickly re-sample positions.
         /// </summary>
         private UIntPtr[] sampledTriangles;
@@ -60,6 +68,9 @@ namespace Pincushion
             // Sample the triangles.
             sourceTriangles = skinnedMeshRenderer.sharedMesh.GetTriangles();
             sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude, sourceTriangles);
+            // Allocate the sampling arrays.
+            sampledPoints = new Vector3[sampledTriangles.Length / 3];
+            sampledNormals = new Vector3[sampledTriangles.Length / 3];
             // Create the mesh.
             Mesh mesh = new Mesh();
             mesh.vertices = new Vector3[sampledTriangles.Length / 3];
@@ -75,7 +86,8 @@ namespace Pincushion
             {
                 skinnedMeshRenderer.BakeMesh(bakedMesh);
                 // Set the positions of the points.
-                sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(bakedMesh, sourceTriangles, sampledTriangles);
+                sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(bakedMesh, sourceTriangles, 
+                    sampledPoints, sampledNormals, sampledTriangles);
                 sampledMeshFilter.mesh.SetPointTopology();           
             }
         }

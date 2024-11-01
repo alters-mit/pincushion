@@ -202,17 +202,17 @@ namespace Pincushion
         /// <param name="mesh">(this)</param>
         /// <param name="sourceMesh">The source mesh.</param>
         /// <param name="sourceTriangles">The source mesh's triangles as UIntPtr values.</param>
+        /// <param name="sampledPoints">The pre-calculated sampled points.</param>
+        /// <param name="sampledNormals">The pre-calculated sampled normals.</param>
         /// <param name="sampledTriangles">The pre-sampled triangles.</param>
-        public static void SetVerticesFromSampledTriangles(this Mesh mesh, Mesh sourceMesh, UIntPtr[] sourceTriangles, UIntPtr[] sampledTriangles)
+        public static void SetVerticesFromSampledTriangles(this Mesh mesh, Mesh sourceMesh, UIntPtr[] sourceTriangles, Vector3[] sampledPoints, Vector3[] sampledNormals,  UIntPtr[] sampledTriangles)
         {
-            Vector3[] points = new Vector3[sampledTriangles.Length / 3];
-            Vector3[] normals = new Vector3[sampledTriangles.Length / 3];
-            UIntPtr pointsLength = (UIntPtr)points.Length;
+            UIntPtr pointsLength = (UIntPtr)sampledPoints.Length;
             UIntPtr sourceMeshVerticesLength = (UIntPtr)sourceMesh.vertices.Length;
-            UIntPtr sourceMeshTrianglesLength = (UIntPtr)(sourceMesh.vertices.Length / 3);
+            UIntPtr sourceMeshTrianglesLength = (UIntPtr)(sourceTriangles.Length / 3);
             unsafe
             {
-                fixed (Vector3* pointsPtr = points, normalsPtr = normals,
+                fixed (Vector3* pointsPtr = sampledPoints, normalsPtr = sampledNormals,
                        sourceVerticesPtr = sourceMesh.vertices, sourceNormalsPtr = sourceMesh.normals)
                 {
                     Vec_Vertex_t pointsV = new Vec_Vertex_t
@@ -271,8 +271,8 @@ namespace Pincushion
                     }
                 }
             }
-            mesh.SetVertices(points);
-            mesh.SetNormals(normals);
+            mesh.SetVertices(sampledPoints);
+            mesh.SetNormals(sampledNormals);
         }
 
 
