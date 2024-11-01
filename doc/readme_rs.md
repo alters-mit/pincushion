@@ -31,4 +31,4 @@ To run the benchmark: `cargo bench benchmark --features obj`
 
 Results:
 
-Sampling: 53μs
+Sampling: 55μs
