@@ -1,6 +1,6 @@
-//! Uniformly sample points on a mesh.
+//! Uniform mesh sampler for Rust and Unity.
 //!
-//! Includes FFI-safe functions for Unity/C# bindings.
+#![doc = include_str!("../../doc/overview.md")]
 //!
 //! ### Usage
 //!

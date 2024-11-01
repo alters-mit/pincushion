@@ -77,6 +77,7 @@ namespace Pincushion
             // Set the layers.
             myRenderer.gameObject.layer = PincushionManager.sourceMeshesLayer;
             points.gameObject.layer = PincushionManager.sampledMeshesLayer;
+            points.name = "Sampled Mesh";
         }
 
 

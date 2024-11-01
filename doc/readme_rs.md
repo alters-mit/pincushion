@@ -3,23 +3,17 @@
 - `obj` adds a `Mesh::from_obj(path)` function to load a mesh from a .obj file.
 - `cs` should only be enabled when generating the C# code (see below).
 
-### Create C# Code
+### Create C# Native Bindings
 
-1. Create the C# native bindings:
+The `PincushionCs` code can call the native `pincushion` Rust library via auto-generated native binding methods.
+
+To regenerate the native bindings:
 
 ```sh
 cargo run --bin cs --features cs
 ```
 
 The file will be at `../PincushionCs/NativeBindings.cs`
-
-2. Compile the native Rust library:
-
-```sh
-cargo build --release
-```
-
-The library will be located in `target/release/`
 
 ### Example
 
@@ -31,4 +25,8 @@ To run the benchmark: `cargo bench benchmark --features obj`
 
 Results:
 
-Sampling: 55μs
+Sample points: 44μs
+
+Sample triangles: 28μs
+
+Sample points from pre-sampled triangles: 7μs

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 
 
 namespace Pincushion
@@ -19,7 +20,7 @@ namespace Pincushion
         /// </summary>
         public Color backgroundColor = Color.black;
         /// <summary>
-        /// This controls what gets occluded and what occludes.
+        /// This controls how Pincushion is rendered.
         /// </summary>
         public PincushionRenderMode renderMode = PincushionRenderMode.OccludeBehind;
         /// <summary>
@@ -148,6 +149,7 @@ namespace Pincushion
                 if (distanceCamera == null)
                 {
                     GameObject distanceCameraObject = new GameObject();
+                    distanceCameraObject.name = "Distance Camera";
                     Transform distanceCameraTransform = distanceCameraObject.transform;
                     distanceCameraTransform.parent = mainCamera.transform;
                     distanceCameraTransform.localPosition = Vector3.zero;
@@ -233,14 +235,27 @@ namespace Pincushion
             sampledMeshesLayer = LayerMask.NameToLayer(sampledMeshesLayerName);
             sourceMeshesCullingMask = 1 << sourceMeshesLayer;
             sampledMeshesCullingMask = 1 << sampledMeshesLayer;
-            
-            // Initialize the pincushions.
-            PincushionRenderer[] pincushions = FindObjectsOfType<PincushionRenderer>(true);
-            for (int i = 0; i < pincushions.Length; i++)
+
+            // Get all renderers in the source meshes layer and add Pincushion renderers.
+            foreach (Renderer r in FindObjectsOfType<Renderer>().Where(r => r.gameObject.layer == sourceMeshesLayer))
             {
-                pincushions[i].Initialize();
+                PincushionRenderer pincushion;
+                if (r is MeshRenderer)
+                {
+                    pincushion = r.gameObject.AddComponent<PincushionMeshRenderer>();
+                }
+                else if (r is SkinnedMeshRenderer)
+                {
+                    pincushion = r.gameObject.AddComponent<PincushionSkinnedMeshRenderer>();
+                }
+                else
+                {
+                    continue;
+                }
+                // Initialize the renderer.
+                pincushion.Initialize();
             }
-            
+
             // Initialize Pincushion.
             Set();
         }
