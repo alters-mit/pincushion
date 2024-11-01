@@ -1,4 +1,5 @@
-﻿Shader "Pincushion/PincushionReplacement"
+﻿// This is a replacement shader used by the camera when the render mode is OccludeBehind.
+Shader "Pincushion/PincushionReplacement"
 {
 	SubShader
 	{
@@ -57,10 +58,12 @@
 			[maxvertexcount(4)]
 			void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 			{
+				// Each gf2 will store this value.
 				float distanceToCamera;
 				float4 v[4];
 				g2f pIn = start_g2f(p[0], distanceToCamera, v);
 
+				// Get the screen position and convert it to UV coordinates.
 				float4 screenPositionFull = ComputeScreenPos(UnityObjectToClipPos(p[0].vertex));
 				const float2 distanceUv = screenPositionFull.xy / screenPositionFull.w;
 				

@@ -1,4 +1,6 @@
-﻿Shader "Pincushion/Pincushion" {
+﻿// This shader is used for all render modes except OccludeBehind.
+// It is assigned to the PincushionRenderer.
+Shader "Pincushion/Pincushion" {
 	Properties {
 		_MainTex ("Albedo (RGB)", 2D) = "white" {}
 		_Color ("Color", Color) = (0.9, 0.9, 0.9, 1)
@@ -55,6 +57,7 @@
 
 				#if _OCCLUDE_BACKFACING
 
+				// Hide points facing away from the camera.
 				// Source: https://discussions.unity.com/t/camera-forward-vector-in-shader/32664/4
 				half3 normal = UnityObjectToWorldNormal(v.normal);
 				half3 worldVert = mul(unity_ObjectToWorld, v.vertex);

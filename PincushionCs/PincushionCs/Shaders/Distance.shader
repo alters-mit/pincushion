@@ -1,4 +1,5 @@
-﻿Shader "Pincushion/Distance" {
+﻿// This shader gets the distance of each vertex from the camera and renders it to a texture.
+Shader "Pincushion/Distance" {
 	SubShader {
 		Tags { "Queue" = "Background" "RenderType" = "Opaque" }
 		
