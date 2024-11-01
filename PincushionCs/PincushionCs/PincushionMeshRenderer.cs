@@ -5,7 +5,7 @@ namespace Pincushion
 {
     /// <summary>
     /// Sample points on a MeshRenderer and convert it into a mesh.
-    /// The mesh is sampled exactly once unless manually requested via Set().
+    /// The mesh is sampled exactly once unless manually resampled from PincushionManager.
     /// </summary>
     [RequireComponent(typeof(MeshFilter))]
     [RequireComponent(typeof(Renderer))]

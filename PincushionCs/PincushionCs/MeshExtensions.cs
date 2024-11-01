@@ -12,6 +12,7 @@ namespace Pincushion
     {
         /// <summary>
         /// Uniformly sample points on a mesh.
+        /// Returns a new mesh containing the sampled data (points, triangles, normals).
         /// </summary>
         /// <param name="mesh">(this)</param>
         /// <param name="pointsPerM">The number of points per square meter.</param>
@@ -111,7 +112,7 @@ namespace Pincushion
 
         
         /// <summary>
-        /// Set the triangles at which points can be sampled.
+        /// Returns the triangles at which points can be sampled.
         /// This is useful for deformable meshes in situations where the positions will change but not the triangles we want to derive positions from.
         /// </summary>
         /// <param name="mesh">(this)</param>

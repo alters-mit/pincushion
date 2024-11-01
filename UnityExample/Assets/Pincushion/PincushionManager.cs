@@ -4,6 +4,11 @@ using UnityEngine;
 
 namespace Pincushion
 {
+    /// <summary>
+    /// Singleton manager class for Pincushion.
+    /// To use Pincushion, add this to the scene, assign mainCamera, and set other parameters as-desired.
+    /// See README for more information.
+    /// </summary>
     public class PincushionManager : MonoBehaviour
     {
         /// <summary>
