@@ -54,7 +54,7 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="PincushionManager.cs" />
-        <Compile Include="PincushionOcclusionMode.cs" />
+        <Compile Include="PincushionRenderMode.cs" />
         <Compile Include="PincushionSkinnedMeshRenderer.cs" />
         <Compile Include="MeshExtensions.cs" />
         <Compile Include="PincushionNativeBindings.cs" />

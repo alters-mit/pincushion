@@ -6,10 +6,40 @@ namespace Pincushion
     public class PincushionManager : MonoBehaviour
     {
         /// <summary>
+        /// The main camera used for viewing the sampled points.
+        /// </summary>
+        [Header("Camera")]
+        public Camera mainCamera;
+        /// <summary>
+        /// If true, set the background color to Background Color.
+        /// </summary>
+        public bool setBackgroundColor = true;
+        /// <summary>
+        /// The solid color of the background.
+        /// </summary>
+        public Color backgroundColor = Color.black;
+        /// <summary>
+        /// This controls what gets occluded and what occludes.
+        /// </summary>
+        public PincushionRenderMode renderMode = PincushionRenderMode.OccludeBehind;
+        /// <summary>
+        /// All source mesh objects will be set to this layer.
+        /// </summary>
+        public string sourceMeshesLayerName = "Default";
+        /// <summary>
+        /// All sampled mesh objects will be set to this layer.
+        /// </summary>
+        public string sampledMeshesLayerName = "TransparentFX";
+        /// <summary>
         /// The texture used to render the points.
         /// Can be null, in which case a default texture is used.
         /// </summary>
+        [Header("Points")]
         public Texture2D texture;
+        /// <summary>
+        /// The color of each point.
+        /// </summary>
+        public Color color = Color.white;
         /// <summary>
         /// The number of points per square meter.
         /// </summary>
@@ -28,35 +58,45 @@ namespace Pincushion
         /// </summary>
         public bool scalePointsPerMByCameraDistance;
         /// <summary>
-        /// The color of each point.
-        /// </summary>
-        public Color color = Color.white;
-        /// <summary>
-        /// This controls what gets occluded and what occludes.
-        /// </summary>
-        public PincushionOcclusionMode occlusionMode = PincushionOcclusionMode.Behind;
-        /// <summary>
-        /// All source mesh objects will be set to this layer.
-        /// </summary>
-        public string sourceMeshesLayerName = "Default";
-        /// <summary>
-        /// All sampled mesh objects will be set to this layer.
-        /// </summary>
-        public string sampledMeshesLayerName = "TransparentFX";
-        /// <summary>
         /// Set the objects to this material.
         /// </summary>
         [HideInInspector]
         public Material material;
+        /// <summary>
+        /// The source meshes' layer.
+        /// </summary>
         public static int sourceMeshesLayer;
+        /// <summary>
+        /// The sampled meshes' layer.
+        /// </summary>
         public static int sampledMeshesLayer;
-        private Camera mainCamera;
-        private Camera distanceCamera;
+        /// <summary>
+        /// A layer mask for culling everything except the source meshes.
+        /// </summary>
         private int sourceMeshesCullingMask;
+        /// <summary>
+        /// A layer mask for culling everything except the sample meshes.
+        /// </summary>
         private int sampledMeshesCullingMask;
-        [SerializeField]
+        /// <summary>
+        /// The camera used for getting the distance of everything in the scene.
+        /// </summary>
+        private Camera distanceCamera;
+        /// <summary>
+        /// The distance camera will render to this texture.
+        /// </summary>
         private RenderTexture rt;
+        /// <summary>
+        /// The original clear flags of the camera.
+        /// </summary>
+        private CameraClearFlags mainCameraClearFlags;
+        /// <summary>
+        /// Singleton instance. Never call this directly!
+        /// </summary>
         private static PincushionManager _instance;
+        /// <summary>
+        /// Singleton instance.
+        /// </summary>
         public static PincushionManager Instance
         {
             get
@@ -70,27 +110,37 @@ namespace Pincushion
         }
 
 
-        public void Sample()
+        /// <summary>
+        /// Initialize or reinitialize Pincushion.
+        ///
+        /// - Set the rendering parameters depending on the render mode.
+        /// - Sample the meshes
+        /// </summary>
+        public void Set()
         {
             // Load a default texture.
             if (texture == null)
             {
                 texture = Resources.Load<Texture2D>("pincushion_point");
             }
-            // Prepare the Pincushion replacement shader.
-            if (mainCamera == null)
-            {
-                mainCamera = Camera.main;
-            }
-            // Set the material.
-            if (occlusionMode == PincushionOcclusionMode.Behind)
-            {
-                // Prepare the distance shader.
-                material = new Material(Shader.Find("Pincushion/Distance"));
 
+            // Show the source meshes.
+            if (renderMode == PincushionRenderMode.DoNot)
+            {
+                // Set the main camera to see everything.
+                mainCamera.cullingMask = ~0;
+                // Remove the replacement shader.
+                mainCamera.ResetReplacementShader();
+                // Restore the clear flags.
+                mainCamera.clearFlags = mainCameraClearFlags;
+            }
+            else if (renderMode == PincushionRenderMode.OccludeBehind)
+            {
                 // Set the render texture.
                 if (rt == null)
                 {
+                    // The render texture is used to store the distance of every pixel from the camera.
+                    // Therefore, we only need a single 32bit channel.
                     rt = new RenderTexture(Screen.width, Screen.height, 16, RenderTextureFormat.RFloat);
                 }
                 
@@ -113,8 +163,12 @@ namespace Pincushion
                     distanceCamera.targetTexture = rt;
                 }
                 
+                // Set global shader properties.
                 SetShader();
-
+                
+                // Set the background.
+                SetPincushionBackground();
+                
                 // Set the culling masks.
                 mainCamera.cullingMask = sampledMeshesCullingMask;
                 distanceCamera.cullingMask = sourceMeshesCullingMask;
@@ -129,8 +183,10 @@ namespace Pincushion
                 {
                     material = new Material(Shader.Find("Pincushion/Pincushion"));          
                 }
+                
                 SetShader();
-                if (occlusionMode == PincushionOcclusionMode.Backfacing)
+                
+                if (renderMode == PincushionRenderMode.HideBackfacing)
                 {
                     Shader.EnableKeyword("_OCCLUDE_BACKFACING");   
                 }
@@ -140,29 +196,37 @@ namespace Pincushion
                 {
                     distanceCamera.enabled = false;
                 }
+                
+                SetPincushionBackground();
+                
                 // Set the main camera to see everything.
                 mainCamera.cullingMask = ~0;
                 // Remove the replacement shader.
                 mainCamera.ResetReplacementShader();
             }
 
-            // Get all renderers in the scene, including inactive ones.
+            // Decide which meshes to render.
+            bool showSourceMeshes = renderMode == PincushionRenderMode.DoNot || 
+                                    renderMode == PincushionRenderMode.WithSourceMeshes;
+            bool showSampledMeshes = renderMode != PincushionRenderMode.DoNot;
+            // Find the pincushions, including those that are inactive.
             PincushionRenderer[] pincushions = FindObjectsOfType<PincushionRenderer>(true);
-            bool showOriginalMeshes = occlusionMode == PincushionOcclusionMode.None ||
-                                      occlusionMode == PincushionOcclusionMode.Behind;
             for (int i = 0; i < pincushions.Length; i++)
             {
                 // Sample the mesh and apply rendering settings.
-                pincushions[i].Sample();
+                pincushions[i].Sample(mainCamera);
                 // Set visibility.
-                pincushions[i].SetOriginalMeshVisibility(showOriginalMeshes);
-                pincushions[i].SetSampledMeshVisibility(true);
+                pincushions[i].SetSourceMeshVisibility(showSourceMeshes);
+                pincushions[i].SetSampledMeshVisibility(showSampledMeshes);
             }
         }
 
 
         private void Awake()
         {
+            // Store the clear flags.
+            mainCameraClearFlags = mainCamera.clearFlags;
+
             // Set the layers. For now, we're using the names of some default layers.
             sourceMeshesLayer = LayerMask.NameToLayer(sourceMeshesLayerName);
             sampledMeshesLayer = LayerMask.NameToLayer(sampledMeshesLayerName);
@@ -177,7 +241,7 @@ namespace Pincushion
             }
             
             // Initialize Pincushion.
-            Sample();
+            Set();
         }
 
         /// <summary>
@@ -194,6 +258,19 @@ namespace Pincushion
             }  
         }
 
+
+        /// <summary>
+        /// Set a solid background color.
+        /// </summary>
+        private void SetPincushionBackground()
+        {
+            if (setBackgroundColor)
+            {
+                mainCamera.clearFlags = CameraClearFlags.SolidColor;
+                mainCamera.backgroundColor = backgroundColor;
+            }
+        }
+        
 
         private void OnDestroy()
         {

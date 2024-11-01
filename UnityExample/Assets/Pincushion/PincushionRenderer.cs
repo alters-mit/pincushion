@@ -21,7 +21,8 @@ namespace Pincushion
         /// <summary>
         /// Sample points and set the mesh(es).
         /// </summary>
-        public void Sample()
+        /// <param name="cam">The main camera.</param>
+        public void Sample(Camera cam)
         {
             Vector3 s = transform.localScale;
             PincushionManager instance = PincushionManager.Instance;
@@ -30,7 +31,7 @@ namespace Pincushion
             // Scale the number of points.
             if (instance.scalePointsPerMByCameraDistance)
             {
-                pointsPerM *= 1f / (0.1f * Vector3.Distance(Camera.main.transform.position, transform.position));
+                pointsPerM *= 1f / (0.1f * Vector3.Distance(cam.transform.position, transform.position));
             }
             
             SampleMesh(pointsPerM, instance);
@@ -41,7 +42,7 @@ namespace Pincushion
         /// Toggle the visibility of the original mesh.
         /// </summary>
         /// <param name="visible">If true, the mesh will be visible.</param>
-        public void SetOriginalMeshVisibility(bool visible)
+        public void SetSourceMeshVisibility(bool visible)
         {
             myRenderer.enabled = visible;
         }
@@ -70,7 +71,7 @@ namespace Pincushion
             t.parent = transform;
             t.localPosition = Vector3.zero;
             t.localRotation = Quaternion.identity;
-            Vector3 s = transform.localScale;
+            Vector3 s = t.parent.localScale;
             t.localScale = new Vector3(1 / s.x, 1 / s.y, 1 / s.z);
             
             // Set the layers.

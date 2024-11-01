@@ -45,8 +45,6 @@ namespace Pincushion
             
             skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
             bakedMesh = new Mesh();
-            
-            // Set the mesh.
             sampledMeshFilter = points.AddComponent<MeshFilter>();
             sampledMeshRenderer = points.AddComponent<MeshRenderer>();
         }
