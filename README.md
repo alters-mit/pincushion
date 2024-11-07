@@ -55,13 +55,16 @@ This repo has three components:
 | Main Camera | The camera that will render Pincushion. |
 | Set Background Color | If true, the background of the scene will be Background Color. If false, the background won't change. |
 | Background Color | The solid color of the background. |
+| Source Meshes Layer Name | All source mesh objects will be set to this layer. |
+| Sampled Meshes Layer Name | All sampled mesh objects will be set to this layer. |
+| Points Per M | The number of sampled points per square meter on the mesh surface. |
+| Multiply Points Per M By Camera Distance | If true, multiply the number of points by the object's initial distance from the camera. |
+| Multiply Points Per M By Object Scale | If true, multiply the number of points by the object's initial uniform scale. |
 | Render Mode | This controls how Pincushion is rendered (see below). |
 | Texture | The texture of each point. |
 | Color | The color of each point. |
-| Points Per M | The number of sampled points per square meter on the mesh surface. |
 | Point Radius | The radius of each point in meters. |
 | Constant Scaling | If true, every point will render at the same size. |
-| Scale Points Per M By Camera | If true, scale the number of points by the object's initial distance from the camera. |
 
 ### Render Modes
 

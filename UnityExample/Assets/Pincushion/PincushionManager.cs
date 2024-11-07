@@ -1,4 +1,7 @@
 ﻿using System.Linq;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Jobs;
 using UnityEngine;
 
 
@@ -25,10 +28,6 @@ namespace Pincushion
         /// </summary>
         public Color backgroundColor = Color.black;
         /// <summary>
-        /// This controls how Pincushion is rendered.
-        /// </summary>
-        public PincushionRenderMode renderMode = PincushionRenderMode.OccludeBehind;
-        /// <summary>
         /// All source mesh objects will be set to this layer.
         /// </summary>
         public string sourceMeshesLayerName = "Default";
@@ -37,19 +36,32 @@ namespace Pincushion
         /// </summary>
         public string sampledMeshesLayerName = "TransparentFX";
         /// <summary>
+        /// The number of points per square meter.
+        /// </summary>
+        [Header("Sampling")] 
+        public float pointsPerM = 80f;
+        /// <summary>
+        /// If true, multiply the number of points by the object's initial distance from the camera.
+        /// </summary>
+        public bool multiplyPointsPerMByCameraDistance;
+        /// <summary>
+        /// If true, multiply the number of points by the object's initial uniform scale.
+        /// </summary>
+        public bool multiplyPointsPerMByObjectScale = true;
+        /// <summary>
+        /// This controls how Pincushion is rendered.
+        /// </summary>
+        [Header("Rendering")]
+        public PincushionRenderMode renderMode = PincushionRenderMode.OccludeBehind;
+        /// <summary>
         /// The texture used to render the points.
         /// Can be null, in which case a default texture is used.
         /// </summary>
-        [Header("Points")]
         public Texture2D texture;
         /// <summary>
         /// The color of each point.
         /// </summary>
         public Color color = Color.white;
-        /// <summary>
-        /// The number of points per square meter.
-        /// </summary>
-        public float pointsPerM = 80f;
         /// <summary>
         /// The radius of each point in meters.
         /// </summary>
@@ -59,10 +71,6 @@ namespace Pincushion
         /// If false, scale the points normally. 
         /// </summary>
         public bool constantScaling;
-        /// <summary>
-        /// Increase the number of points on closer objects. 
-        /// </summary>
-        public bool scalePointsPerMByCameraDistance;
         /// <summary>
         /// Set the objects to this material.
         /// </summary>

@@ -80,7 +80,7 @@ namespace Pincushion
         }
 
 
-        private void Update()
+        private void OnRenderObject()
         {
             if (sampledMeshRenderer.enabled)
             {

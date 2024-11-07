@@ -24,12 +24,15 @@ namespace Pincushion
         /// <param name="cam">The main camera.</param>
         public void Sample(Camera cam)
         {
-            Vector3 s = transform.localScale;
             PincushionManager instance = PincushionManager.Instance;
-            float pointsPerM = instance.pointsPerM * s.magnitude;
+            float pointsPerM = instance.pointsPerM;
             
-            // Scale the number of points.
-            if (instance.scalePointsPerMByCameraDistance)
+            // Multiply the number of points.
+            if (instance.multiplyPointsPerMByObjectScale)
+            {
+                pointsPerM *= transform.localScale.magnitude;
+            }
+            if (instance.multiplyPointsPerMByCameraDistance)
             {
                 pointsPerM *= 1f / (0.1f * Vector3.Distance(cam.transform.position, transform.position));
             }
