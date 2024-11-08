@@ -202,18 +202,23 @@ namespace Pincushion
         /// </summary>
         /// <param name="mesh">(this)</param>
         /// <param name="sourceMesh">The source mesh.</param>
-        /// <param name="sampledMesh">The sampled mesh data.</param>
-        public static void SetVerticesFromSampledTriangles(this Mesh mesh, Mesh sourceMesh, PincushionSampledMesh sampledMesh)
+        /// <param name="sourceMeshData">The source mesh data.</param>
+        /// <param name="sampledMeshData">The sampled mesh data.</param>
+        public static void SetVerticesFromSampledTriangles(this Mesh mesh, Mesh sourceMesh,
+            PincushionMesh sourceMeshData, PincushionMesh sampledMeshData)
         {
-            UIntPtr pointsLength = (UIntPtr)sampledMesh.vertices.Length;
-            UIntPtr sourceMeshVerticesLength = (UIntPtr)sourceMesh.vertices.Length;
-            UIntPtr sourceMeshTrianglesLength = (UIntPtr)(sampledMesh.triangles.Length / 3);
+            UIntPtr pointsLength = (UIntPtr)sampledMeshData.vertices.Length;
+            // Copy the vertices to skip a lot of allocations.
+            Array.Copy(sourceMesh.vertices, sourceMeshData.vertices, sourceMeshData.vertices.Length);
+            Array.Copy(sourceMesh.normals, sourceMeshData.normals, sourceMeshData.normals.Length);
+            UIntPtr sourceMeshVerticesLength = (UIntPtr)sourceMeshData.vertices.Length;
+            UIntPtr sourceMeshTrianglesLength = (UIntPtr)(sampledMeshData.triangles.Length / 3);
             unsafe
             {
-                fixed (Vector3* pointsPtr = sampledMesh.vertices,
-                       normalsPtr = sampledMesh.normals,
-                       sourceVerticesPtr = sourceMesh.vertices,
-                       sourceNormalsPtr = sourceMesh.normals)
+                fixed (Vector3* pointsPtr = sampledMeshData.vertices,
+                       normalsPtr = sampledMeshData.normals,
+                       sourceVerticesPtr = sourceMeshData.vertices,
+                       sourceNormalsPtr = sourceMeshData.normals)
                 {
                     Vec_Vertex_t pointsV = new Vec_Vertex_t
                     {
@@ -240,8 +245,8 @@ namespace Pincushion
                         cap = sourceMeshVerticesLength
                     };
                     // Deterministically sample the points.
-                    fixed (UIntPtr* sampledTrianglesPtr = sampledMesh.triangles, 
-                           sourceMeshTrianglesPtr = sampledMesh.sourceTriangles) 
+                    fixed (UIntPtr* sampledTrianglesPtr = sampledMeshData.triangles, 
+                           sourceMeshTrianglesPtr = sourceMeshData.triangles) 
                     {
                         Vec_Triangle_t sampledTrianglesV = new Vec_Triangle_t
                         {
@@ -272,8 +277,8 @@ namespace Pincushion
                     }
                 }
             }
-            mesh.SetVertices(sampledMesh.vertices);
-            mesh.SetNormals(sampledMesh.normals);
+            mesh.SetVertices(sampledMeshData.vertices);
+            mesh.SetNormals(sampledMeshData.normals);
         }
 
 

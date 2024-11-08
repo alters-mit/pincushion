@@ -5,9 +5,9 @@ using UnityEngine;
 namespace Pincushion
 {
     /// <summary>
-    /// Sampled and pre-sampled mesh data used by PincushionSkinnedMeshRenderer.
+    /// Mesh data used by PincushionSkinnedMeshRenderer.
     /// </summary>
-    public struct PincushionSampledMesh
+    public struct PincushionMesh
     {
         /// <summary>
         /// The sampled points.

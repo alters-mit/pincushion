@@ -61,7 +61,7 @@
         <Compile Include="PincushionMeshRenderer.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="PincushionRenderer.cs" />
-        <Compile Include="PincushionSampledMesh.cs" />
+        <Compile Include="PincushionMesh.cs" />
     </ItemGroup>
     <ItemGroup>
       <None Include="packages.config" />
