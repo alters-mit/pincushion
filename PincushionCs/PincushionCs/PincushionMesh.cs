@@ -21,9 +21,5 @@ namespace Pincushion
         /// The sampled normals.
         /// </summary>
         public Vector3[] normals;
-        /// <summary>
-        /// The triangles of the source mesh.
-        /// </summary>
-        public UIntPtr[] sourceTriangles;
     }
 }
