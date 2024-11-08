@@ -22,21 +22,9 @@ namespace Pincushion
         /// </summary>
         private SkinnedMeshRenderer skinnedMeshRenderer;
         /// <summary>
-        /// A cached array of triangles from the source mesh.
+        /// The sampled mesh data.
         /// </summary>
-        private UIntPtr[] sourceTriangles;
-        /// <summary>
-        /// A cached array of points, used to quickly re-sample positions.
-        /// </summary>
-        private Vector3[] sampledPoints;
-        /// <summary>
-        /// A cached array of normals, used to quickly re-sample positions.
-        /// </summary>
-        private Vector3[] sampledNormals;
-        /// <summary>
-        /// A cached array of triangles, used to quickly re-sample positions.
-        /// </summary>
-        private UIntPtr[] sampledTriangles;
+        private PincushionSampledMesh sampledMesh;
         /// <summary>
         /// The MeshFilter that handles the sampled points.
         /// </summary>
@@ -48,7 +36,7 @@ namespace Pincushion
         /// <summary>
         /// This is used to re-sample points.
         /// </summary>
-        private Mesh bakedMesh;
+        private Mesh sourceMesh;
         
         
         public override void Initialize()
@@ -56,7 +44,7 @@ namespace Pincushion
             base.Initialize();
             
             skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
-            bakedMesh = new Mesh();
+            sourceMesh = new Mesh();
             sampledMeshFilter = points.AddComponent<MeshFilter>();
             sampledMeshRenderer = points.AddComponent<MeshRenderer>();
         }
@@ -66,16 +54,21 @@ namespace Pincushion
         {
             sampledMeshRenderer.sharedMaterial = instance.material;
             // Sample the triangles.
-            sourceTriangles = skinnedMeshRenderer.sharedMesh.GetTriangles();
-            sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude, sourceTriangles);
-            // Allocate the sampling arrays.
-            sampledPoints = new Vector3[sampledTriangles.Length / 3];
-            sampledNormals = new Vector3[sampledTriangles.Length / 3];
+            UIntPtr[] sourceTriangles = skinnedMeshRenderer.sharedMesh.GetTriangles();
+            UIntPtr[] sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude, sourceTriangles);
+            // Allocate the sampling data.
+            sampledMesh = new PincushionSampledMesh
+            {
+                vertices = new Vector3[sampledTriangles.Length / 3],
+                triangles = sampledTriangles,
+                normals = new Vector3[sampledTriangles.Length / 3],
+                sourceTriangles = sourceTriangles
+            };
             // Create the mesh.
             Mesh mesh = new Mesh();
-            mesh.vertices = new Vector3[sampledTriangles.Length / 3];
-            mesh.normals = new Vector3[sampledTriangles.Length / 3];
-            mesh.triangles = new int[sampledTriangles.Length];
+            mesh.vertices = new Vector3[sampledMesh.vertices.Length];
+            mesh.normals = new Vector3[sampledMesh.normals.Length];
+            mesh.triangles = new int[sampledMesh.triangles.Length];
             sampledMeshFilter.mesh = mesh;
         }
 
@@ -84,10 +77,9 @@ namespace Pincushion
         {
             if (sampledMeshRenderer.enabled)
             {
-                skinnedMeshRenderer.BakeMesh(bakedMesh);
+                skinnedMeshRenderer.BakeMesh(sourceMesh);
                 // Set the positions of the points.
-                sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(bakedMesh, sourceTriangles, 
-                    sampledPoints, sampledNormals, sampledTriangles);
+                sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(sourceMesh, sampledMesh);
                 sampledMeshFilter.mesh.SetPointTopology();           
             }
         }
