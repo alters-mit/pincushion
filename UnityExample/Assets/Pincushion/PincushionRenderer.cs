@@ -6,7 +6,7 @@ namespace Pincushion
     /// <summary>
     /// Abstract base class that creates or replaces a mesh with sampled points.
     /// </summary>
-    public abstract class PincushionRenderer<T> : MonoBehaviour where T: PincushionRenderer<T>
+    public abstract class PincushionRenderer : MonoBehaviour
     {
         /// <summary>
         /// The object that renders the points.
@@ -19,7 +19,7 @@ namespace Pincushion
         /// <summary>
         /// The material used to render the points.
         /// </summary>
-        protected static Material material;
+        protected Material material;
 
 
         /// <summary>
@@ -87,10 +87,7 @@ namespace Pincushion
             points.name = "Sampled Mesh";
             
             // Set the shared material.
-            if (material == null)
-            {
-                material = new Material(Shader.Find("Pincushion/" + GetShaderName()));
-            }
+            material = new Material(Shader.Find("Pincushion/" + GetShaderName()));
         }
 
 

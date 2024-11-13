@@ -226,14 +226,7 @@ namespace Pincushion
                                     renderMode == PincushionRenderMode.OccludeBehind;
             bool showSampledMeshes = renderMode != PincushionRenderMode.DoNot;
             // Find the pincushions, including those that are inactive.
-            SetPincushionsVisibility<PincushionMeshRenderer>(showSourceMeshes, showSampledMeshes);
-            SetPincushionsVisibility<PincushionSkinnedMeshRenderer>(showSourceMeshes, showSampledMeshes);
-        }
-
-
-        private void SetPincushionsVisibility<T>(bool showSourceMeshes, bool showSampledMeshes) where T : PincushionRenderer<T>
-        {
-            T[] pincushions = FindObjectsOfType<T>(true);
+            PincushionRenderer[] pincushions = FindObjectsOfType<PincushionRenderer>(true);
             for (int i = 0; i < pincushions.Length; i++)
             {
                 // Sample the mesh and apply rendering settings.

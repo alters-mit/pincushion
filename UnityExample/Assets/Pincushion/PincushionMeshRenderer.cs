@@ -9,7 +9,7 @@ namespace Pincushion
     /// </summary>
     [RequireComponent(typeof(MeshFilter))]
     [RequireComponent(typeof(Renderer))]
-    public class PincushionMeshRenderer : PincushionRenderer<PincushionMeshRenderer>
+    public class PincushionMeshRenderer : PincushionRenderer
     {
         protected override void SampleMesh(float pointsPerM)
         {

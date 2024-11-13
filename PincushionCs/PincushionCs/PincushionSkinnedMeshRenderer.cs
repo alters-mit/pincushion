@@ -15,7 +15,7 @@ namespace Pincushion
     /// This is in contrast to PincushionMeshRenderer, in which points are jostled randomly within their sampled triangles.
     /// </summary>
     [RequireComponent(typeof(SkinnedMeshRenderer))]
-    public class PincushionSkinnedMeshRenderer : PincushionRenderer<PincushionSkinnedMeshRenderer>
+    public class PincushionSkinnedMeshRenderer : PincushionRenderer
     {
         /// <summary>
         /// The renderer. This is set on Awake().
