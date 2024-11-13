@@ -1,29 +1,23 @@
 ### Features
 
-- `ffi` (default) will compile FFI-safe wrapper functions. This is required when compiling `pincushion` into a library that can be used in Unity.
+- `obj` adds a `Mesh::from_obj(path)` function to load a mesh from a .obj file.
 - `cs` should only be enabled when generating the C# code (see below).
 
-### Create C# Code
+### Create C# Native Bindings
 
-1. Create the C# files:
+The `PincushionCs` code can call the native `pincushion` Rust library via auto-generated native binding methods.
+
+To regenerate the native bindings:
 
 ```sh
 cargo run --bin cs --features cs
 ```
 
-The files will be in `../PincushionCs/`
-
-2. Compile the native Rust library:
-
-```sh
-cargo build --release
-```
-
-The library will be located in `target/release/`
+The file will be at `../PincushionCs/NativeBindings.cs`
 
 ### Example
 
-To run the example: `cargo run --example suzanne --featueres obj`
+To run the example: `cargo run --example suzanne --features obj`
 
 ### Benchmarks
 

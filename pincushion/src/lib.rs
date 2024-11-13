@@ -1,14 +1,17 @@
-//! Uniformly sample points on a mesh.
+//! Uniform mesh sampler for Rust and Unity.
 //!
-//! Includes FFI-safe functions for Unity/C# bindings.
+#![doc = include_str!("../../doc/overview.md")]
+//!
+//! Pincushion can be used as a typical Rust crate or as a native library in Unity.
+//! 
+//! This documentation is for the Rust crate. 
+//! Documentation for Unity/C# can be found [here](https://github.com/alters-mit/pincushion).
 //!
 //! ### Usage
 //!
 //! ```
 #![doc = include_str!("../examples/readme.rs")]
 //! ```
-//!
-//! Documentation for Unity/C# can be found [here](https://github.com/alters-mit/pincushion).
 //!
 #![doc = include_str!("../../doc/readme_rs.md")]
 

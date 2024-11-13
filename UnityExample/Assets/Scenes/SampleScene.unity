@@ -178,13 +178,17 @@ PrefabInstance:
       propertyPath: m_Name
       value: suzanne (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: db3df8007ce92a34fb183a7ed21e993f, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1151388028547126963, guid: db3df8007ce92a34fb183a7ed21e993f, type: 3}
       propertyPath: m_LocalPosition.z
       value: 0.85
       objectReference: {fileID: 0}
     - target: {fileID: 8164078558771037576, guid: db3df8007ce92a34fb183a7ed21e993f, type: 3}
       propertyPath: m_Layer
-      value: 6
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8164078558771037576, guid: db3df8007ce92a34fb183a7ed21e993f, type: 3}
       propertyPath: m_TagString
@@ -192,33 +196,62 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: db3df8007ce92a34fb183a7ed21e993f, type: 3}
---- !u!1 &232822177 stripped
+--- !u!1 &209450892
 GameObject:
-  m_CorrespondingSourceObject: {fileID: 8164078558771037576, guid: db3df8007ce92a34fb183a7ed21e993f, type: 3}
-  m_PrefabInstance: {fileID: 73067850}
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &232822179
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 209450894}
+  - component: {fileID: 209450893}
+  m_Layer: 0
+  m_Name: PincushionManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &209450893
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 232822177}
+  m_GameObject: {fileID: 209450892}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a459d9dc1f6c7c9459705267d85442bd, type: 3}
+  m_Script: {fileID: 11500000, guid: b85ed196132d8664ebfa9dd5e76f4d32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mainCamera: {fileID: 963194227}
+  setBackgroundColor: 1
+  backgroundColor: {r: 0, g: 0, b: 0, a: 1}
+  renderMode: 4
+  sourceMeshesLayerName: Default
+  sampledMeshesLayerName: TransparentFX
+  texture: {fileID: 0}
   color: {r: 1, g: 1, b: 1, a: 1}
-  texture: {fileID: 2800000, guid: f75919db7bb0d3c409be280d4ae6f3e8, type: 3}
   pointsPerM: 80
   pointRadius: 0.02
   constantScaling: 0
   scalePointsPerMByCameraDistance: 0
-  showOriginalMesh: 0
-  showSampledMesh: 1
-  occlusionMode: 2
-  occluderColor: {r: 0, g: 0, b: 0, a: 1}
+  material: {fileID: 0}
+--- !u!4 &209450894
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 209450892}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -395,33 +428,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
---- !u!1 &1196225406 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8164078558771037576, guid: db3df8007ce92a34fb183a7ed21e993f, type: 3}
-  m_PrefabInstance: {fileID: 1347204012}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1196225408
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1196225406}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a459d9dc1f6c7c9459705267d85442bd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  color: {r: 1, g: 1, b: 1, a: 1}
-  texture: {fileID: 2800000, guid: f75919db7bb0d3c409be280d4ae6f3e8, type: 3}
-  pointsPerM: 80
-  pointRadius: 0.02
-  constantScaling: 0
-  scalePointsPerMByCameraDistance: 0
-  showOriginalMesh: 0
-  showSampledMesh: 1
-  occlusionMode: 2
-  occluderColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!1001 &1347204012
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -483,7 +489,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8164078558771037576, guid: db3df8007ce92a34fb183a7ed21e993f, type: 3}
       propertyPath: m_Layer
-      value: 6
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8164078558771037576, guid: db3df8007ce92a34fb183a7ed21e993f, type: 3}
       propertyPath: m_TagString
