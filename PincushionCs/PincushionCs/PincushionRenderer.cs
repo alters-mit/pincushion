@@ -86,7 +86,7 @@ namespace Pincushion
             points.gameObject.layer = PincushionManager.sampledMeshesLayer;
             points.name = "Sampled Mesh";
             
-            // Set the shared material.
+            // Set the material.
             material = new Material(Shader.Find("Pincushion/" + GetShaderName()));
         }
 
