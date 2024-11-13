@@ -113,7 +113,12 @@ namespace Pincushion
                 
                 // Set the vertex and normal buffers.
                 sourceVerticesBuffer.SetData(sourceMesh.vertices);
-                sourceNormalsBuffer.SetData(sourceMesh.normals);
+
+                // We only care about normals when we have to find backfacing points.
+                if (PincushionManager.Instance.renderMode == PincushionRenderMode.HideBackfacing)
+                {
+                    sourceNormalsBuffer.SetData(sourceMesh.normals);
+                }
             }
         }
 
