@@ -106,7 +106,7 @@ namespace Pincushion
 
         private void OnRenderObject()
         {
-            if (sampledMeshRenderer.enabled)
+            if (sampledMeshRenderer.gameObject.activeSelf)
             {
                 // Bake the mesh to get the vertices and normals.
                 skinnedMeshRenderer.BakeMesh(sourceMesh);
@@ -114,8 +114,6 @@ namespace Pincushion
                 // Set the vertex and normal buffers.
                 sourceVerticesBuffer.SetData(sourceMesh.vertices);
                 sourceNormalsBuffer.SetData(sourceMesh.normals);
-                material.SetBuffer(sourceVerticesId, sourceVerticesBuffer);
-                material.SetBuffer(sourceNormalsId, sourceNormalsBuffer);
             }
         }
 
