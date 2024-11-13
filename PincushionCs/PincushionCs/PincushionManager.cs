@@ -288,7 +288,11 @@ namespace Pincushion
             if (constantScaling)
             {
                 Shader.EnableKeyword("_CONSTANT_SCALING");
-            }  
+            }
+            else
+            {
+                Shader.DisableKeyword("_CONSTANT_SCALING");
+            }
         }
 
 

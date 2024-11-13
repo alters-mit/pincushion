@@ -1,4 +1,4 @@
-﻿// Render deformable (dynamic) (skinned mesh) pincushion meshes.
+﻿// Render pincushions from SkinnedMeshRenderers.
 Shader "Pincushion/PincushionDynamic" {
 	SubShader {
 			Tags{ "Queue" = "Overlay" "IgnoreProjector" = "True" "RenderType" = "Transparent" "DisableBatching" = "True" }
@@ -18,48 +18,39 @@ Shader "Pincushion/PincushionDynamic" {
 
 			#include "Pincushion.cginc"
 			
-			Buffer<float3> sourceVertices;
-			Buffer<float3> sourceNormals;
-			Buffer<int3> sampledTriangles;
+			Buffer<float3> _PincushionSourceVertices;
+			Buffer<float3> _PincushionSourceNormals;
+			Buffer<int3> _PincushionSampledTriangles;
 
-			// Source: https://github.com/cinight/MinimalCompute/blob/master/Assets/06_Compute_Mesh/06_4_SkinnedMeshBuffer_DiffMesh/SkinnedMeshBuffer_diffMesh.shader
-			inline void get_position(in uint vertexID, out float3 vertex, out float3 normal)
-			{
-				// Get the triangle.
-				int3 tri = sampledTriangles[vertexID];
-
-				// Sample the point in the center of the triangle.
-				vertex = sourceVertices[tri.x] * u +
-					sourceVertices[tri.y] * v +
-						sourceVertices[tri.z] * w;
-				
-				// Get an average of the triangle's normals.
-				normal = (
-					sourceNormals[tri.x] +
-					sourceNormals[tri.y] +
-					sourceNormals[tri.z]
-					)
-				/ 3;
-			}
-
-			v2g vert (appdata v, uint vid : SV_VertexID)
+			v2g vert (appdata i, uint vid : SV_VertexID)
 			{
 				v2g o;
 				// set all values in the v2g o to 0.0
 				UNITY_INITIALIZE_OUTPUT(v2g, o);
 				// setup the instanced id to be accessed
-				UNITY_SETUP_INSTANCE_ID(v);
+				UNITY_SETUP_INSTANCE_ID(i);
 				// copy instance id in the appdata v to the v2g o
-				UNITY_TRANSFER_INSTANCE_ID(v, o);
+				UNITY_TRANSFER_INSTANCE_ID(i, o);
 
-				o.vertex = v.vertex;
+				// Get the triangle.
+				int3 tri = _PincushionSampledTriangles[vid];
 				
-				float3 normal;
-				get_position(vid, o.vertex.xyz, normal);
+				// Sample the point in the center of the triangle.
+				o.vertex = float4(_PincushionSourceVertices[tri.x] * u +
+					_PincushionSourceVertices[tri.y] * v +
+						_PincushionSourceVertices[tri.z] * w, 1);
 
 				#if _OCCLUDE_BACKFACING
+
+				// Get an average of the triangle's normals.
+				float3 normal = (
+					_PincushionSourceNormals[tri.x] +
+					_PincushionSourceNormals[tri.y] +
+					_PincushionSourceNormals[tri.z]
+					)
+				/ 3;
 				
-				occlude_backfacing(UnityObjectToWorldNormal(normal), v, o);
+				occlude_backfacing(UnityObjectToWorldNormal(normal), i, o);
 
 				#endif
 							

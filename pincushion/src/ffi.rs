@@ -42,13 +42,3 @@ pub fn sample_triangles(
 ) {
     mesh.set_sampled_triangles(area, sampled_triangles);
 }
-
-/// Given pre-sampled triangles, sample vertices.
-/// The position of the vertex relative to the spatial area of the triangle is deterministic.
-///
-/// - `mesh` The source mesh.
-/// - `sampled_mesh`: The sampled mesh, which contains pre-sampled triangles.
-#[ffi_export]
-pub fn set_points_from_sampled_triangles(mesh: &Mesh, sampled_mesh: &mut Mesh) {
-    mesh.set_presampled_mesh(sampled_mesh);
-}

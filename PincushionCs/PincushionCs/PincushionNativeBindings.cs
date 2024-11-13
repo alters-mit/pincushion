@@ -177,19 +177,5 @@ public unsafe partial class Ffi {
         Area_t * area);
 }
 
-public unsafe partial class Ffi {
-    /// <summary>
-    /// Given pre-sampled triangles, sample vertices.
-    /// The position of the vertex relative to the spatial area of the triangle is deterministic.
-    ///
-    /// - <c>mesh</c> The source mesh.
-    /// - <c>sampled_mesh</c>: The sampled mesh, which contains pre-sampled triangles.
-    /// </summary>
-    [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
-    void set_points_from_sampled_triangles (
-        Mesh_t /*const*/ * mesh,
-        Mesh_t * sampled_mesh);
-}
-
 
 } /* Pincushion */

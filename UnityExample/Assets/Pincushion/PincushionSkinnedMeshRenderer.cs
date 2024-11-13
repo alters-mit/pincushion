@@ -33,10 +33,26 @@ namespace Pincushion
         /// This is used to re-sample points.
         /// </summary>
         private Mesh sourceMesh;
-
+        /// <summary>
+        /// The buffer used to store the vertices of the source mesh.
+        /// </summary>
         private ComputeBuffer sourceVerticesBuffer;
+        /// <summary>
+        /// The buffer used to store the normals of the source mesh.
+        /// </summary>
         private ComputeBuffer sourceNormalsBuffer;
+        /// <summary>
+        /// The buffer used to store the sampled triangles.
+        /// </summary>
         private ComputeBuffer sampledTrianglesBuffer;
+        /// <summary>
+        /// The property ID of the source vertices buffer.
+        /// </summary>
+        private int sourceVerticesId;
+        /// <summary>
+        /// The property ID of the source normals buffer.
+        /// </summary>
+        private int sourceNormalsId;
         
         
         public override void Initialize()
@@ -54,9 +70,10 @@ namespace Pincushion
         {
             sampledMeshRenderer.sharedMaterial = material;
             // Sample the triangles.
-            UIntPtr[] sourceTriangles = skinnedMeshRenderer.sharedMesh.GetTriangles();
-            int[] sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude, sourceTriangles);
-            int numSourceVertices = skinnedMeshRenderer.sharedMesh.vertexCount;
+            Mesh skinnedMesh = skinnedMeshRenderer.sharedMesh;
+            UIntPtr[] sourceTriangles = skinnedMesh.GetTriangles();
+            int[] sampledTriangles = skinnedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude, sourceTriangles);
+            int numSourceVertices = skinnedMesh.vertexCount;
 
             sourceVerticesBuffer = new ComputeBuffer(numSourceVertices, 12);
             sourceNormalsBuffer = new ComputeBuffer(numSourceVertices, 12);
@@ -64,9 +81,12 @@ namespace Pincushion
             
             // Set the triangles buffer.
             sampledTrianglesBuffer.SetData(sampledTriangles);
-            material.SetBuffer("sourceVertices", sourceVerticesBuffer);
-            material.SetBuffer("sourceNormals", sourceNormalsBuffer);
-            material.SetBuffer("sampledTriangles", sampledTrianglesBuffer);
+            sourceVerticesId = Shader.PropertyToID("_PincushionSourceVertices");
+            sourceNormalsId = Shader.PropertyToID("_PincushionSourceNormals");
+            int sourceTrianglesId = Shader.PropertyToID("_PincushionSampledTriangles");
+            material.SetBuffer(sourceVerticesId, sourceVerticesBuffer);
+            material.SetBuffer(sourceNormalsId, sourceNormalsBuffer);
+            material.SetBuffer(sourceTrianglesId, sampledTrianglesBuffer);
             
             // Create the mesh.
             Mesh mesh = new Mesh();
@@ -94,8 +114,8 @@ namespace Pincushion
                 // Set the vertex and normal buffers.
                 sourceVerticesBuffer.SetData(sourceMesh.vertices);
                 sourceNormalsBuffer.SetData(sourceMesh.normals);
-                material.SetBuffer("sourceVertices", sourceVerticesBuffer);
-                material.SetBuffer("sourceNormals", sourceNormalsBuffer);
+                material.SetBuffer(sourceVerticesId, sourceVerticesBuffer);
+                material.SetBuffer(sourceNormalsId, sourceNormalsBuffer);
             }
         }
 

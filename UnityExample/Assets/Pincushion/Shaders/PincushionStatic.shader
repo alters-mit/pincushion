@@ -1,4 +1,4 @@
-﻿// Render static pincushion meshes.
+﻿// Render pincushions from MeshRenderers.
 Shader "Pincushion/PincushionStatic" {
 	SubShader {
 			Tags{ "Queue" = "Overlay" "IgnoreProjector" = "True" "RenderType" = "Transparent" "DisableBatching" = "True" }
