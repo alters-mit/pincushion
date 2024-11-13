@@ -12,6 +12,16 @@ namespace Pincushion
     public class PincushionManager : MonoBehaviour
     {
         /// <summary>
+        /// The shader keyword corresponding the render mode HideBackfacing.
+        /// </summary>
+        private const string OCCLUDE_BACKFACING = "_OCCLUDE_BACKFACING";
+        /// <summary>
+        /// The shader keyword corresponding the render mode OccludeBehind.
+        /// </summary>
+        private const string OCCLUDE_BEHIND = "_OCCLUDE_BEHIND";
+        
+        
+        /// <summary>
         /// The main camera used for viewing the sampled points.
         /// </summary>
         [Header("Camera")]
@@ -206,19 +216,19 @@ namespace Pincushion
             // Set or unset shader keywords depending on the render mode.
             if (renderMode == PincushionRenderMode.HideBackfacing)
             {
-                Shader.EnableKeyword("_OCCLUDE_BACKFACING");   
+                Shader.EnableKeyword(OCCLUDE_BACKFACING);   
             }
             else
             {
-                Shader.DisableKeyword("_OCCLUDE_BACKFACING");  
+                Shader.DisableKeyword(OCCLUDE_BACKFACING);  
             }
             if (renderMode == PincushionRenderMode.OccludeBehind)
             {
-                Shader.EnableKeyword("_OCCLUDE_BEHIND");
+                Shader.EnableKeyword(OCCLUDE_BEHIND);
             }
             else
             {
-                Shader.DisableKeyword("_OCCLUDE_BEHIND");  
+                Shader.DisableKeyword(OCCLUDE_BEHIND);  
             }
 
             // Decide which meshes to render.
