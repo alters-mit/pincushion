@@ -70,10 +70,6 @@
       <Content Include="Resources\pincushion_point.png" />
       <Content Include="Shaders\Distance.shader" />
       <Content Include="Shaders\Pincushion.shader" />
-      <Content Include="Shaders\PincushionReplacement.shader" />
-    </ItemGroup>
-    <ItemGroup>
-      <ClInclude Include="Shaders\Pincushion.cginc" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

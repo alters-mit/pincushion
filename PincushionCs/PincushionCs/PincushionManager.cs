@@ -175,46 +175,41 @@ namespace Pincushion
                     distanceCamera.targetTexture = rt;
                 }
                 
-                // Set global shader properties.
-                SetShader();
-                
-                // Set the background.
-                SetPincushionBackground();
-                
                 // Set the culling masks.
                 mainCamera.cullingMask = sampledMeshesCullingMask;
                 distanceCamera.cullingMask = sourceMeshesCullingMask;
-                
-                // Set the main camera's replacement shader.
-                mainCamera.SetReplacementShader(Shader.Find("Pincushion/PincushionReplacement"), "");
             }
             else
             {
-                // Prepare the Pincushion shader.
-                if (material == null)
-                {
-                    material = new Material(Shader.Find("Pincushion/Pincushion"));          
-                }
-                
-                SetShader();
-                
-                if (renderMode == PincushionRenderMode.HideBackfacing)
-                {
-                    Shader.EnableKeyword("_OCCLUDE_BACKFACING");   
-                }
-
                 // Hide the distance camera.
                 if (distanceCamera != null)
                 {
                     distanceCamera.enabled = false;
                 }
-                
-                SetPincushionBackground();
-                
+
                 // Set the main camera to see everything.
                 mainCamera.cullingMask = ~0;
-                // Remove the replacement shader.
-                mainCamera.ResetReplacementShader();
+            }
+            
+            // Prepare the Pincushion shader.
+            if (material == null)
+            {
+                material = new Material(Shader.Find("Pincushion/Pincushion"));          
+            }
+            
+            // Set global shader properties.
+            SetShader();
+            
+            // Set the background.
+            SetPincushionBackground();
+
+            if (renderMode == PincushionRenderMode.HideBackfacing)
+            {
+                Shader.EnableKeyword("_OCCLUDE_BACKFACING");   
+            }
+            else if (renderMode == PincushionRenderMode.OccludeBehind)
+            {
+                Shader.EnableKeyword("_OCCLUDE_BEHIND"); 
             }
 
             // Decide which meshes to render.
