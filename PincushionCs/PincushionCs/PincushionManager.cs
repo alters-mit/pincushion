@@ -203,13 +203,22 @@ namespace Pincushion
             // Set the background.
             SetPincushionBackground();
 
+            // Set or unset shader keywords depending on the render mode.
             if (renderMode == PincushionRenderMode.HideBackfacing)
             {
                 Shader.EnableKeyword("_OCCLUDE_BACKFACING");   
             }
-            else if (renderMode == PincushionRenderMode.OccludeBehind)
+            else
             {
-                Shader.EnableKeyword("_OCCLUDE_BEHIND"); 
+                Shader.DisableKeyword("_OCCLUDE_BACKFACING");  
+            }
+            if (renderMode == PincushionRenderMode.OccludeBehind)
+            {
+                Shader.EnableKeyword("_OCCLUDE_BEHIND");
+            }
+            else
+            {
+                Shader.DisableKeyword("_OCCLUDE_BEHIND");  
             }
 
             // Decide which meshes to render.
