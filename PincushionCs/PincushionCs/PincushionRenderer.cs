@@ -9,100 +9,46 @@ namespace Pincushion
     public abstract class PincushionRenderer : MonoBehaviour
     {
         /// <summary>
-        /// The color of each point.
-        /// </summary>
-        public Color color = Color.white;
-        /// <summary>
-        /// Use this texture to render each point.
-        /// </summary>
-        public Texture2D texture;
-        /// <summary>
-        /// The number of points per square meter.
-        /// </summary>
-        public float pointsPerM = 80f;
-        /// <summary>
-        /// The radius of each point in meters.
-        /// </summary>
-        public float pointRadius = 0.02f;
-        /// <summary>
-        /// If true, hide points facing away from the camera.
-        /// </summary>
-        public bool occludeBackFacing = true;
-        /// <summary>
-        /// If true, points will always render at the same size, regardless of distance.
-        /// If false, scale the points normally. 
-        /// </summary>
-        public bool constantScaling;
-        /// <summary>
-        /// Increase the number of points on closer objects. 
-        /// </summary>
-        public bool scalePointsPerMByCameraDistance;
-        /// <summary>
-        /// Toggles whether to show the original mesh on awake.
-        /// </summary>
-        public bool showOriginalMesh;
-        /// <summary>
-        /// Toggles whether to show the sampled mesh on awake.
-        /// </summary>
-        public bool showSampledMesh = true;
-        /// <summary>
         /// The object that renders the points.
         /// </summary>
         protected GameObject points;
-
-
-        private void Awake()
-        {
-            Initialize();
-            Set();
-            SetOriginalMeshVisibility(showOriginalMesh);
-            SetSampledMeshVisibility(showSampledMesh);
-        }
+        /// <summary>
+        /// The renderer component.
+        /// </summary>
+        private Renderer myRenderer;
 
 
         /// <summary>
         /// Sample points and set the mesh(es).
         /// </summary>
-        public void Set()
+        /// <param name="cam">The main camera.</param>
+        public void Sample(Camera cam)
         {
-            // Create the points object.
-            points = new GameObject();
-            Transform t = points.transform;
-            t.parent = transform;
-            t.localPosition = Vector3.zero;
-            t.localRotation = Quaternion.identity;
-            Vector3 s = transform.localScale;
-            t.localScale = new Vector3(1 / s.x, 1 / s.y, 1 / s.z);
+            PincushionManager instance = PincushionManager.Instance;
+            float pointsPerM = instance.pointsPerM;
             
-            pointsPerM *= transform.localScale.magnitude;
-            
-            // Scale the number of points.
-            if (scalePointsPerMByCameraDistance)
+            // Multiply the number of points.
+            if (instance.multiplyPointsPerMByObjectScale)
             {
-                pointsPerM *= 1f / (0.1f * Vector3.Distance(Camera.main.transform.position, transform.position));
+                pointsPerM *= transform.localScale.magnitude;
+            }
+            if (instance.multiplyPointsPerMByCameraDistance)
+            {
+                pointsPerM *= 1f / (0.1f * Vector3.Distance(cam.transform.position, transform.position));
             }
             
-            SetMesh();
+            SampleMesh(pointsPerM, instance);
         }
 
 
         /// <summary>
-        /// Initialize on Awake().
-        /// </summary>
-        protected abstract void Initialize();
-
-
-        /// <summary>
-        /// Sample points, create the sampled mesh, and set the material.
-        /// </summary>
-        protected abstract void SetMesh();
-
-        
-        /// <summary>
         /// Toggle the visibility of the original mesh.
         /// </summary>
         /// <param name="visible">If true, the mesh will be visible.</param>
-        public abstract void SetOriginalMeshVisibility(bool visible);
+        public void SetSourceMeshVisibility(bool visible)
+        {
+            myRenderer.enabled = visible;
+        }
         
         
         /// <summary>
@@ -116,24 +62,31 @@ namespace Pincushion
 
 
         /// <summary>
-        /// Returns the material used to render the sampled mesh.
+        /// Initialize the renderer. This is called by PincushionManager.
         /// </summary>
-        /// <returns></returns>
-        protected Material GetMaterial()
+        public virtual void Initialize()
         {
-            Material material = new Material(Shader.Find("Pincushion/Pincushion"));
-            material.SetColor("_Color", color);
-            material.SetTexture("_MainTex", texture);
-            material.SetFloat("_PointSize", pointRadius);
-            if (occludeBackFacing)
-            {
-                material.EnableKeyword("_OCCLUDE_BACKFACING");   
-            }
-            if (constantScaling)
-            {
-                material.EnableKeyword("_CONSTANT_SCALING");   
-            }
-            return material;
+            myRenderer = GetComponent<Renderer>();
+
+            // Create the points object.
+            points = new GameObject();
+            Transform t = points.transform;
+            t.parent = transform;
+            t.localPosition = Vector3.zero;
+            t.localRotation = Quaternion.identity;
+            Vector3 s = t.parent.localScale;
+            t.localScale = new Vector3(1 / s.x, 1 / s.y, 1 / s.z);
+            
+            // Set the layers.
+            myRenderer.gameObject.layer = PincushionManager.sourceMeshesLayer;
+            points.gameObject.layer = PincushionManager.sampledMeshesLayer;
+            points.name = "Sampled Mesh";
         }
+
+
+        /// <summary>
+        /// Sample points, create the sampled mesh, and set the material.
+        /// </summary>
+        protected abstract void SampleMesh(float pointsPerM, PincushionManager instance);
     }
 }

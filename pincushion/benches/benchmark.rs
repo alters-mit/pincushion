@@ -9,18 +9,38 @@ pub fn main() {
     let mesh = Mesh::from_obj("tests/suzanne.obj");
     // Run the benchmark many times and average the result.
     let num_iterations = 1000;
-    let dt = (0..num_iterations)
+    let dts = (0..num_iterations)
         .map(|_| benchmark(&mesh))
-        .sum::<Duration>()
-        .as_micros()
-        / num_iterations as u128;
-    let text = format!("Sampling: {}μs", dt);
+        .collect::<Vec<(Duration, Duration, Duration)>>();
+    let dt_sample =
+        dts.iter().map(|dt| dt.0).sum::<Duration>().as_micros() / num_iterations as u128;
+    let dt_triangles =
+        dts.iter().map(|dt| dt.1).sum::<Duration>().as_micros() / num_iterations as u128;
+    let dt_presample =
+        dts.iter().map(|dt| dt.2).sum::<Duration>().as_micros() / num_iterations as u128;
+    let text = format!("Sample points: {}μs\n\nSample triangles: {}μs\n\nSample points from pre-sampled triangles: {}μs", dt_sample, dt_triangles, dt_presample);
     write("../doc/benchmark.txt", &text).unwrap();
     println!("{}", text);
 }
 
-fn benchmark(mesh: &Mesh) -> Duration {
+fn benchmark(mesh: &Mesh) -> (Duration, Duration, Duration) {
+    const POINTS_PER_M: f32 = 80.;
+    const SCALE: f32 = 1.;
+
     let t0 = Instant::now();
-    mesh.sample_points(80., 1.);
-    Instant::now() - t0
+    let (vertices, normals) = mesh.sample_points(POINTS_PER_M, SCALE);
+    let dt_sample = Instant::now() - t0;
+
+    let t0 = Instant::now();
+    let area = mesh.get_area(SCALE);
+    let triangles = mesh.sample_triangles(POINTS_PER_M, &area);
+    let dt_triangles = Instant::now() - t0;
+
+    let mut sampled_mesh = Mesh::new(vertices, triangles, normals);
+
+    let t0 = Instant::now();
+    mesh.set_presampled_mesh(&mut sampled_mesh);
+    let dt_presample = Instant::now() - t0;
+
+    (dt_sample, dt_triangles, dt_presample)
 }

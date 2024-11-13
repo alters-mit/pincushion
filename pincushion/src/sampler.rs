@@ -36,8 +36,8 @@ pub(crate) trait Sampler {
                 // Sample some points.
                 for i in 0..num_points {
                     // Get a random triangle, bounded by the start index and the current index in `areas`.
-                    let triangle = if start_index_point == index {
-                        &triangles[start_index_point]
+                    let triangle = if start_index_triangle == index {
+                        &triangles[start_index_triangle]
                     } else {
                         &triangles[rng.gen_range(start_index_triangle..=index)]
                     };
@@ -61,14 +61,10 @@ pub(crate) fn sample_point(
     point: &mut Vertex,
     u: f32,
     v: f32,
+    w: f32,
     triangle: &Triangle,
     vertices: &[Vertex],
 ) {
-    let t = f32::sqrt(v);
-    let v = u * t;
-    let u = (1.0 - u) * t;
-    let w = 1.0 - u - v;
-    // Set the point at `start_index_pooint` offset by 0..num_points.
     *point = vertices[triangle.a]
         .mul(u)
         .add(&vertices[triangle.b].mul(v))

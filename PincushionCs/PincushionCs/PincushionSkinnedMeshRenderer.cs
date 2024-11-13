@@ -7,7 +7,7 @@ namespace Pincushion
     /// <summary>
     /// Sample points on a SkinnedMeshRenderer and convert it into a mesh.
     ///
-    /// On Set() and Awake(), the *triangles* of the mesh are sampled.
+    /// Initially, the *triangles* of the mesh are sampled.
     ///
     /// Per-frame, bake the SkinnedMeshRenderer mesh and use the baked mesh and the cached triangles to resample the points.
     ///
@@ -22,9 +22,13 @@ namespace Pincushion
         /// </summary>
         private SkinnedMeshRenderer skinnedMeshRenderer;
         /// <summary>
-        /// A cached array of indices of vertices, used to quickly re-sample positions.
+        /// The source mesh data.
         /// </summary>
-        private UIntPtr[] sampledTriangles;
+        private PincushionMesh sourceMeshData;
+        /// <summary>
+        /// The sampled mesh data.
+        /// </summary>
+        private PincushionMesh sampledMeshData;
         /// <summary>
         /// The MeshFilter that handles the sampled points.
         /// </summary>
@@ -36,47 +40,55 @@ namespace Pincushion
         /// <summary>
         /// This is used to re-sample points.
         /// </summary>
-        private Mesh bakedMesh;
+        private Mesh sourceMesh;
         
         
-        public override void SetOriginalMeshVisibility(bool visible)
+        public override void Initialize()
         {
-            skinnedMeshRenderer.enabled = visible;
-        }
-        
-        
-        protected override void Initialize()
-        {
+            base.Initialize();
+            
             skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
-            bakedMesh = new Mesh();
+            sourceMesh = new Mesh();
+            sampledMeshFilter = points.AddComponent<MeshFilter>();
+            sampledMeshRenderer = points.AddComponent<MeshRenderer>();
         }
 
 
-        protected override void SetMesh()
+        protected override void SampleMesh(float pointsPerM, PincushionManager instance)
         {
+            sampledMeshRenderer.sharedMaterial = instance.material;
             // Sample the triangles.
-            sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude);
+            UIntPtr[] sourceTriangles = skinnedMeshRenderer.sharedMesh.GetTriangles();
+            UIntPtr[] sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude, sourceTriangles);
+            // Allocate the sampling data.
+            sourceMeshData = new PincushionMesh
+            {
+                vertices = new Vector3[skinnedMeshRenderer.sharedMesh.vertexCount],
+                normals = new Vector3[skinnedMeshRenderer.sharedMesh.vertexCount],
+                triangles = sourceTriangles,
+            };
+            sampledMeshData = new PincushionMesh
+            {
+                vertices = new Vector3[sampledTriangles.Length / 3],
+                triangles = sampledTriangles,
+                normals = new Vector3[sampledTriangles.Length / 3],
+            };
             // Create the mesh.
             Mesh mesh = new Mesh();
-            skinnedMeshRenderer.BakeMesh(bakedMesh);
-            // Deterministically set sampled points.
-            mesh.SetVerticesFromSampledTriangles(bakedMesh, sampledTriangles);
-            mesh.SetPointTopology();
-            // Set the mesh.
-            sampledMeshFilter = points.AddComponent<MeshFilter>();
+            mesh.vertices = new Vector3[sourceMeshData.vertices.Length];
+            mesh.normals = new Vector3[sourceMeshData.normals.Length];
+            mesh.triangles = new int[sourceMeshData.triangles.Length];
             sampledMeshFilter.mesh = mesh;
-            sampledMeshRenderer = points.AddComponent<MeshRenderer>();
-            sampledMeshRenderer.material = GetMaterial();
         }
 
 
-        private void Update()
+        private void OnRenderObject()
         {
             if (sampledMeshRenderer.enabled)
             {
-                skinnedMeshRenderer.BakeMesh(bakedMesh);
+                skinnedMeshRenderer.BakeMesh(sourceMesh);
                 // Set the positions of the points.
-                sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(bakedMesh, sampledTriangles);
+                sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(sourceMesh, sourceMeshData, sampledMeshData);
                 sampledMeshFilter.mesh.SetPointTopology();           
             }
         }
