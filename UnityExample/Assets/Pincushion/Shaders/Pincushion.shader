@@ -1,5 +1,4 @@
-﻿// This shader is used for all render modes except OccludeBehind.
-// It is assigned to the PincushionRenderer.
+﻿// Render pincushion meshes.
 Shader "Pincushion/Pincushion" {
 	SubShader {
 			Tags{ "Queue" = "Overlay" "IgnoreProjector" = "True" "RenderType" = "Transparent" "DisableBatching" = "True" }
@@ -13,84 +12,89 @@ Shader "Pincushion/Pincushion" {
 
 			#pragma target 2.5
 			#pragma vertex vert
-            #pragma fragment frag
+			#pragma fragment frag
 			#pragma geometry geom
 			#pragma multi_compile _ _OCCLUDE_BACKFACING
 			#pragma multi_compile _ _CONSTANT_SCALING
 			#pragma multi_compile _ _OCCLUDE_BEHIND
 
+			#include "UnityCG.cginc"
+
 			uniform half4 _PincushionColor;
 			uniform half _PincushionPointSize;
 			uniform sampler2D _PincushionMainTex;
+			static float2 pointUvs[4] = { float2(1, 0), float2(1, 1), float2(0, 0), float2(0, 1) };
 
 			#if _OCCLUDE_BEHIND
 
-			uniform sampler2D _PincushionDistanceTex; 
-			
+			uniform sampler2D _PincushionDistanceTex;
+						
 			#endif
-
-			#include "UnityCG.cginc"
 
 			struct appdata
 			{
-			    float4 vertex : POSITION;
+				float4 vertex : POSITION;
 
 				#if _OCCLUDE_BACKFACING
-				
+
+				// This is used to determine if a point is backfacing.
 				float4 normal: NORMAL;
 
 				#endif
-				
+							
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
 			struct v2g
 			{
-			    float4 vertex : SV_POSITION;
+				float4 vertex : SV_POSITION;
 
 				#if _OCCLUDE_BACKFACING
 				
+				// To hide a backfacing point, set its color to (0, 0, 0, 0).
+				// Otherwise, this will be the _PincushionColor
 				float4 color: COLOR;
 
 				#endif
-				
+							
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 			};
 
 			struct g2f
 			{
-			    float4 vertex : POSITION;
+				float4 vertex : POSITION;
 				float2 uv : TEXCOORD0;
 
 				#if _OCCLUDE_BACKFACING
 
+				// The color from v2g.
 				float4 color: COLOR;
-				
+							
 				#endif
 
 				#if _OCCLUDE_BEHIND
-				
+							
 				// The distance texture UV.
 				float2 distanceUv : TEXCOORD1;
 				// The actual distance.
 				float distance: TEXCOORD2;
 
 				#endif
-				
+							
 				UNITY_VERTEX_INPUT_INSTANCE_ID
 				UNITY_VERTEX_OUTPUT_STEREO
 			};
 
 			v2g vert (appdata v)
-            {
-                v2g o;
+			{
+				v2g o;
 				// set all values in the v2g o to 0.0
 				UNITY_INITIALIZE_OUTPUT(v2g, o);
 				// setup the instanced id to be accessed
 				UNITY_SETUP_INSTANCE_ID(v);
 				// copy instance id in the appdata v to the v2g o
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
-							
+										
 				o.vertex = v.vertex;
 
 				#if _OCCLUDE_BACKFACING
@@ -109,27 +113,28 @@ Shader "Pincushion/Pincushion" {
 				}
 
 				#endif
-				
-                return o;
-            }
+							
+				return o;
+			}
 
 			[maxvertexcount(4)]
 			void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 			{
-
 				float3 right = normalize(UNITY_MATRIX_IT_MV[0].xyz);
 				float3 up = normalize(UNITY_MATRIX_IT_MV[1].xyz);
 				float distanceToCamera = distance(mul(unity_ObjectToWorld, p[0].vertex), _WorldSpaceCameraPos);
 
 				#if _OCCLUDE_BEHIND
 
+				// To occlude behind, we need the point's coordinates on the pre-rendered distance texture.
+				// We assume that the size of the distance texture matches that of the screen.
 				float4 screenPositionFull = ComputeScreenPos(UnityObjectToClipPos(p[0].vertex));
 				const float2 distanceUv = screenPositionFull.xy / screenPositionFull.w;
 
 				#endif
 
 				#if _CONSTANT_SCALING
-				
+							
 				// Keep a constant scale regardless of distance.
 				float scale = distanceToCamera * 0.1;
 
@@ -140,10 +145,9 @@ Shader "Pincushion/Pincushion" {
 				#endif
 
 				// Handle eventual rescaling of the renderer by computing average scale.
-				float3 scaleX = unity_ObjectToWorld[0].xyz;
-				float3 scaleY = unity_ObjectToWorld[1].xyz;
-				float3 scaleZ = unity_ObjectToWorld[2].xyz;
-				float3 objectScale = float3(length(scaleX), length(scaleY), length(scaleZ));
+				float3 objectScale = float3(length( unity_ObjectToWorld[0].xyz),
+					length(unity_ObjectToWorld[1].xyz),
+					length(unity_ObjectToWorld[2].xyz));
 				float averageScale = (objectScale.x + objectScale.y + objectScale.z) / 3.0;
 
 				scale /= averageScale;
@@ -157,87 +161,40 @@ Shader "Pincushion/Pincushion" {
 				v[2] = float4(p[0].vertex - right - up, 1.0f);
 				v[3] = float4(p[0].vertex - right + up, 1.0f);
 
-				g2f pIn;
-				UNITY_INITIALIZE_OUTPUT(g2f, pIn);
+				g2f o;
+				UNITY_INITIALIZE_OUTPUT(g2f, o);
 				UNITY_SETUP_INSTANCE_ID(i);
 				UNITY_TRANSFER_INSTANCE_ID(i, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
-				
-				pIn.vertex = UnityObjectToClipPos(v[0]);
-				pIn.uv = float2(1.0f, 0.0f);
 
-				#if _OCCLUDE_BACKFACING
-				
-				pIn.color = p[0].color;
+				for (int j = 0; j < 4; j++)
+				{
+					o.vertex = UnityObjectToClipPos(v[j]);
+					// The UVs never change.
+					o.uv = pointUvs[j];
 
-				#endif
+					
+					#if _OCCLUDE_BACKFACING
 
-				#if _OCCLUDE_BEHIND
+					o.color = p[0].color;
 
-				pIn.distanceUv = distanceUv;
-				pIn.distance = distanceToCamera;
+					#endif
+					
+					#if _OCCLUDE_BEHIND
 
-				#endif
-				
-				triStream.Append(pIn);
+					o.distanceUv = distanceUv;
+					o.distance = distanceToCamera;
 
-				pIn.vertex = UnityObjectToClipPos(v[1]);
-				pIn.uv = float2(1.0f, 1.0f);
+					#endif
 
-				#if _OCCLUDE_BACKFACING
-				
-				pIn.color = p[0].color;
-
-				#endif
-				
-				#if _OCCLUDE_BEHIND
-
-				pIn.distanceUv = distanceUv;
-				pIn.distance = distanceToCamera;
-
-				#endif
-				
-				triStream.Append(pIn);
-
-				pIn.vertex = UnityObjectToClipPos(v[2]);
-				pIn.uv = float2(0.0f, 0.0f);
-
-				#if _OCCLUDE_BACKFACING
-				
-				pIn.color = p[0].color;
-
-				#endif
-				
-				#if _OCCLUDE_BEHIND
-
-				pIn.distanceUv = distanceUv;
-				pIn.distance = distanceToCamera;
-
-				#endif
-				
-				triStream.Append(pIn);
-
-				pIn.vertex = UnityObjectToClipPos(v[3]);
-				pIn.uv = float2(0.0f, 1.0f);
-
-				#if _OCCLUDE_BACKFACING
-				
-				pIn.color = p[0].color;
-
-				#endif
-				
-				#if _OCCLUDE_BEHIND
-
-				pIn.distanceUv = distanceUv;
-				pIn.distance = distanceToCamera;
-
-				#endif
-				
-				triStream.Append(pIn);
+					// Add the vertex.
+					triStream.Append(o);
+				}
 			}
 
 			half4 frag(g2f i) : SV_Target
 			{
+				
 				#if _OCCLUDE_BACKFACING
 
 				// The color was set via calculating the normal.
@@ -257,10 +214,11 @@ Shader "Pincushion/Pincushion" {
 				return _PincushionColor;
 
 				#endif
-				
+							
 			}
-		
-		ENDCG
+			
+			ENDCG
+			
 		}
 	}
 }
