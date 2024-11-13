@@ -119,7 +119,7 @@ namespace Pincushion
         /// <param name="pointsPerM">Points per meter squared of the mesh's surface area.</param>
         /// <param name="scale">The uniform scale of the mesh.</param>
         /// <param name="sourceTriangles">The source mesh's triangles as UIntPtr values.</param>
-        public static UIntPtr[] GetSampledTriangles(this Mesh mesh, float pointsPerM, float scale, UIntPtr[] sourceTriangles)
+        public static int[] GetSampledTriangles(this Mesh mesh, float pointsPerM, float scale, UIntPtr[] sourceTriangles)
         {
             UIntPtr verticesLength = (UIntPtr)mesh.vertices.Length;
             int numTriangles = mesh.triangles.Length / 3;
@@ -188,7 +188,7 @@ namespace Pincushion
                                 };
                                 Ffi.sample_triangles(&meshT, &areaT, &sampledTrianglesVec);
                             }
-                            return sampledTriangles;
+                            return Array.ConvertAll(sampledTriangles, uIntPtrToInt);
                         }
                     }
                 }
@@ -306,6 +306,12 @@ namespace Pincushion
         private static UIntPtr intToUIntPtr(int i)
         {
             return (UIntPtr)i;
+        }
+        
+        
+        private static int uIntPtrToInt(UIntPtr i)
+        {
+            return (int)i;
         }
     } 
 }

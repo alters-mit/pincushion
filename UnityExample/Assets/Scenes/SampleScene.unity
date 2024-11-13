@@ -238,7 +238,6 @@ MonoBehaviour:
   color: {r: 1, g: 1, b: 1, a: 1}
   pointRadius: 0.02
   constantScaling: 0
-  material: {fileID: 0}
 --- !u!4 &209450894
 Transform:
   m_ObjectHideFlags: 0

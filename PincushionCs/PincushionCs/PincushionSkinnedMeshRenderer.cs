@@ -15,20 +15,12 @@ namespace Pincushion
     /// This is in contrast to PincushionMeshRenderer, in which points are jostled randomly within their sampled triangles.
     /// </summary>
     [RequireComponent(typeof(SkinnedMeshRenderer))]
-    public class PincushionSkinnedMeshRenderer : PincushionRenderer
+    public class PincushionSkinnedMeshRenderer : PincushionRenderer<PincushionSkinnedMeshRenderer>
     {
         /// <summary>
         /// The renderer. This is set on Awake().
         /// </summary>
         private SkinnedMeshRenderer skinnedMeshRenderer;
-        /// <summary>
-        /// The source mesh data.
-        /// </summary>
-        private PincushionMesh sourceMeshData;
-        /// <summary>
-        /// The sampled mesh data.
-        /// </summary>
-        private PincushionMesh sampledMeshData;
         /// <summary>
         /// The MeshFilter that handles the sampled points.
         /// </summary>
@@ -41,6 +33,10 @@ namespace Pincushion
         /// This is used to re-sample points.
         /// </summary>
         private Mesh sourceMesh;
+
+        private ComputeBuffer sourceVerticesBuffer;
+        private ComputeBuffer sourceNormalsBuffer;
+        private ComputeBuffer sampledTrianglesBuffer;
         
         
         public override void Initialize()
@@ -54,31 +50,37 @@ namespace Pincushion
         }
 
 
-        protected override void SampleMesh(float pointsPerM, PincushionManager instance)
+        protected override void SampleMesh(float pointsPerM)
         {
-            sampledMeshRenderer.sharedMaterial = instance.material;
+            sampledMeshRenderer.sharedMaterial = material;
             // Sample the triangles.
             UIntPtr[] sourceTriangles = skinnedMeshRenderer.sharedMesh.GetTriangles();
-            UIntPtr[] sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude, sourceTriangles);
-            // Allocate the sampling data.
-            sourceMeshData = new PincushionMesh
-            {
-                vertices = new Vector3[skinnedMeshRenderer.sharedMesh.vertexCount],
-                normals = new Vector3[skinnedMeshRenderer.sharedMesh.vertexCount],
-                triangles = sourceTriangles,
-            };
-            sampledMeshData = new PincushionMesh
-            {
-                vertices = new Vector3[sampledTriangles.Length / 3],
-                triangles = sampledTriangles,
-                normals = new Vector3[sampledTriangles.Length / 3],
-            };
+            int[] sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude, sourceTriangles);
+            int numSourceVertices = skinnedMeshRenderer.sharedMesh.vertexCount;
+
+            sourceVerticesBuffer = new ComputeBuffer(numSourceVertices, 12);
+            sourceNormalsBuffer = new ComputeBuffer(numSourceVertices, 12);
+            sampledTrianglesBuffer = new ComputeBuffer(sampledTriangles.Length / 3, 12);
+            
+            // Set the triangles buffer.
+            sampledTrianglesBuffer.SetData(sampledTriangles);
+            material.SetBuffer("sourceVertices", sourceVerticesBuffer);
+            material.SetBuffer("sourceNormals", sourceNormalsBuffer);
+            material.SetBuffer("sampledTriangles", sampledTrianglesBuffer);
+            
             // Create the mesh.
             Mesh mesh = new Mesh();
-            mesh.vertices = new Vector3[sourceMeshData.vertices.Length];
-            mesh.normals = new Vector3[sourceMeshData.normals.Length];
-            mesh.triangles = new int[sourceMeshData.triangles.Length];
+            mesh.vertices = new Vector3[sampledTriangles.Length / 3];
+            mesh.normals = new Vector3[sampledTriangles.Length / 3];
+            mesh.triangles = new int[sampledTriangles.Length];
+            mesh.SetPointTopology();
             sampledMeshFilter.mesh = mesh;
+        }
+
+
+        protected override string GetShaderName()
+        {
+            return "PincushionDynamic";
         }
 
 
@@ -86,11 +88,23 @@ namespace Pincushion
         {
             if (sampledMeshRenderer.enabled)
             {
+                // Bake the mesh to get the vertices and normals.
                 skinnedMeshRenderer.BakeMesh(sourceMesh);
-                // Set the positions of the points.
-                sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(sourceMesh, sourceMeshData, sampledMeshData);
-                sampledMeshFilter.mesh.SetPointTopology();           
+                
+                // Set the vertex and normal buffers.
+                sourceVerticesBuffer.SetData(sourceMesh.vertices);
+                sourceNormalsBuffer.SetData(sourceMesh.normals);
+                material.SetBuffer("sourceVertices", sourceVerticesBuffer);
+                material.SetBuffer("sourceNormals", sourceNormalsBuffer);
             }
+        }
+
+
+        private void OnDestroy()
+        {
+            sourceVerticesBuffer.Release();
+            sourceNormalsBuffer.Release();
+            sampledTrianglesBuffer.Release();
         }
     }
 }

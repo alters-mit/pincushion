@@ -79,11 +79,6 @@ namespace Pincushion
         /// </summary>
         public bool constantScaling;
         /// <summary>
-        /// Set the objects to this material.
-        /// </summary>
-        [HideInInspector]
-        public Material material;
-        /// <summary>
         /// The source meshes' layer.
         /// </summary>
         public static int sourceMeshesLayer;
@@ -144,6 +139,12 @@ namespace Pincushion
             {
                 texture = Resources.Load<Texture2D>("pincushion_point");
             }
+            
+            // Set global shader properties.
+            SetShader();
+            
+            // Set the background.
+            SetPincushionBackground();
 
             // Show the source meshes.
             if (renderMode == PincushionRenderMode.DoNot)
@@ -200,18 +201,6 @@ namespace Pincushion
                 // Set the main camera to see everything.
                 mainCamera.cullingMask = ~0;
             }
-            
-            // Prepare the Pincushion shader.
-            if (material == null)
-            {
-                material = new Material(Shader.Find("Pincushion/Pincushion"));          
-            }
-            
-            // Set global shader properties.
-            SetShader();
-            
-            // Set the background.
-            SetPincushionBackground();
 
             // Set or unset shader keywords depending on the render mode.
             if (renderMode == PincushionRenderMode.HideBackfacing)
@@ -237,7 +226,14 @@ namespace Pincushion
                                     renderMode == PincushionRenderMode.OccludeBehind;
             bool showSampledMeshes = renderMode != PincushionRenderMode.DoNot;
             // Find the pincushions, including those that are inactive.
-            PincushionRenderer[] pincushions = FindObjectsOfType<PincushionRenderer>(true);
+            SetPincushionsVisibility<PincushionMeshRenderer>(showSourceMeshes, showSampledMeshes);
+            SetPincushionsVisibility<PincushionSkinnedMeshRenderer>(showSourceMeshes, showSampledMeshes);
+        }
+
+
+        private void SetPincushionsVisibility<T>(bool showSourceMeshes, bool showSampledMeshes) where T : PincushionRenderer<T>
+        {
+            T[] pincushions = FindObjectsOfType<T>(true);
             for (int i = 0; i < pincushions.Length; i++)
             {
                 // Sample the mesh and apply rendering settings.
@@ -263,21 +259,18 @@ namespace Pincushion
             // Get all renderers in the source meshes layer and add Pincushion renderers.
             foreach (Renderer r in FindObjectsOfType<Renderer>().Where(r => r.gameObject.layer == sourceMeshesLayer))
             {
-                PincushionRenderer pincushion;
                 if (r is MeshRenderer)
                 {
-                    pincushion = r.gameObject.AddComponent<PincushionMeshRenderer>();
+                    PincushionMeshRenderer pincushion = r.gameObject.AddComponent<PincushionMeshRenderer>();
+                    // Initialize the renderer.
+                    pincushion.Initialize();
                 }
                 else if (r is SkinnedMeshRenderer)
                 {
-                    pincushion = r.gameObject.AddComponent<PincushionSkinnedMeshRenderer>();
+                    PincushionSkinnedMeshRenderer pincushion = r.gameObject.AddComponent<PincushionSkinnedMeshRenderer>();
+                    // Initialize the renderer.
+                    pincushion.Initialize();
                 }
-                else
-                {
-                    continue;
-                }
-                // Initialize the renderer.
-                pincushion.Initialize();
             }
 
             // Initialize Pincushion.

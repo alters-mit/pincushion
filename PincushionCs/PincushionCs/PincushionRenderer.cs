@@ -6,7 +6,7 @@ namespace Pincushion
     /// <summary>
     /// Abstract base class that creates or replaces a mesh with sampled points.
     /// </summary>
-    public abstract class PincushionRenderer : MonoBehaviour
+    public abstract class PincushionRenderer<T> : MonoBehaviour where T: PincushionRenderer<T>
     {
         /// <summary>
         /// The object that renders the points.
@@ -16,6 +16,10 @@ namespace Pincushion
         /// The renderer component.
         /// </summary>
         private Renderer myRenderer;
+        /// <summary>
+        /// The material used to render the points.
+        /// </summary>
+        protected static Material material;
 
 
         /// <summary>
@@ -37,7 +41,7 @@ namespace Pincushion
                 pointsPerM *= 1f / (0.1f * Vector3.Distance(cam.transform.position, transform.position));
             }
             
-            SampleMesh(pointsPerM, instance);
+            SampleMesh(pointsPerM);
         }
 
 
@@ -81,12 +85,25 @@ namespace Pincushion
             myRenderer.gameObject.layer = PincushionManager.sourceMeshesLayer;
             points.gameObject.layer = PincushionManager.sampledMeshesLayer;
             points.name = "Sampled Mesh";
+            
+            // Set the shared material.
+            if (material == null)
+            {
+                material = new Material(Shader.Find("Pincushion/" + GetShaderName()));
+            }
         }
 
 
         /// <summary>
         /// Sample points, create the sampled mesh, and set the material.
         /// </summary>
-        protected abstract void SampleMesh(float pointsPerM, PincushionManager instance);
+        protected abstract void SampleMesh(float pointsPerM);
+
+
+        /// <summary>
+        /// Returns the name of the shader used to render the sampled points.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract string GetShaderName();
     }
 }

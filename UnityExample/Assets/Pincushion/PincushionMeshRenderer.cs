@@ -9,16 +9,22 @@ namespace Pincushion
     /// </summary>
     [RequireComponent(typeof(MeshFilter))]
     [RequireComponent(typeof(Renderer))]
-    public class PincushionMeshRenderer : PincushionRenderer
+    public class PincushionMeshRenderer : PincushionRenderer<PincushionMeshRenderer>
     {
-        protected override void SampleMesh(float pointsPerM, PincushionManager instance)
+        protected override void SampleMesh(float pointsPerM)
         {
             // Sample the points.
             Mesh mesh = GetComponent<MeshFilter>().mesh.GetSampledMesh(
                 pointsPerM, transform.localScale.magnitude);
             points.AddComponent<MeshFilter>().mesh = mesh;
             // Set the material.
-            points.AddComponent<MeshRenderer>().sharedMaterial = instance.material;
+            points.AddComponent<MeshRenderer>().sharedMaterial = material;
+        }
+
+
+        protected override string GetShaderName()
+        {
+            return "PincushionStatic";
         }
     }
 }
