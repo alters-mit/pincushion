@@ -104,9 +104,9 @@ namespace Pincushion
         }
 
 
-        private void OnRenderObject()
+        private void Update()
         {
-            if (sampledMeshRenderer.gameObject.activeSelf)
+            if (PincushionManager.Instance.renderMode != PincushionRenderMode.DoNot)
             {
                 // Bake the mesh to get the vertices and normals.
                 skinnedMeshRenderer.BakeMesh(sourceMesh);
