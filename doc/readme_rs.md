@@ -28,5 +28,3 @@ Results:
 Sample points: 44μs
 
 Sample triangles: 28μs
-
-Sample points from pre-sampled triangles: 7μs

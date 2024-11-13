@@ -22,7 +22,7 @@ Pincushion solves these problems with some unusual/novel features:
 - **Points are sampled using native Rust code.** This is, as they say, blazingly fast, and *much* faster than C#.
 - Pincushion can handle both static meshes (MeshRenderers) and deformable meshes (SkinnedMeshRenderers). 
   - **Static meshes (MeshRenderer) are sampled only once.** This is *very* fast.
-  - **Deformable meshes (SkinnedMeshRenderer) use cached data.**[^1] Pincushion assumes that the mesh won't deform *too* much, and uses some cached data to make per-frame resampling *fast*.[^2]
+  - **Deformable meshes (SkinnedMeshRenderer) are resampled in a shader.**[^1] Pincushion assumes that the mesh won't deform *too* much, and uses some cached data to make per-frame resampling *fast*.[^2]
 
 **Additionally, Pincushion has unique rendering options not found in any other uniform mesh sampler example that I have seen thus far.**
 

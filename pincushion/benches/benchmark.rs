@@ -11,19 +11,17 @@ pub fn main() {
     let num_iterations = 1000;
     let dts = (0..num_iterations)
         .map(|_| benchmark(&mesh))
-        .collect::<Vec<(Duration, Duration, Duration)>>();
+        .collect::<Vec<(Duration, Duration)>>();
     let dt_sample =
         dts.iter().map(|dt| dt.0).sum::<Duration>().as_micros() / num_iterations as u128;
     let dt_triangles =
         dts.iter().map(|dt| dt.1).sum::<Duration>().as_micros() / num_iterations as u128;
-    let dt_presample =
-        dts.iter().map(|dt| dt.2).sum::<Duration>().as_micros() / num_iterations as u128;
-    let text = format!("Sample points: {}μs\n\nSample triangles: {}μs\n\nSample points from pre-sampled triangles: {}μs", dt_sample, dt_triangles, dt_presample);
+    let text = format!("Sample points: {}μs\n\nSample triangles: {}μs", dt_sample, dt_triangles);
     write("../doc/benchmark.txt", &text).unwrap();
     println!("{}", text);
 }
 
-fn benchmark(mesh: &Mesh) -> (Duration, Duration, Duration) {
+fn benchmark(mesh: &Mesh) -> (Duration, Duration) {
     const POINTS_PER_M: f32 = 80.;
     const SCALE: f32 = 1.;
 
@@ -36,11 +34,5 @@ fn benchmark(mesh: &Mesh) -> (Duration, Duration, Duration) {
     let triangles = mesh.sample_triangles(POINTS_PER_M, &area);
     let dt_triangles = Instant::now() - t0;
 
-    let mut sampled_mesh = Mesh::new(vertices, triangles, normals);
-
-    let t0 = Instant::now();
-    mesh.set_presampled_mesh(&mut sampled_mesh);
-    let dt_presample = Instant::now() - t0;
-
-    (dt_sample, dt_triangles, dt_presample)
+    (dt_sample, dt_triangles)
 }
