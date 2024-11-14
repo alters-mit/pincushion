@@ -98,7 +98,7 @@ namespace Pincushion
         /// <summary>
         /// The shader property ID for showing every nth point.
         /// </summary>
-        public static int showEveryNthId;
+        public static int nthMaskId;
         /// <summary>
         /// A layer mask for culling everything except the source meshes.
         /// </summary>
@@ -215,7 +215,7 @@ namespace Pincushion
                 mainCamera.cullingMask = ~0;
             }
             
-            showEveryNthId = Shader.PropertyToID("_PincushionShowNth");
+            nthMaskId = Shader.PropertyToID("_PincushionNthMask");
 
             // Set or unset shader keywords depending on the render mode.
             if (renderMode == PincushionRenderMode.HideBackfacing)

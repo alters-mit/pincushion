@@ -11,7 +11,7 @@ uniform sampler2D _PincushionDistanceTex;
 
 #if _SHOW_EVERY_NTH
 
-int _PincushionShowNth;
+Buffer<uint> _PincushionNthMask;
 
 #endif
 
@@ -50,7 +50,7 @@ v2g vert (appdata v, uint vid : SV_VertexID)
 	#if _SHOW_EVERY_NTH
 
 	// Only show every nth vertex.
-	if (_PincushionShowNth == 0 || vid % _PincushionShowNth != 0)
+	if (!_PincushionNthMask[vid])
 	{
 		o.color = float4(0, 0, 0, 0);
 	}

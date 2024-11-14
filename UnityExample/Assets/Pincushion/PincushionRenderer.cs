@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 
 namespace Pincushion
@@ -26,9 +27,9 @@ namespace Pincushion
         /// The renderer component.
         /// </summary>
         private Renderer myRenderer;
-        /// <summary>
-        /// The number of sampled points.
-        /// </summary>
+        private byte[] stepSeries;
+        private uint[] nthMask;
+        private ComputeBuffer nthMaskBuffer;
         private int numSampledPoints;
 
 
@@ -52,6 +53,15 @@ namespace Pincushion
             }
             
             numSampledPoints = SampleMesh(pointsPerM);
+            nthMask = new uint[numSampledPoints];
+            stepSeries = new byte[numSampledPoints];
+            if (nthMaskBuffer != null)
+            {
+                nthMaskBuffer.Release();
+            }
+            nthMaskBuffer = new ComputeBuffer(numSampledPoints, 4);
+            material.SetBuffer(PincushionManager.nthMaskId, nthMaskBuffer);
+            SetStepSeries();
         }
 
 
@@ -108,12 +118,8 @@ namespace Pincushion
         public void ShowEveryNth(float factor)
         {
             material.EnableKeyword(SHOW_EVERY_NTH);
-            int v = factor > 0 ? (int)Mathf.Ceil(numSampledPoints - numSampledPoints / (1 / Mathf.Clamp01(factor))) / 100 : 0;
-            if (factor > 0.9f && v == 0)
-            {
-                v = 1;
-            }
-            material.SetInt(PincushionManager.showEveryNthId, v);
+            SetNthMask(factor);
+            nthMaskBuffer.SetData(nthMask);
         }
 
 
@@ -135,5 +141,58 @@ namespace Pincushion
         /// </summary>
         /// <returns></returns>
         protected abstract string GetShaderName();
+
+
+        private unsafe void SetStepSeries()
+        {
+            UIntPtr numSteps = (UIntPtr)stepSeries.Length;
+            fixed (byte* stepSeriesPtr = stepSeries)
+            {
+                Vec_uint8_t steps = new Vec_uint8_t
+                {
+                    ptr = stepSeriesPtr,
+                    len = numSteps,
+                    cap = numSteps
+                };
+                Ffi.set_nth_steps(&steps);
+            }
+        }
+
+
+        private unsafe void SetNthMask(float factor)
+        {
+            UIntPtr numSteps = (UIntPtr)stepSeries.Length;
+            fixed (byte* stepSeriesPtr = stepSeries)
+            {
+                Vec_uint8_t steps = new Vec_uint8_t
+                {
+                    ptr = stepSeriesPtr,
+                    len = numSteps,
+                    cap = numSteps
+                };
+                fixed (uint* nthMaskPtr = nthMask)
+                {
+                    Vec_uint32_t mask = new Vec_uint32_t
+                    {
+                        ptr = nthMaskPtr,
+                        len = numSteps,
+                        cap = numSteps
+                    };
+                    UIntPtr s = (UIntPtr)(factor > 0
+                        ? (int)Mathf.Ceil(numSampledPoints - numSampledPoints / (1 / Mathf.Clamp(factor, Mathf.Epsilon, 1))) / 100
+                        : 1);
+                    Ffi.set_nth_mask(s, &steps, &mask);         
+                }
+            }
+        }
+
+
+        private void OnDestroy()
+        {
+            if (nthMaskBuffer != null)
+            {
+                nthMaskBuffer.Release();             
+            }
+        }
     }
 }

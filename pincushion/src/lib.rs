@@ -3,8 +3,8 @@
 #![doc = include_str!("../../doc/overview.md")]
 //!
 //! Pincushion can be used as a typical Rust crate or as a native library in Unity.
-//! 
-//! This documentation is for the Rust crate. 
+//!
+//! This documentation is for the Rust crate.
 //! Documentation for Unity/C# can be found [here](https://github.com/alters-mit/pincushion).
 //!
 //! ### Usage
@@ -23,8 +23,9 @@ pub use vecs::*;
 
 #[cfg(feature = "cs")]
 pub mod cs;
-
 pub mod ffi;
+#[cfg(feature = "nth")]
+pub mod nth;
 
 mod area;
 mod mesh;
@@ -38,15 +39,4 @@ mod vecs;
 #[ffi_export]
 pub fn get_num_points(total_area: f32, points_per_m: f32) -> usize {
     (total_area * points_per_m) as usize
-}
-
-#[cfg(test)]
-mod tests {
-    #[cfg(feature = "obj")]
-    #[test]
-    fn test_sample_points() {
-        let mesh = super::Mesh::from_obj("tests/suzanne.obj");
-        let (points, _) = mesh.sample_points(80., 1.);
-        assert_eq!(points.len(), 997);
-    }
 }

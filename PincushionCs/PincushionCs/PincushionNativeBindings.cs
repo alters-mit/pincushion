@@ -177,5 +177,56 @@ public unsafe partial class Ffi {
         Area_t * area);
 }
 
+/// <summary>
+/// Same as [<c>Vec<T></c>][<c>rust::Vec</c>], but with guaranteed <c>#[repr(C)]</c> layout
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 24)]
+public unsafe struct Vec_uint8_t {
+    public byte * ptr;
+
+    public UIntPtr len;
+
+    public UIntPtr cap;
+}
+
+/// <summary>
+/// Same as [<c>Vec<T></c>][<c>rust::Vec</c>], but with guaranteed <c>#[repr(C)]</c> layout
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 24)]
+public unsafe struct Vec_uint32_t {
+    public UInt32 * ptr;
+
+    public UIntPtr len;
+
+    public UIntPtr cap;
+}
+
+public unsafe partial class Ffi {
+    /// <summary>
+    /// Set a vertex mask from the <c>steps</c>.
+    ///
+    /// - <c>step</c>: A value between 1 and 100 (inclusive).
+    /// The mask will have this many values equal to <c>1</c>: <c>steps.len() * step * 0.01</c>.
+    /// - <c>steps</c>: A precalculated array from <c>set_nth_steps</c>.
+    /// This is used to ensure that the incides of the true values in <c>mask</c> don't vary.
+    /// - <c>mask</c> A mask of true/false byte values. Unity wants this to be u32 instead of bool.
+    /// </summary>
+    [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
+    void set_nth_mask (
+        UIntPtr step,
+        Vec_uint8_t /*const*/ * steps,
+        Vec_uint32_t * mask);
+}
+
+public unsafe partial class Ffi {
+    /// <summary>
+    /// For a hardcoded range of 1 to 100 (inclusive), step through <c>steps</c> and increment each stepped value by one.
+    /// <c>steps</c> can be used with <c>set_nth_mask</c>.
+    /// </summary>
+    [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
+    void set_nth_steps (
+        Vec_uint8_t * steps);
+}
+
 
 } /* Pincushion */
