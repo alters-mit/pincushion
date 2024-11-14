@@ -5,8 +5,7 @@
 #pragma multi_compile _ _OCCLUDE_BACKFACING
 #pragma multi_compile _ _CONSTANT_SCALING
 #pragma multi_compile _ _OCCLUDE_BEHIND
-
-#include "UnityCG.cginc"
+#pragma multi_compile _ _SKIP_EVERY_NTH
 
 uniform half4 _PincushionColor;
 uniform half _PincushionPointSize;
@@ -19,70 +18,31 @@ uniform sampler2D _PincushionDistanceTex;
 						
 #endif
 
-struct appdata
+#if _SKIP_EVERY_NTH
+
+uint _PincushionSkipNth;
+
+#endif
+
+v2g vert (appdata v, uint vid : SV_VertexID)
 {
-	float4 vertex : POSITION;
-
-	#if _OCCLUDE_BACKFACING
-
-	// This is used to determine if a point is backfacing.
-	float4 normal: NORMAL;
-
-	#endif
-							
-	UNITY_VERTEX_INPUT_INSTANCE_ID
-};
-
-struct v2g
-{
-	float4 vertex : SV_POSITION;
-
-	#if _OCCLUDE_BACKFACING
+	v2g o;
+	// set all values in the v2g o to 0.0
+	UNITY_INITIALIZE_OUTPUT(v2g, o);
+	// setup the instanced id to be accessed
+	UNITY_SETUP_INSTANCE_ID(v);
+	// copy instance id in the appdata v to the v2g o
+	UNITY_TRANSFER_INSTANCE_ID(v, o);
+										
+	o.vertex = get_vertex(v, vid);
 				
-	// To hide a backfacing point, set its color to (0, 0, 0, 0).
-	// Otherwise, this will be the _PincushionColor
-	float4 color: COLOR;
-
-	#endif
-							
-	UNITY_VERTEX_INPUT_INSTANCE_ID
-};
-
-struct g2f
-{
-	float4 vertex : POSITION;
-	float2 uv : TEXCOORD0;
-
-	#if _OCCLUDE_BACKFACING
-
-	// The color from v2g.
-	float4 color: COLOR;
-							
-	#endif
-
-	#if _OCCLUDE_BEHIND
-							
-	// The distance texture UV.
-	float2 distanceUv : TEXCOORD1;
-	// The actual distance.
-	float distance: TEXCOORD2;
-
-	#endif
-							
-	UNITY_VERTEX_INPUT_INSTANCE_ID
-	UNITY_VERTEX_OUTPUT_STEREO
-};
-
-inline void occlude_backfacing(float3 normal, in appdata v, inout v2g o)
-{
-	
 	#if _OCCLUDE_BACKFACING
 
 	// Hide points facing away from the camera.
 	// Source: https://discussions.unity.com/t/camera-forward-vector-in-shader/32664/4
 	half3 worldVert = mul(unity_ObjectToWorld, v.vertex);
 	half3 viewDir = _WorldSpaceCameraPos - worldVert;
-	if (dot(viewDir, normal) > 0) {
+	if (dot(viewDir, get_normal(v, vid)) > 0) {
 		o.color = _PincushionColor;
 	}
 	else
@@ -91,7 +51,18 @@ inline void occlude_backfacing(float3 normal, in appdata v, inout v2g o)
 	}
 
 	#endif
+
+	#if _SKIP_EVERY_NTH
+
+	// Only show every nth vertex.
+	if (vertexID % _PincushionSkipNth != 0)
+	{
+		o.color = float4(0, 0, 0, 0);
+	}
 	
+	#endif
+							
+	return o;
 }
 
 [maxvertexcount(4)]
