@@ -1,13 +1,4 @@
-﻿#pragma target 2.5
-#pragma vertex vert
-#pragma fragment frag
-#pragma geometry geom
-#pragma multi_compile _ _OCCLUDE_BACKFACING
-#pragma multi_compile _ _CONSTANT_SCALING
-#pragma multi_compile _ _OCCLUDE_BEHIND
-#pragma multi_compile _ _SKIP_EVERY_NTH
-
-uniform half4 _PincushionColor;
+﻿uniform half4 _PincushionColor;
 uniform half _PincushionPointSize;
 uniform sampler2D _PincushionMainTex;
 static float2 pointUvs[4] = { float2(1, 0), float2(1, 1), float2(0, 0), float2(0, 1) };
@@ -18,9 +9,9 @@ uniform sampler2D _PincushionDistanceTex;
 						
 #endif
 
-#if _SKIP_EVERY_NTH
+#if _SHOW_EVERY_NTH
 
-uint _PincushionSkipNth;
+uniform int _PincushionShowNth;
 
 #endif
 
@@ -52,12 +43,16 @@ v2g vert (appdata v, uint vid : SV_VertexID)
 
 	#endif
 
-	#if _SKIP_EVERY_NTH
+	#if _SHOW_EVERY_NTH
 
 	// Only show every nth vertex.
-	if (vertexID % _PincushionSkipNth != 0)
+	if (_PincushionShowNth == 0 || vid % _PincushionShowNth != 0)
 	{
 		o.color = float4(0, 0, 0, 0);
+	}
+	else
+	{
+		o.color = _PincushionColor;
 	}
 	
 	#endif
@@ -120,9 +115,8 @@ void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 		o.vertex = UnityObjectToClipPos(v[j]);
 		// The UVs never change.
 		o.uv = pointUvs[j];
-
-					
-		#if _OCCLUDE_BACKFACING
+		
+		#if _OCCLUDE_BACKFACING || _SHOW_EVERY_NTH
 
 		o.color = p[0].color;
 
@@ -142,24 +136,34 @@ void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 
 half4 frag(g2f i) : SV_Target
 {
+
+	#if _OCCLUDE_BACKFACING || _SHOW_EVERY_NTH
+
+	float4 color = i.color;
+
+	#else
+
+	float4 color = _PincushionColor;
+	
+	#endif
 				
 	#if _OCCLUDE_BACKFACING
 
 	// The color was set via calculating the normal.
-	return tex2D(_PincushionMainTex, i.uv) * i.color;
+	return tex2D(_PincushionMainTex, i.uv) * color;
 
 	#elif _OCCLUDE_BEHIND
 
 	// Sample the distance texture and compare to the vertex's distance.
 	if (i.distance < tex2D(_PincushionDistanceTex, i.distanceUv).r + 0.01)
 	{
-		return tex2D(_PincushionMainTex, i.uv) * _PincushionColor;
+		return tex2D(_PincushionMainTex, i.uv) * color;
 	}
 	return float4(0, 0, 0, 0);
 
 	#else
 
-	return tex2D(_PincushionMainTex, i.uv);
+	return tex2D(_PincushionMainTex, i.uv) * color;
 
 	#endif
 							

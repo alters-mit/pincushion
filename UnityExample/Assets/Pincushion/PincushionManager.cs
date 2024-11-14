@@ -19,6 +19,10 @@ namespace Pincushion
         /// The shader keyword corresponding the render mode OccludeBehind.
         /// </summary>
         private const string OCCLUDE_BEHIND = "_OCCLUDE_BEHIND";
+        /// <summary>
+        /// The shader keyword that will let us show every nth point.
+        /// </summary>
+        private const string SHOW_EVERY_NTH = "_SHOW_EVERY_NTH";
         
         
         /// <summary>
@@ -79,6 +83,15 @@ namespace Pincushion
         /// </summary>
         public bool constantScaling;
         /// <summary>
+        /// If true, show every nth point.
+        /// </summary>
+        public bool showEveryNth;
+        /// <summary>
+        /// A factor between 0 and 1 that controls how many points will be skipped when rendering.
+        /// </summary>
+        [Range(0, 1)]
+        public float nthFactor = 1;
+        /// <summary>
         /// The source meshes' layer.
         /// </summary>
         public static int sourceMeshesLayer;
@@ -106,6 +119,10 @@ namespace Pincushion
         /// The original clear flags of the camera.
         /// </summary>
         private CameraClearFlags mainCameraClearFlags;
+        /// <summary>
+        /// The shader property ID for showing every nth point.
+        /// </summary>
+        private int showEveryNthId;
         /// <summary>
         /// Singleton instance. Never call this directly!
         /// </summary>
@@ -201,6 +218,8 @@ namespace Pincushion
                 // Set the main camera to see everything.
                 mainCamera.cullingMask = ~0;
             }
+            
+            showEveryNthId = Shader.PropertyToID("_PincushionShowNth");
 
             // Set or unset shader keywords depending on the render mode.
             if (renderMode == PincushionRenderMode.HideBackfacing)
@@ -218,6 +237,19 @@ namespace Pincushion
             else
             {
                 Shader.DisableKeyword(OCCLUDE_BEHIND);  
+            }
+            
+            // Show every nth.
+            if (showEveryNth)
+            {
+                Shader.EnableKeyword(SHOW_EVERY_NTH);
+            
+                // Set the number of skipped points.
+                Shader.SetGlobalInt(showEveryNthId, nthFactor > 0 ? (int)(1 / Mathf.Clamp01(nthFactor)) : 0);
+            }
+            else
+            {
+                Shader.DisableKeyword(SHOW_EVERY_NTH);
             }
 
             // Decide which meshes to render.

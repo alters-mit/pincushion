@@ -20,8 +20,8 @@ namespace Pincushion
         /// The material used to render the points.
         /// </summary>
         protected Material material;
-
-
+        
+        
         /// <summary>
         /// Sample points and set the mesh(es).
         /// </summary>

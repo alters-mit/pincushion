@@ -39,6 +39,8 @@ Shader "Pincushion/PincushionDynamic" {
 			{
 				// Get the triangle.
 				int3 tri = _PincushionSampledTriangles[vid];
+				
+				// Get the average of the triangle's normals.
 				return (
 					_PincushionSourceNormals[tri.x] +
 					_PincushionSourceNormals[tri.y] +
