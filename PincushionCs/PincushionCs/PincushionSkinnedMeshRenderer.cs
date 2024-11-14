@@ -66,7 +66,7 @@ namespace Pincushion
         }
 
 
-        protected override void SampleMesh(float pointsPerM)
+        protected override int SampleMesh(float pointsPerM)
         {
             sampledMeshRenderer.sharedMaterial = material;
             // Sample the triangles.
@@ -95,6 +95,8 @@ namespace Pincushion
             mesh.triangles = new int[sampledTriangles.Length];
             mesh.SetPointTopology();
             sampledMeshFilter.mesh = mesh;
+
+            return mesh.vertexCount;
         }
 
 

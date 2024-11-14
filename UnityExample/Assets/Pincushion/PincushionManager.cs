@@ -19,12 +19,8 @@ namespace Pincushion
         /// The shader keyword corresponding the render mode OccludeBehind.
         /// </summary>
         private const string OCCLUDE_BEHIND = "_OCCLUDE_BEHIND";
-        /// <summary>
-        /// The shader keyword that will let us show every nth point.
-        /// </summary>
-        private const string SHOW_EVERY_NTH = "_SHOW_EVERY_NTH";
-        
-        
+
+
         /// <summary>
         /// The main camera used for viewing the sampled points.
         /// </summary>
@@ -100,6 +96,10 @@ namespace Pincushion
         /// </summary>
         public static int sampledMeshesLayer;
         /// <summary>
+        /// The shader property ID for showing every nth point.
+        /// </summary>
+        public static int showEveryNthId;
+        /// <summary>
         /// A layer mask for culling everything except the source meshes.
         /// </summary>
         private int sourceMeshesCullingMask;
@@ -119,10 +119,6 @@ namespace Pincushion
         /// The original clear flags of the camera.
         /// </summary>
         private CameraClearFlags mainCameraClearFlags;
-        /// <summary>
-        /// The shader property ID for showing every nth point.
-        /// </summary>
-        private int showEveryNthId;
         /// <summary>
         /// Singleton instance. Never call this directly!
         /// </summary>
@@ -238,19 +234,6 @@ namespace Pincushion
             {
                 Shader.DisableKeyword(OCCLUDE_BEHIND);  
             }
-            
-            // Show every nth.
-            if (showEveryNth)
-            {
-                Shader.EnableKeyword(SHOW_EVERY_NTH);
-            
-                // Set the number of skipped points.
-                Shader.SetGlobalInt(showEveryNthId, nthFactor > 0 ? (int)(1 / Mathf.Clamp01(nthFactor)) : 0);
-            }
-            else
-            {
-                Shader.DisableKeyword(SHOW_EVERY_NTH);
-            }
 
             // Decide which meshes to render.
             bool showSourceMeshes = renderMode == PincushionRenderMode.DoNot || 
@@ -266,6 +249,35 @@ namespace Pincushion
                 // Set visibility.
                 pincushions[i].SetSourceMeshVisibility(showSourceMeshes);
                 pincushions[i].SetSampledMeshVisibility(showSampledMeshes);
+
+                if (showEveryNth)
+                {
+                    pincushions[i].ShowEveryNth(nthFactor);
+                }
+                else
+                {
+                    pincushions[i].ShowAll();
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Show every nth point.
+        /// </summary>
+        public void ShowEveryNthPoint()
+        {
+            PincushionRenderer[] pincushions = FindObjectsOfType<PincushionRenderer>(true);
+            for (int i = 0; i < pincushions.Length; i++)
+            {
+                if (showEveryNth)
+                {
+                    pincushions[i].ShowEveryNth(nthFactor);
+                }
+                else
+                {
+                    pincushions[i].ShowAll();
+                }
             }
         }
 

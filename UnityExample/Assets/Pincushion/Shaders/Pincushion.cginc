@@ -11,7 +11,7 @@ uniform sampler2D _PincushionDistanceTex;
 
 #if _SHOW_EVERY_NTH
 
-uniform int _PincushionShowNth;
+int _PincushionShowNth;
 
 #endif
 
@@ -41,6 +41,10 @@ v2g vert (appdata v, uint vid : SV_VertexID)
 		o.color = float4(0, 0, 0, 0);
 	}
 
+	#elif _SHOW_EVERY_NTH
+
+	o.color = _PincushionColor;
+
 	#endif
 
 	#if _SHOW_EVERY_NTH
@@ -49,10 +53,6 @@ v2g vert (appdata v, uint vid : SV_VertexID)
 	if (_PincushionShowNth == 0 || vid % _PincushionShowNth != 0)
 	{
 		o.color = float4(0, 0, 0, 0);
-	}
-	else
-	{
-		o.color = _PincushionColor;
 	}
 	
 	#endif

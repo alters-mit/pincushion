@@ -9,6 +9,16 @@ namespace Pincushion
     public abstract class PincushionRenderer : MonoBehaviour
     {
         /// <summary>
+        /// The shader keyword that will let us show every nth point.
+        /// </summary>
+        private const string SHOW_EVERY_NTH = "_SHOW_EVERY_NTH";
+        
+        
+        /// <summary>
+        /// The material used to render the points.
+        /// </summary>
+        protected Material material;
+        /// <summary>
         /// The object that renders the points.
         /// </summary>
         protected GameObject points;
@@ -17,11 +27,11 @@ namespace Pincushion
         /// </summary>
         private Renderer myRenderer;
         /// <summary>
-        /// The material used to render the points.
+        /// The number of sampled points.
         /// </summary>
-        protected Material material;
-        
-        
+        private int numSampledPoints;
+
+
         /// <summary>
         /// Sample points and set the mesh(es).
         /// </summary>
@@ -41,7 +51,7 @@ namespace Pincushion
                 pointsPerM *= 1f / (0.1f * Vector3.Distance(cam.transform.position, transform.position));
             }
             
-            SampleMesh(pointsPerM);
+            numSampledPoints = SampleMesh(pointsPerM);
         }
 
 
@@ -92,9 +102,32 @@ namespace Pincushion
 
 
         /// <summary>
+        /// Show every nth point.
+        /// </summary>
+        /// <param name="factor">A factor between 0 and 1.</param>
+        public void ShowEveryNth(float factor)
+        {
+            material.EnableKeyword(SHOW_EVERY_NTH);
+            int v = factor > 0 ? (int)Mathf.Ceil(numSampledPoints - numSampledPoints / (1 / Mathf.Clamp01(factor))) / 100 : 0;
+            if (factor > 0.9f && v == 0)
+            {
+                v = 1;
+            }
+            material.SetInt(PincushionManager.showEveryNthId, v);
+        }
+
+
+        
+        public void ShowAll()
+        {
+            material.DisableKeyword(SHOW_EVERY_NTH);
+        }
+
+
+        /// <summary>
         /// Sample points, create the sampled mesh, and set the material.
         /// </summary>
-        protected abstract void SampleMesh(float pointsPerM);
+        protected abstract int SampleMesh(float pointsPerM);
 
 
         /// <summary>
