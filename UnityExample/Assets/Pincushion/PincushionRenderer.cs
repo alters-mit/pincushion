@@ -12,7 +12,7 @@ namespace Pincushion
         /// <summary>
         /// The shader keyword to apply as mask to the rendered points.
         /// </summary>
-        private const string APPLY_MASK = "_APPLY_MASK";
+        private const string APPLY_MASK = "_PINCUSHION_APPLY_MASK";
         
         
         /// <summary>

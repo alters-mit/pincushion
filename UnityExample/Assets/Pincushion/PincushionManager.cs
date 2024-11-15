@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 
 namespace Pincushion
@@ -15,11 +14,11 @@ namespace Pincushion
         /// <summary>
         /// The shader keyword corresponding the render mode HideBackfacing.
         /// </summary>
-        private const string OCCLUDE_BACKFACING = "_OCCLUDE_BACKFACING";
+        private const string OCCLUDE_BACKFACING = "_PINCUSHION_OCCLUDE_BACKFACING";
         /// <summary>
         /// The shader keyword corresponding the render mode OccludeBehind.
         /// </summary>
-        private const string OCCLUDE_BEHIND = "_OCCLUDE_BEHIND";
+        private const string OCCLUDE_BEHIND = "_PINCUSHION_OCCLUDE_BEHIND";
 
 
         /// <summary>
@@ -326,11 +325,11 @@ namespace Pincushion
             Shader.SetGlobalFloat("_PincushionPointSize", pointRadius);
             if (constantScaling)
             {
-                Shader.EnableKeyword("_CONSTANT_SCALING");
+                Shader.EnableKeyword("_PINCUSHION_CONSTANT_SCALING");
             }
             else
             {
-                Shader.DisableKeyword("_CONSTANT_SCALING");
+                Shader.DisableKeyword("_PINCUSHION_CONSTANT_SCALING");
             }
         }
 

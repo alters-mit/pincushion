@@ -5,10 +5,10 @@
 #pragma vertex vert
 #pragma fragment frag
 #pragma geometry geom
-#pragma multi_compile _ _OCCLUDE_BACKFACING
-#pragma multi_compile _ _CONSTANT_SCALING
-#pragma multi_compile _ _OCCLUDE_BEHIND
-#pragma multi_compile _ _APPLY_MASK
+#pragma multi_compile _ _PINCUSHION_OCCLUDE_BACKFACING
+#pragma multi_compile _ _PINCUSHION_CONSTANT_SCALING
+#pragma multi_compile _ _PINCUSHION_OCCLUDE_BEHIND
+#pragma multi_compile _ _PINCUSHION_APPLY_MASK
 
 #include "UnityCG.cginc"
 
@@ -16,7 +16,7 @@ struct appdata
 {
     float4 vertex : POSITION;
 
-    #if _OCCLUDE_BACKFACING
+    #if _PINCUSHION_OCCLUDE_BACKFACING
 
     // This is used to determine if a point is backfacing.
     float4 normal: NORMAL;
@@ -30,7 +30,7 @@ struct v2g
 {
     float4 vertex : SV_POSITION;
 
-    #if _OCCLUDE_BACKFACING || _APPLY_MASK
+    #if _PINCUSHION_OCCLUDE_BACKFACING || _PINCUSHION_APPLY_MASK
 				
     // To hide a backfacing point, set its color to (0, 0, 0, 0).
     // Otherwise, this will be the _PincushionColor
@@ -46,14 +46,14 @@ struct g2f
     float4 vertex : POSITION;
     float2 uv : TEXCOORD0;
 
-    #if _OCCLUDE_BACKFACING || _APPLY_MASK
+    #if _PINCUSHION_OCCLUDE_BACKFACING || _PINCUSHION_APPLY_MASK
 
     // The color from v2g.
     float4 color: COLOR;
 							
     #endif
 
-    #if _OCCLUDE_BEHIND
+    #if _PINCUSHION_OCCLUDE_BEHIND
 							
     // The distance texture UV.
     float2 distanceUv : TEXCOORD1;

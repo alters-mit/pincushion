@@ -17,7 +17,7 @@ Shader "Pincushion/PincushionStatic" {
 				return v.vertex;
 			}
 
-			#if _OCCLUDE_BACKFACING
+			#if _PINCUSHION_OCCLUDE_BACKFACING
 
 			inline float3 get_normal(in appdata v, in uint vid)
 			{

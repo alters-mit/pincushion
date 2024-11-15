@@ -3,13 +3,13 @@ uniform half _PincushionPointSize;
 uniform sampler2D _PincushionMainTex;
 static float2 pointUvs[4] = { float2(1, 0), float2(1, 1), float2(0, 0), float2(0, 1) };
 
-#if _OCCLUDE_BEHIND
+#if _PINCUSHION_OCCLUDE_BEHIND
 
 uniform sampler2D _PincushionDistanceTex;
 						
 #endif
 
-#if _APPLY_MASK
+#if _PINCUSHION_APPLY_MASK
 
 Buffer<uint> _PincushionMask;
 
@@ -27,7 +27,7 @@ v2g vert (appdata v, uint vid : SV_VertexID)
 										
 	o.vertex = get_vertex(v, vid);
 				
-	#if _OCCLUDE_BACKFACING
+	#if _PINCUSHION_OCCLUDE_BACKFACING
 
 	// Hide points facing away from the camera.
 	// Source: https://discussions.unity.com/t/camera-forward-vector-in-shader/32664/4
@@ -41,13 +41,13 @@ v2g vert (appdata v, uint vid : SV_VertexID)
 		o.color = float4(0, 0, 0, 0);
 	}
 
-	#elif _APPLY_MASK
+	#elif _PINCUSHION_APPLY_MASK
 
 	o.color = _PincushionColor;
 
 	#endif
 
-	#if _APPLY_MASK
+	#if _PINCUSHION_APPLY_MASK
 
 	// Hide some points.
 	if (_PincushionMask[vid] == 0)
@@ -67,7 +67,7 @@ void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 	float3 up = normalize(UNITY_MATRIX_IT_MV[1].xyz);
 	float distanceToCamera = distance(mul(unity_ObjectToWorld, p[0].vertex), _WorldSpaceCameraPos);
 
-	#if _OCCLUDE_BEHIND
+	#if _PINCUSHION_OCCLUDE_BEHIND
 
 	// To occlude behind, we need the point's coordinates on the pre-rendered distance texture.
 	// We assume that the size of the distance texture matches that of the screen.
@@ -76,7 +76,7 @@ void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 
 	#endif
 
-	#if _CONSTANT_SCALING
+	#if _PINCUSHION_CONSTANT_SCALING
 							
 	// Keep a constant scale regardless of distance.
 	float scale = distanceToCamera * 0.1;
@@ -116,13 +116,13 @@ void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 		// The UVs never change.
 		o.uv = pointUvs[j];
 		
-		#if _OCCLUDE_BACKFACING || _APPLY_MASK
+		#if _PINCUSHION_OCCLUDE_BACKFACING || _PINCUSHION_APPLY_MASK
 
 		o.color = p[0].color;
 
 		#endif
 					
-		#if _OCCLUDE_BEHIND
+		#if _PINCUSHION_OCCLUDE_BEHIND
 
 		o.distanceUv = distanceUv;
 		o.distance = distanceToCamera;
@@ -137,7 +137,7 @@ void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 half4 frag(g2f i) : SV_Target
 {
 
-	#if _OCCLUDE_BACKFACING || _APPLY_MASK
+	#if _PINCUSHION_OCCLUDE_BACKFACING || _PINCUSHION_APPLY_MASK
 
 	float4 color = i.color;
 
@@ -147,12 +147,12 @@ half4 frag(g2f i) : SV_Target
 	
 	#endif
 				
-	#if _OCCLUDE_BACKFACING
+	#if _PINCUSHION_OCCLUDE_BACKFACING
 
 	// The color was set via calculating the normal.
 	return tex2D(_PincushionMainTex, i.uv) * color;
 
-	#elif _OCCLUDE_BEHIND
+	#elif _PINCUSHION_OCCLUDE_BEHIND
 
 	// Sample the distance texture and compare to the vertex's distance.
 	if (i.distance < tex2D(_PincushionDistanceTex, i.distanceUv).r + 0.01)
