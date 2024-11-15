@@ -61,16 +61,35 @@ namespace Pincushion
                 pointsPerM *= 1f / (0.1f * Vector3.Distance(cam.transform.position, transform.position));
             }
             
+            // Sample the points.
             int numSampledPoints = SampleMesh(pointsPerM);
+            
+            // Allocate the mask arrays.
             mask = new uint[numSampledPoints];
             maskIndices = new UIntPtr[numSampledPoints];
             if (maskBuffer != null)
             {
                 maskBuffer.Release();
             }
+            // Allocate and set the mask buffer.
             maskBuffer = new ComputeBuffer(numSampledPoints, 4);
             material.SetBuffer(PincushionManager.maskId, maskBuffer);
-            SetMaskIndices();
+            
+            // Set the mask indices.
+            unsafe
+            {
+                UIntPtr num = (UIntPtr)maskIndices.Length;
+                fixed (UIntPtr* maskIndicesPtr = maskIndices)
+                {
+                    Vec_size_t indices = new Vec_size_t
+                    {
+                        ptr = maskIndicesPtr,
+                        len = num,
+                        cap = num
+                    };
+                    Ffi.set_mask_indices(&indices);
+                }
+            }
         }
 
 
@@ -156,6 +175,9 @@ namespace Pincushion
 
 
         
+        /// <summary>
+        /// Disable the rendering mask.
+        /// </summary>
         public void ShowAll()
         {
             material.DisableKeyword(APPLY_MASK);
@@ -173,23 +195,7 @@ namespace Pincushion
         /// </summary>
         /// <returns></returns>
         protected abstract string GetShaderName();
-
-
-        private unsafe void SetMaskIndices()
-        {
-            UIntPtr num = (UIntPtr)maskIndices.Length;
-            fixed (UIntPtr* maskIndicesPtr = maskIndices)
-            {
-                Vec_size_t indices = new Vec_size_t
-                {
-                    ptr = maskIndicesPtr,
-                    len = num,
-                    cap = num
-                };
-                Ffi.set_mask_indices(&indices);
-            }
-        }
-
+        
 
         private void OnDestroy()
         {

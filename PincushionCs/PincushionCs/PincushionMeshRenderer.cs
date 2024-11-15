@@ -10,8 +10,17 @@ namespace Pincushion
     [RequireComponent(typeof(MeshFilter))]
     public class PincushionMeshRenderer : PincushionRenderer
     {
+        /// <summary>
+        /// The source MeshFilter.
+        /// </summary>
         private MeshFilter meshFilter;
+        /// <summary>
+        /// The sampled points MeshFilter.
+        /// </summary>
         private MeshFilter pointsMeshFilter;
+        /// <summary>
+        /// The sampled points MeshRenderer.
+        /// </summary>
         private MeshRenderer pointsMeshRenderer;
 
         public override void Initialize()
@@ -22,6 +31,7 @@ namespace Pincushion
             pointsMeshRenderer = points.AddComponent<MeshRenderer>();
         }
 
+        
         protected override int SampleMesh(float pointsPerM)
         {
             // Sample the points.

@@ -19,6 +19,10 @@ namespace Pincushion
         /// The shader keyword corresponding the render mode OccludeBehind.
         /// </summary>
         private const string OCCLUDE_BEHIND = "_PINCUSHION_OCCLUDE_BEHIND";
+        /// <summary>
+        /// The shader keyword that enables constant point scaling.
+        /// </summary>
+        private const string CONSTANT_SCALING = "_PINCUSHION_CONSTANT_SCALING";
 
 
         /// <summary>
@@ -325,11 +329,11 @@ namespace Pincushion
             Shader.SetGlobalFloat("_PincushionPointSize", pointRadius);
             if (constantScaling)
             {
-                Shader.EnableKeyword("_PINCUSHION_CONSTANT_SCALING");
+                Shader.EnableKeyword(CONSTANT_SCALING);
             }
             else
             {
-                Shader.DisableKeyword("_PINCUSHION_CONSTANT_SCALING");
+                Shader.DisableKeyword(CONSTANT_SCALING);
             }
         }
 
