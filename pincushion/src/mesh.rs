@@ -49,7 +49,7 @@ impl Mesh {
     /// Set a pre-allocated slice of areas on the mesh.
     ///
     /// - `scale`: The uniform scale of the mesh.
-    /// - `area`: The area of the mesh.
+    /// - `area`: The `Area` of the mesh.
     ///
     /// Returns: The total surface area of the mesh in square meters.
     pub fn set_area(&self, scale: f32, area: &mut Area) {
@@ -87,7 +87,7 @@ impl Mesh {
 
     /// Fill pre-allocated slices with sampled points and normals.
     ///
-    /// - `area`: The area of the mesh.
+    /// - `area`: The `Area` of the mesh.
     /// - `sampled_points`: (x, y, z) sampled points. The size can differ from `triangles` and `areas`.
     /// - `sampled_normals`: Normal directional vectors, one per sampled point. This must be the same size as `points`.
     pub fn set_sampled_points(
@@ -125,7 +125,7 @@ impl Mesh {
     /// This is useful for deformable meshes in situations where the positions will change but not the triangles we want to derive positions from.
     ///
     /// - `area`: The `Area` of the mesh.
-    /// - `sampled_triangles`: A pre-defined slice of triangles that will be set in this function. The size can differ from `triangles` and `areas` and must match the number of points that will be sampled.
+    /// - `sampled_triangles`: A pre-defined slice of triangles that will be set in this function. The size must match the number of points that will be sampled.
     pub fn set_sampled_triangles(&self, area: &Area, sampled_triangles: &mut [Triangle]) {
         let num_points = sampled_triangles.len();
         let mut sampler = TriangleSampler { sampled_triangles };
