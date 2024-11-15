@@ -6,11 +6,3 @@ pub struct Triangle {
     pub b: usize,
     pub c: usize,
 }
-
-impl Triangle {
-    pub fn add_mut(&mut self, value: usize) {
-        self.a += value;
-        self.b += value;
-        self.c += value;
-    }
-}
