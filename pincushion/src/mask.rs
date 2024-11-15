@@ -1,5 +1,7 @@
 //! These functions create a boolean mask for an array of a given size, and given a factor.
-//! This is meant to be used in Unity for a rendering shader.
+//! For example, if there are 3500 elements in an array and the factor is 0.5, then 1750 of the elements will be "true".
+//! "True" is in quotes because we're using u32s, not booleans.
+//! We're not using booleans because this is meant to be used in Unity for a rendering shader, and shaders want 32bit types.
 
 use rand::{seq::SliceRandom, thread_rng};
 use safer_ffi::ffi_export;
