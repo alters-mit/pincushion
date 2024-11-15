@@ -24,8 +24,8 @@ pub use vecs::*;
 #[cfg(feature = "cs")]
 pub mod cs;
 pub mod ffi;
-#[cfg(feature = "nth")]
-pub mod nth;
+#[cfg(feature = "mask")]
+pub mod mask;
 
 mod area;
 mod mesh;

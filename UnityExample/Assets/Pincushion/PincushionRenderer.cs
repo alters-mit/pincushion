@@ -10,9 +10,9 @@ namespace Pincushion
     public abstract class PincushionRenderer : MonoBehaviour
     {
         /// <summary>
-        /// The shader keyword that will let us show every nth point.
+        /// The shader keyword to apply as mask to the rendered points.
         /// </summary>
-        private const string SHOW_EVERY_NTH = "_SHOW_EVERY_NTH";
+        private const string APPLY_MASK = "_APPLY_MASK";
         
         
         /// <summary>
@@ -27,10 +27,19 @@ namespace Pincushion
         /// The renderer component.
         /// </summary>
         private Renderer myRenderer;
-        private byte[] stepSeries;
-        private uint[] nthMask;
-        private ComputeBuffer nthMaskBuffer;
-        private int numSampledPoints;
+        /// <summary>
+        /// The cached indices of `mask` in a random order.
+        /// </summary>
+        private UIntPtr[] maskIndices;
+        /// <summary>
+        /// This will be sent to the shader to mask some values.
+        /// The values will be either 0 (false) or 1 (true).
+        /// </summary>
+        private uint[] mask;
+        /// <summary>
+        /// The compute buffer containing the `mask`.
+        /// </summary>
+        private ComputeBuffer maskBuffer;
 
 
         /// <summary>
@@ -52,16 +61,16 @@ namespace Pincushion
                 pointsPerM *= 1f / (0.1f * Vector3.Distance(cam.transform.position, transform.position));
             }
             
-            numSampledPoints = SampleMesh(pointsPerM);
-            nthMask = new uint[numSampledPoints];
-            stepSeries = new byte[numSampledPoints];
-            if (nthMaskBuffer != null)
+            int numSampledPoints = SampleMesh(pointsPerM);
+            mask = new uint[numSampledPoints];
+            maskIndices = new UIntPtr[numSampledPoints];
+            if (maskBuffer != null)
             {
-                nthMaskBuffer.Release();
+                maskBuffer.Release();
             }
-            nthMaskBuffer = new ComputeBuffer(numSampledPoints, 4);
-            material.SetBuffer(PincushionManager.nthMaskId, nthMaskBuffer);
-            SetStepSeries();
+            maskBuffer = new ComputeBuffer(numSampledPoints, 4);
+            material.SetBuffer(PincushionManager.maskId, maskBuffer);
+            SetMaskIndices();
         }
 
 
@@ -112,21 +121,44 @@ namespace Pincushion
 
 
         /// <summary>
-        /// Show every nth point.
+        /// Apply a rendering mask.
+        /// The number of visible points will be `vertices.Length * factor`
         /// </summary>
         /// <param name="factor">A factor between 0 and 1.</param>
-        public void ShowEveryNth(float factor)
+        public void SetMask(float factor)
         {
-            material.EnableKeyword(SHOW_EVERY_NTH);
-            SetNthMask(factor);
-            nthMaskBuffer.SetData(nthMask);
+            material.EnableKeyword(APPLY_MASK);
+            unsafe
+            {
+                UIntPtr num = (UIntPtr)maskIndices.Length;
+                fixed (UIntPtr* maskIndicesPtr = maskIndices)
+                {
+                    Vec_size_t indices = new Vec_size_t
+                    {
+                        ptr = maskIndicesPtr,
+                        len = num,
+                        cap = num
+                    };
+                    fixed (uint* maskPtr = mask)
+                    {
+                        Vec_uint32_t maskV = new Vec_uint32_t
+                        {
+                            ptr = maskPtr,
+                            len = num,
+                            cap = num
+                        };
+                        Ffi.set_mask(factor, &indices, &maskV);         
+                    }
+                }
+            }
+            maskBuffer.SetData(mask);
         }
 
 
         
         public void ShowAll()
         {
-            material.DisableKeyword(SHOW_EVERY_NTH);
+            material.DisableKeyword(APPLY_MASK);
         }
 
 
@@ -143,55 +175,27 @@ namespace Pincushion
         protected abstract string GetShaderName();
 
 
-        private unsafe void SetStepSeries()
+        private unsafe void SetMaskIndices()
         {
-            UIntPtr numSteps = (UIntPtr)stepSeries.Length;
-            fixed (byte* stepSeriesPtr = stepSeries)
+            UIntPtr num = (UIntPtr)maskIndices.Length;
+            fixed (UIntPtr* maskIndicesPtr = maskIndices)
             {
-                Vec_uint8_t steps = new Vec_uint8_t
+                Vec_size_t indices = new Vec_size_t
                 {
-                    ptr = stepSeriesPtr,
-                    len = numSteps,
-                    cap = numSteps
+                    ptr = maskIndicesPtr,
+                    len = num,
+                    cap = num
                 };
-                Ffi.set_nth_steps(&steps);
-            }
-        }
-
-
-        private unsafe void SetNthMask(float factor)
-        {
-            UIntPtr numSteps = (UIntPtr)stepSeries.Length;
-            fixed (byte* stepSeriesPtr = stepSeries)
-            {
-                Vec_uint8_t steps = new Vec_uint8_t
-                {
-                    ptr = stepSeriesPtr,
-                    len = numSteps,
-                    cap = numSteps
-                };
-                fixed (uint* nthMaskPtr = nthMask)
-                {
-                    Vec_uint32_t mask = new Vec_uint32_t
-                    {
-                        ptr = nthMaskPtr,
-                        len = numSteps,
-                        cap = numSteps
-                    };
-                    UIntPtr s = (UIntPtr)(factor > 0
-                        ? (int)Mathf.Ceil(numSampledPoints - numSampledPoints / (1 / Mathf.Clamp(factor, Mathf.Epsilon, 1))) / 100
-                        : 1);
-                    Ffi.set_nth_mask(s, &steps, &mask);         
-                }
+                Ffi.set_mask_indices(&indices);
             }
         }
 
 
         private void OnDestroy()
         {
-            if (nthMaskBuffer != null)
+            if (maskBuffer != null)
             {
-                nthMaskBuffer.Release();             
+                maskBuffer.Release();             
             }
         }
     }

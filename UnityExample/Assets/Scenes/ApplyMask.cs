@@ -3,7 +3,7 @@ using Pincushion;
 using UnityEngine.UI;
 
 
-public class ShowEveryNth : MonoBehaviour
+public class ApplyMask : MonoBehaviour
 {
     private Slider slider;
     
@@ -19,9 +19,9 @@ public class ShowEveryNth : MonoBehaviour
     {
         PincushionManager instance = PincushionManager.Instance;
         // Set the factor.
-        instance.showEveryNth = true;
-        instance.nthFactor = value;
-        // Resample.
-        instance.ShowEveryNthPoint();
+        instance.applyMask = true;
+        instance.maskFactor = value;
+        // Apply the mask.
+        instance.SetMask();
     }
 }

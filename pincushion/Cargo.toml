@@ -17,8 +17,8 @@ macroquad = "0.4.13"
 crate-type = ["lib", "cdylib"]
 
 [features]
-default = ["nth"]
-nth = []
+default = ["mask"]
+mask = []
 obj = ["dep:tobj"]
 cs = ["safer-ffi/headers"]
 

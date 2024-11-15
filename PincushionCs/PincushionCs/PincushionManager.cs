@@ -79,14 +79,15 @@ namespace Pincushion
         /// </summary>
         public bool constantScaling;
         /// <summary>
-        /// If true, show every nth point.
+        /// If true, apply a mask.
+        /// A fraction of the sampled points defined by `maskFactor` will be rendered.
         /// </summary>
-        public bool showEveryNth;
+        public bool applyMask;
         /// <summary>
         /// A factor between 0 and 1 that controls how many points will be skipped when rendering.
         /// </summary>
         [Range(0, 1)]
-        public float nthFactor = 1;
+        public float maskFactor = 1;
         /// <summary>
         /// The source meshes' layer.
         /// </summary>
@@ -96,9 +97,9 @@ namespace Pincushion
         /// </summary>
         public static int sampledMeshesLayer;
         /// <summary>
-        /// The shader property ID for showing every nth point.
+        /// The shader property ID for the mask buffer.
         /// </summary>
-        public static int nthMaskId;
+        public static int maskId;
         /// <summary>
         /// A layer mask for culling everything except the source meshes.
         /// </summary>
@@ -215,7 +216,7 @@ namespace Pincushion
                 mainCamera.cullingMask = ~0;
             }
             
-            nthMaskId = Shader.PropertyToID("_PincushionNthMask");
+            maskId = Shader.PropertyToID("_PincushionMask");
 
             // Set or unset shader keywords depending on the render mode.
             if (renderMode == PincushionRenderMode.HideBackfacing)
@@ -250,9 +251,9 @@ namespace Pincushion
                 pincushions[i].SetSourceMeshVisibility(showSourceMeshes);
                 pincushions[i].SetSampledMeshVisibility(showSampledMeshes);
 
-                if (showEveryNth)
+                if (applyMask)
                 {
-                    pincushions[i].ShowEveryNth(nthFactor);
+                    pincushions[i].SetMask(maskFactor);
                 }
                 else
                 {
@@ -263,16 +264,16 @@ namespace Pincushion
 
 
         /// <summary>
-        /// Show every nth point.
+        /// Apply a mask, revealing only some of the sampled points.
         /// </summary>
-        public void ShowEveryNthPoint()
+        public void SetMask()
         {
             PincushionRenderer[] pincushions = FindObjectsOfType<PincushionRenderer>(true);
             for (int i = 0; i < pincushions.Length; i++)
             {
-                if (showEveryNth)
+                if (applyMask)
                 {
-                    pincushions[i].ShowEveryNth(nthFactor);
+                    pincushions[i].SetMask(maskFactor);
                 }
                 else
                 {

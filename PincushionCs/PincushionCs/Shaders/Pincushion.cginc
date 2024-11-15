@@ -9,9 +9,9 @@ uniform sampler2D _PincushionDistanceTex;
 						
 #endif
 
-#if _SHOW_EVERY_NTH
+#if _APPLY_MASK
 
-Buffer<uint> _PincushionNthMask;
+Buffer<uint> _PincushionMask;
 
 #endif
 
@@ -41,16 +41,16 @@ v2g vert (appdata v, uint vid : SV_VertexID)
 		o.color = float4(0, 0, 0, 0);
 	}
 
-	#elif _SHOW_EVERY_NTH
+	#elif _APPLY_MASK
 
 	o.color = _PincushionColor;
 
 	#endif
 
-	#if _SHOW_EVERY_NTH
+	#if _APPLY_MASK
 
-	// Only show every nth vertex.
-	if (!_PincushionNthMask[vid])
+	// Hide some points.
+	if (_PincushionMask[vid] == 0)
 	{
 		o.color = float4(0, 0, 0, 0);
 	}
@@ -116,7 +116,7 @@ void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 		// The UVs never change.
 		o.uv = pointUvs[j];
 		
-		#if _OCCLUDE_BACKFACING || _SHOW_EVERY_NTH
+		#if _OCCLUDE_BACKFACING || _APPLY_MASK
 
 		o.color = p[0].color;
 
@@ -137,7 +137,7 @@ void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 half4 frag(g2f i) : SV_Target
 {
 
-	#if _OCCLUDE_BACKFACING || _SHOW_EVERY_NTH
+	#if _OCCLUDE_BACKFACING || _APPLY_MASK
 
 	float4 color = i.color;
 

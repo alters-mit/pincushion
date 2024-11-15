@@ -181,8 +181,8 @@ public unsafe partial class Ffi {
 /// Same as [<c>Vec<T></c>][<c>rust::Vec</c>], but with guaranteed <c>#[repr(C)]</c> layout
 /// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 24)]
-public unsafe struct Vec_uint8_t {
-    public byte * ptr;
+public unsafe struct Vec_size_t {
+    public UIntPtr * ptr;
 
     public UIntPtr len;
 
@@ -205,27 +205,26 @@ public unsafe partial class Ffi {
     /// <summary>
     /// Set a vertex mask from the <c>steps</c>.
     ///
-    /// - <c>step</c>: A value between 1 and 100 (inclusive).
-    /// The mask will have this many values equal to <c>1</c>: <c>steps.len() * step * 0.01</c>.
-    /// - <c>steps</c>: A precalculated array from <c>set_nth_steps</c>.
-    /// This is used to ensure that the incides of the true values in <c>mask</c> don't vary.
-    /// - <c>mask</c> A mask of true/false byte values. Unity wants this to be u32 instead of bool.
+    /// - <c>factor</c>: A value between 0 and 1. The number of "true" values will be <c>mask.len() * factor</c>
+    /// - <c>mask_indices</c>: A precalculated array from <c>set_mask_indices</c>.
+    /// This contains all indices in <c>mask</c> in a random order.
+    /// - <c>mask</c> The mask array. Unity wants this to be u32 instead of bool so <c>1</c> is equivalent to <c>true</c>.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
-    void set_nth_mask (
-        UIntPtr step,
-        Vec_uint8_t /*const*/ * steps,
+    void set_mask (
+        float factor,
+        Vec_size_t /*const*/ * mask_indices,
         Vec_uint32_t * mask);
 }
 
 public unsafe partial class Ffi {
     /// <summary>
-    /// For a hardcoded range of 1 to 100 (inclusive), step through <c>steps</c> and increment each stepped value by one.
-    /// <c>steps</c> can be used with <c>set_nth_mask</c>.
+    /// Set the <c>mask_indices</c> to index values (0, 1, 2, etc.)
+    /// Then, shuffle <c>mask_indices</c>.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
-    void set_nth_steps (
-        Vec_uint8_t * steps);
+    void set_mask_indices (
+        Vec_size_t * mask_indices);
 }
 
 

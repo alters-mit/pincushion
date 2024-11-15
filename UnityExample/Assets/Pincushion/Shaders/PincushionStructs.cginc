@@ -8,7 +8,7 @@
 #pragma multi_compile _ _OCCLUDE_BACKFACING
 #pragma multi_compile _ _CONSTANT_SCALING
 #pragma multi_compile _ _OCCLUDE_BEHIND
-#pragma multi_compile _ _SHOW_EVERY_NTH
+#pragma multi_compile _ _APPLY_MASK
 
 #include "UnityCG.cginc"
 
@@ -30,7 +30,7 @@ struct v2g
 {
     float4 vertex : SV_POSITION;
 
-    #if _OCCLUDE_BACKFACING || _SHOW_EVERY_NTH
+    #if _OCCLUDE_BACKFACING || _APPLY_MASK
 				
     // To hide a backfacing point, set its color to (0, 0, 0, 0).
     // Otherwise, this will be the _PincushionColor
@@ -46,7 +46,7 @@ struct g2f
     float4 vertex : POSITION;
     float2 uv : TEXCOORD0;
 
-    #if _OCCLUDE_BACKFACING || _SHOW_EVERY_NTH
+    #if _OCCLUDE_BACKFACING || _APPLY_MASK
 
     // The color from v2g.
     float4 color: COLOR;
