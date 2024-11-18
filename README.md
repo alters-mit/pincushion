@@ -58,6 +58,7 @@ This repo has three components:
 | Background Color | The solid color of the background. |
 | Source Meshes Layer Name | All source mesh objects will be set to this layer. |
 | Sampled Meshes Layer Name | All sampled mesh objects will be set to this layer. |
+| Ignore Meshes Layer Name | Meshes in this layer won't be rendered. |
 | Points Per M | The number of sampled points per square meter on the mesh surface. |
 | Multiply Points Per M By Camera Distance | If true, multiply the number of points by the object's initial distance from the camera. |
 | Multiply Points Per M By Object Scale | If true, multiply the number of points by the object's initial uniform scale. |

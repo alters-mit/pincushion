@@ -53,6 +53,10 @@ namespace Pincushion
         /// </summary>
         public string sampledMeshesLayerName = "TransparentFX";
         /// <summary>
+        /// Meshes in this layer won't be rendered.
+        /// </summary>
+        public string ignoreMeshesLayerName = "Water";
+        /// <summary>
         /// The number of points per square meter.
         /// </summary>
         [Header("Sampling")] 
@@ -119,6 +123,10 @@ namespace Pincushion
         /// </summary>
         private int sampledMeshesCullingMask;
         /// <summary>
+        /// A layer mask for culling everything except the meshes in their original shaders.
+        /// </summary>
+        private int ignoreMeshesCullingMask;
+        /// <summary>
         /// The camera used for getting the distance of everything in the scene.
         /// </summary>
         private Camera distanceCamera;
@@ -134,6 +142,10 @@ namespace Pincushion
         /// All PincushionSkinnedMeshRenderers in the scene.
         /// </summary>
         private PincushionSkinnedMeshRenderer[] pincushionSkinnedMeshRenderers;
+        /// <summary>
+        /// The ignore meshes' layer.
+        /// </summary>
+        private static int ignoreMeshesLayer;
         /// <summary>
         /// Singleton instance. Never call this directly!
         /// </summary>
@@ -215,8 +227,8 @@ namespace Pincushion
                 }
                 
                 // Set the culling masks.
-                mainCamera.cullingMask = sampledMeshesCullingMask;
-                distanceCamera.cullingMask = sourceMeshesCullingMask;
+                mainCamera.cullingMask = sampledMeshesCullingMask | ignoreMeshesCullingMask;
+                distanceCamera.cullingMask = sourceMeshesCullingMask | ignoreMeshesCullingMask;
             }
             else
             {
@@ -318,8 +330,10 @@ namespace Pincushion
             // Set the layers. For now, we're using the names of some default layers.
             sourceMeshesLayer = LayerMask.NameToLayer(sourceMeshesLayerName);
             sampledMeshesLayer = LayerMask.NameToLayer(sampledMeshesLayerName);
+            ignoreMeshesLayer = LayerMask.NameToLayer(ignoreMeshesLayerName);
             sourceMeshesCullingMask = 1 << sourceMeshesLayer;
             sampledMeshesCullingMask = 1 << sampledMeshesLayer;
+            ignoreMeshesCullingMask = 1 << ignoreMeshesLayer;
 
             // Get all renderers in the source meshes layer and add Pincushion renderers.
             foreach (Renderer r in FindObjectsOfType<Renderer>().Where(r => r.gameObject.layer == sourceMeshesLayer))
