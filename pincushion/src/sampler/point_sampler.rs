@@ -17,8 +17,6 @@ impl<'mesh> Sampler for PointSampler<'mesh> {
         &mut self,
         triangle: &Triangle,
         point_index: usize,
-        _: usize,
-        _: usize,
         rng: &mut ThreadRng,
     ) {
         // Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
