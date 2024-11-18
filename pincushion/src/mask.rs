@@ -10,7 +10,7 @@ use safer_ffi::ffi_export;
 /// Then, shuffle `mask_indices`.
 #[ffi_export]
 pub fn set_mask_indices(mask_indices: &mut safer_ffi::Vec<usize>) {
-    let mut vec = (0..mask_indices.len()).collect::<Vec<usize>>();
+    let mut vec = Vec::from_iter(0..mask_indices.len());
     vec.shuffle(&mut thread_rng());
     mask_indices.copy_from_slice(&vec[0..]);
 }
