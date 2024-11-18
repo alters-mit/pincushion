@@ -58,10 +58,12 @@ This repo has three components:
 | Multiply Points Per M By Camera Distance | If true, multiply the number of points by the object's initial distance from the camera. |
 | Multiply Points Per M By Object Scale | If true, multiply the number of points by the object's initial uniform scale. |
 | Render Mode | This controls how Pincushion is rendered (see below). |
-| Texture | The texture of each point. |
+| Texture | The texture of each point. Can be null, in which case a default texture is used. |
 | Color | The color of each point. |
 | Point Radius | The radius of each point in meters. |
 | Constant Scaling | If true, every point will render at the same size. |
+| Apply Mask | If true, apply a mask. A fraction of the sampled points defined by `Mask Factor` will be rendered. |
+| Mask Factor | A factor between 0 and 1 that controls how many points will be skipped when rendering. |
 
 ### Render Modes
 
@@ -94,6 +96,13 @@ You can reinitialize Pincushion by doing the following:
 2. Call Set(): `PincushionManager.Set()`
 
 This works for all `PincushionManager` parameters, including the Render Mode.
+
+### Examples
+
+Example scenes are in `UnityExample/Assets/Scenes/`
+
+- `SampleScene` has a basic Pincushion setup with two MeshRenderers.
+- `ApplyMask` has a slider that you can drag to adjust the rendering mask.
 
 ## Usage (Rust)
 

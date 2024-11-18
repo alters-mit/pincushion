@@ -1,88 +1,39 @@
-﻿#pragma target 2.5
-#pragma vertex vert
-#pragma fragment frag
-#pragma geometry geom
-#pragma multi_compile _ _OCCLUDE_BACKFACING
-#pragma multi_compile _ _CONSTANT_SCALING
-#pragma multi_compile _ _OCCLUDE_BEHIND
-
-#include "UnityCG.cginc"
-
-uniform half4 _PincushionColor;
+﻿uniform half4 _PincushionColor;
 uniform half _PincushionPointSize;
 uniform sampler2D _PincushionMainTex;
 static float2 pointUvs[4] = { float2(1, 0), float2(1, 1), float2(0, 0), float2(0, 1) };
 
-#if _OCCLUDE_BEHIND
+#if _PINCUSHION_OCCLUDE_BEHIND
 
 uniform sampler2D _PincushionDistanceTex;
 						
 #endif
 
-struct appdata
+#if _PINCUSHION_APPLY_MASK
+
+Buffer<uint> _PincushionMask;
+
+#endif
+
+v2g vert (appdata v, uint vid : SV_VertexID)
 {
-	float4 vertex : POSITION;
-
-	#if _OCCLUDE_BACKFACING
-
-	// This is used to determine if a point is backfacing.
-	float4 normal: NORMAL;
-
-	#endif
-							
-	UNITY_VERTEX_INPUT_INSTANCE_ID
-};
-
-struct v2g
-{
-	float4 vertex : SV_POSITION;
-
-	#if _OCCLUDE_BACKFACING
+	v2g o;
+	// set all values in the v2g o to 0.0
+	UNITY_INITIALIZE_OUTPUT(v2g, o);
+	// setup the instanced id to be accessed
+	UNITY_SETUP_INSTANCE_ID(v);
+	// copy instance id in the appdata v to the v2g o
+	UNITY_TRANSFER_INSTANCE_ID(v, o);
+										
+	o.vertex = get_vertex(v, vid);
 				
-	// To hide a backfacing point, set its color to (0, 0, 0, 0).
-	// Otherwise, this will be the _PincushionColor
-	float4 color: COLOR;
-
-	#endif
-							
-	UNITY_VERTEX_INPUT_INSTANCE_ID
-};
-
-struct g2f
-{
-	float4 vertex : POSITION;
-	float2 uv : TEXCOORD0;
-
-	#if _OCCLUDE_BACKFACING
-
-	// The color from v2g.
-	float4 color: COLOR;
-							
-	#endif
-
-	#if _OCCLUDE_BEHIND
-							
-	// The distance texture UV.
-	float2 distanceUv : TEXCOORD1;
-	// The actual distance.
-	float distance: TEXCOORD2;
-
-	#endif
-							
-	UNITY_VERTEX_INPUT_INSTANCE_ID
-	UNITY_VERTEX_OUTPUT_STEREO
-};
-
-inline void occlude_backfacing(float3 normal, in appdata v, inout v2g o)
-{
-	
-	#if _OCCLUDE_BACKFACING
+	#if _PINCUSHION_OCCLUDE_BACKFACING
 
 	// Hide points facing away from the camera.
 	// Source: https://discussions.unity.com/t/camera-forward-vector-in-shader/32664/4
 	half3 worldVert = mul(unity_ObjectToWorld, v.vertex);
 	half3 viewDir = _WorldSpaceCameraPos - worldVert;
-	if (dot(viewDir, normal) > 0) {
+	if (dot(viewDir, get_normal(v, vid)) > 0) {
 		o.color = _PincushionColor;
 	}
 	else
@@ -90,8 +41,23 @@ inline void occlude_backfacing(float3 normal, in appdata v, inout v2g o)
 		o.color = float4(0, 0, 0, 0);
 	}
 
+	#elif _PINCUSHION_APPLY_MASK
+
+	o.color = _PincushionColor;
+
 	#endif
+
+	#if _PINCUSHION_APPLY_MASK
+
+	// Hide some points.
+	if (_PincushionMask[vid] == 0)
+	{
+		o.color = float4(0, 0, 0, 0);
+	}
 	
+	#endif
+							
+	return o;
 }
 
 [maxvertexcount(4)]
@@ -101,7 +67,7 @@ void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 	float3 up = normalize(UNITY_MATRIX_IT_MV[1].xyz);
 	float distanceToCamera = distance(mul(unity_ObjectToWorld, p[0].vertex), _WorldSpaceCameraPos);
 
-	#if _OCCLUDE_BEHIND
+	#if _PINCUSHION_OCCLUDE_BEHIND
 
 	// To occlude behind, we need the point's coordinates on the pre-rendered distance texture.
 	// We assume that the size of the distance texture matches that of the screen.
@@ -110,7 +76,7 @@ void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 
 	#endif
 
-	#if _CONSTANT_SCALING
+	#if _PINCUSHION_CONSTANT_SCALING
 							
 	// Keep a constant scale regardless of distance.
 	float scale = distanceToCamera * 0.1;
@@ -149,15 +115,14 @@ void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 		o.vertex = UnityObjectToClipPos(v[j]);
 		// The UVs never change.
 		o.uv = pointUvs[j];
-
-					
-		#if _OCCLUDE_BACKFACING
+		
+		#if _PINCUSHION_OCCLUDE_BACKFACING || _PINCUSHION_APPLY_MASK
 
 		o.color = p[0].color;
 
 		#endif
 					
-		#if _OCCLUDE_BEHIND
+		#if _PINCUSHION_OCCLUDE_BEHIND
 
 		o.distanceUv = distanceUv;
 		o.distance = distanceToCamera;
@@ -171,24 +136,34 @@ void geom(point v2g p[1], inout TriangleStream<g2f> triStream)
 
 half4 frag(g2f i) : SV_Target
 {
+
+	#if _PINCUSHION_OCCLUDE_BACKFACING || _PINCUSHION_APPLY_MASK
+
+	float4 color = i.color;
+
+	#else
+
+	float4 color = _PincushionColor;
+	
+	#endif
 				
-	#if _OCCLUDE_BACKFACING
+	#if _PINCUSHION_OCCLUDE_BACKFACING
 
 	// The color was set via calculating the normal.
-	return tex2D(_PincushionMainTex, i.uv) * i.color;
+	return tex2D(_PincushionMainTex, i.uv) * color;
 
-	#elif _OCCLUDE_BEHIND
+	#elif _PINCUSHION_OCCLUDE_BEHIND
 
 	// Sample the distance texture and compare to the vertex's distance.
 	if (i.distance < tex2D(_PincushionDistanceTex, i.distanceUv).r + 0.01)
 	{
-		return tex2D(_PincushionMainTex, i.uv) * _PincushionColor;
+		return tex2D(_PincushionMainTex, i.uv) * color;
 	}
 	return float4(0, 0, 0, 0);
 
 	#else
 
-	return tex2D(_PincushionMainTex, i.uv);
+	return tex2D(_PincushionMainTex, i.uv) * color;
 
 	#endif
 							

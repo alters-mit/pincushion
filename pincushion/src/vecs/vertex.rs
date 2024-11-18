@@ -8,24 +8,12 @@ pub struct Vertex {
 }
 
 impl Vertex {
-    pub const FORWARD: Self = Self {
-        x: 0.,
-        y: 0.,
-        z: 1.,
-    };
-
     pub fn add(&self, other: &Self) -> Self {
         Self {
             x: self.x + other.x,
             y: self.y + other.y,
             z: self.z + other.z,
         }
-    }
-
-    pub fn add_mut(&mut self, other: &Self) {
-        self.x += other.x;
-        self.y += other.y;
-        self.z += other.z;
     }
 
     pub fn sub(&self, other: &Self) -> Self {
@@ -48,12 +36,6 @@ impl Vertex {
         self.x *= value;
         self.y *= value;
         self.z *= value;
-    }
-
-    pub fn scale(&mut self, other: &Self) {
-        self.x *= other.x;
-        self.y *= other.y;
-        self.z *= other.z;
     }
 
     pub fn div(&self, value: f32) -> Self {
