@@ -52,6 +52,7 @@ This repo has three components:
 
 | Parameter | Description |
 | --- | --- |
+| Auto Update | If true, Pincushion will update on Update(). If false, you must manually call ManuallyUpdate() to update Pincushion. |
 | Main Camera | The camera that will render Pincushion. |
 | Set Background Color | If true, the background of the scene will be Background Color. If false, the background won't change. |
 | Background Color | The solid color of the background. |

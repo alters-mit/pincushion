@@ -23,6 +23,7 @@ namespace Pincushion
         /// </summary>
         private MeshRenderer pointsMeshRenderer;
 
+        
         public override void Initialize()
         {
             base.Initialize();

@@ -26,6 +26,12 @@ namespace Pincushion
 
 
         /// <summary>
+        /// If true, Pincushion will update on Update().
+        /// If false, you must manually call ManuallyUpdate() to update Pincushion.
+        /// </summary>
+        [Header("Unity")]
+        public bool autoUpdate = true;
+        /// <summary>
         /// The main camera used for viewing the sampled points.
         /// </summary>
         [Header("Camera")]
@@ -132,6 +138,10 @@ namespace Pincushion
         /// The original clear flags of the camera.
         /// </summary>
         private CameraClearFlags mainCameraClearFlags;
+        /// <summary>
+        /// All PincushionSkinnedMeshRenderers in the scene.
+        /// </summary>
+        private PincushionSkinnedMeshRenderer[] pincushionSkinnedMeshRenderers;
         /// <summary>
         /// The ignore meshes' layer.
         /// </summary>
@@ -276,6 +286,7 @@ namespace Pincushion
                     pincushions[i].ShowAll();
                 }
             }
+            pincushionSkinnedMeshRenderers = FindObjectsOfType<PincushionSkinnedMeshRenderer>(true);
         }
 
 
@@ -295,6 +306,18 @@ namespace Pincushion
                 {
                     pincushions[i].ShowAll();
                 }
+            }
+        }
+
+
+        /// <summary>
+        /// Manually update Pincushion.
+        /// </summary>
+        public void ManuallyUpdate()
+        {
+            for (int i = 0; i < pincushionSkinnedMeshRenderers.Length; i++)
+            {
+                pincushionSkinnedMeshRenderers[i].DoUpdate(renderMode);
             }
         }
 
@@ -333,6 +356,7 @@ namespace Pincushion
             Set();
         }
 
+        
         /// <summary>
         /// Set the global shader values.
         /// </summary>
