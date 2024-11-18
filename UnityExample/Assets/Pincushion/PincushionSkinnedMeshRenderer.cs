@@ -53,6 +53,31 @@ namespace Pincushion
         /// The property ID of the source normals buffer.
         /// </summary>
         private int sourceNormalsId;
+
+
+        /// <summary>
+        /// Update this renderer.
+        /// This gets called on Update() or in PincushionManager.Instance.ManuallyUpdate(),
+        /// depending on whether PincushionManager.Instance.autoUpdate == true.
+        /// </summary>
+        /// <param name="renderMode">The current render mode.</param>
+        public void DoUpdate(PincushionRenderMode renderMode)
+        {
+            if (renderMode != PincushionRenderMode.DoNot)
+            {
+                // Bake the mesh to get the vertices and normals.
+                skinnedMeshRenderer.BakeMesh(sourceMesh);
+                
+                // Set the vertex and normal buffers.
+                sourceVerticesBuffer.SetData(sourceMesh.vertices);
+
+                // We only care about normals when we have to find backfacing points.
+                if (renderMode == PincushionRenderMode.HideBackfacing)
+                {
+                    sourceNormalsBuffer.SetData(sourceMesh.normals);
+                }
+            }
+        }
         
         
         public override void Initialize()
@@ -108,19 +133,10 @@ namespace Pincushion
 
         private void Update()
         {
-            if (PincushionManager.Instance.renderMode != PincushionRenderMode.DoNot)
+            PincushionManager instance = PincushionManager.Instance;
+            if (instance.autoUpdate)
             {
-                // Bake the mesh to get the vertices and normals.
-                skinnedMeshRenderer.BakeMesh(sourceMesh);
-                
-                // Set the vertex and normal buffers.
-                sourceVerticesBuffer.SetData(sourceMesh.vertices);
-
-                // We only care about normals when we have to find backfacing points.
-                if (PincushionManager.Instance.renderMode == PincushionRenderMode.HideBackfacing)
-                {
-                    sourceNormalsBuffer.SetData(sourceMesh.normals);
-                }
+                DoUpdate(instance.renderMode);
             }
         }
 
