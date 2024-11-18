@@ -10,28 +10,23 @@ Shader "Pincushion/PincushionStatic" {
 		{
 			CGPROGRAM
 
-			#include "Pincushion.cginc"
-			
-			v2g vert (appdata v)
-			{
-				v2g o;
-				// set all values in the v2g o to 0.0
-				UNITY_INITIALIZE_OUTPUT(v2g, o);
-				// setup the instanced id to be accessed
-				UNITY_SETUP_INSTANCE_ID(v);
-				// copy instance id in the appdata v to the v2g o
-				UNITY_TRANSFER_INSTANCE_ID(v, o);
-										
-				o.vertex = v.vertex;
-				
-				#if _OCCLUDE_BACKFACING
-				
-				occlude_backfacing(UnityObjectToWorldNormal(v.normal), v, o);
+			#include "PincushionStructs.cginc"
 
-				#endif
-							
-				return o;
+			inline float4 get_vertex(in appdata v, in uint vid)
+			{
+				return v.vertex;
 			}
+
+			#if _PINCUSHION_OCCLUDE_BACKFACING
+
+			inline float3 get_normal(in appdata v, in uint vid)
+			{
+				return v.normal;
+			}
+
+			#endif
+
+			#include "Pincushion.cginc"
 			
 			ENDCG
 			

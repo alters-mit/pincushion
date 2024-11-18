@@ -12,11 +12,9 @@ impl<'mesh> Sampler for TriangleSampler<'mesh> {
     fn sample(
         &mut self,
         triangle: &Triangle,
-        _: usize,
-        start_index_point: usize,
-        i: usize,
+        point_index: usize,
         _: &mut ThreadRng,
     ) {
-        self.sampled_triangles[start_index_point + i] = *triangle;
+        self.sampled_triangles[point_index] = *triangle;
     }
 }

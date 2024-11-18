@@ -14,13 +14,17 @@ namespace Pincushion
         /// <summary>
         /// The shader keyword corresponding the render mode HideBackfacing.
         /// </summary>
-        private const string OCCLUDE_BACKFACING = "_OCCLUDE_BACKFACING";
+        private const string OCCLUDE_BACKFACING = "_PINCUSHION_OCCLUDE_BACKFACING";
         /// <summary>
         /// The shader keyword corresponding the render mode OccludeBehind.
         /// </summary>
-        private const string OCCLUDE_BEHIND = "_OCCLUDE_BEHIND";
-        
-        
+        private const string OCCLUDE_BEHIND = "_PINCUSHION_OCCLUDE_BEHIND";
+        /// <summary>
+        /// The shader keyword that enables constant point scaling.
+        /// </summary>
+        private const string CONSTANT_SCALING = "_PINCUSHION_CONSTANT_SCALING";
+
+
         /// <summary>
         /// The main camera used for viewing the sampled points.
         /// </summary>
@@ -43,7 +47,7 @@ namespace Pincushion
         /// </summary>
         public string sampledMeshesLayerName = "TransparentFX";
         /// <summary>
-        /// All mesh objects displayed in their original shader will be set to this layer. 
+        /// Meshes in this layer won't be rendered.
         /// </summary>
         public string ignoreMeshesLayerName = "Water";
         /// <summary>
@@ -83,6 +87,16 @@ namespace Pincushion
         /// </summary>
         public bool constantScaling;
         /// <summary>
+        /// If true, apply a mask.
+        /// A fraction of the sampled points defined by `maskFactor` will be rendered.
+        /// </summary>
+        public bool applyMask;
+        /// <summary>
+        /// A factor between 0 and 1 that controls how many points will be skipped when rendering.
+        /// </summary>
+        [Range(0, 1)]
+        public float maskFactor = 1;
+        /// <summary>
         /// The source meshes' layer.
         /// </summary>
         public static int sourceMeshesLayer;
@@ -91,9 +105,9 @@ namespace Pincushion
         /// </summary>
         public static int sampledMeshesLayer;
         /// <summary>
-        /// The ignore meshes' layer.
+        /// The shader property ID for the mask buffer.
         /// </summary>
-        public static int ignoreMeshesLayer;
+        public static int maskId;
         /// <summary>
         /// A layer mask for culling everything except the source meshes.
         /// </summary>
@@ -118,6 +132,10 @@ namespace Pincushion
         /// The original clear flags of the camera.
         /// </summary>
         private CameraClearFlags mainCameraClearFlags;
+        /// <summary>
+        /// The ignore meshes' layer.
+        /// </summary>
+        private static int ignoreMeshesLayer;
         /// <summary>
         /// Singleton instance. Never call this directly!
         /// </summary>
@@ -213,6 +231,8 @@ namespace Pincushion
                 // Set the main camera to see everything.
                 mainCamera.cullingMask = ~0;
             }
+            
+            maskId = Shader.PropertyToID("_PincushionMask");
 
             // Set or unset shader keywords depending on the render mode.
             if (renderMode == PincushionRenderMode.HideBackfacing)
@@ -246,6 +266,35 @@ namespace Pincushion
                 // Set visibility.
                 pincushions[i].SetSourceMeshVisibility(showSourceMeshes);
                 pincushions[i].SetSampledMeshVisibility(showSampledMeshes);
+
+                if (applyMask)
+                {
+                    pincushions[i].SetMask(maskFactor);
+                }
+                else
+                {
+                    pincushions[i].ShowAll();
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Apply a mask, revealing only some of the sampled points.
+        /// </summary>
+        public void SetMask()
+        {
+            PincushionRenderer[] pincushions = FindObjectsOfType<PincushionRenderer>(true);
+            for (int i = 0; i < pincushions.Length; i++)
+            {
+                if (applyMask)
+                {
+                    pincushions[i].SetMask(maskFactor);
+                }
+                else
+                {
+                    pincushions[i].ShowAll();
+                }
             }
         }
 
@@ -294,11 +343,11 @@ namespace Pincushion
             Shader.SetGlobalFloat("_PincushionPointSize", pointRadius);
             if (constantScaling)
             {
-                Shader.EnableKeyword("_CONSTANT_SCALING");
+                Shader.EnableKeyword(CONSTANT_SCALING);
             }
             else
             {
-                Shader.DisableKeyword("_CONSTANT_SCALING");
+                Shader.DisableKeyword(CONSTANT_SCALING);
             }
         }
 

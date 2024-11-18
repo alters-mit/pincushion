@@ -1,6 +1,7 @@
 ### Features
 
 - `obj` adds a `Mesh::from_obj(path)` function to load a mesh from a .obj file.
+- `mask` adds a few FFI-safe functions to apply a "mask", showing/hiding some elements in an array. This is meant to be used in Unity and probably isn't useful elsewhere. 
 - `cs` should only be enabled when generating the C# code (see below).
 
 ### Create C# Native Bindings

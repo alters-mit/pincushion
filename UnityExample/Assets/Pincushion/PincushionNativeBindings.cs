@@ -177,5 +177,55 @@ public unsafe partial class Ffi {
         Area_t * area);
 }
 
+/// <summary>
+/// Same as [<c>Vec<T></c>][<c>rust::Vec</c>], but with guaranteed <c>#[repr(C)]</c> layout
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 24)]
+public unsafe struct Vec_size_t {
+    public UIntPtr * ptr;
+
+    public UIntPtr len;
+
+    public UIntPtr cap;
+}
+
+/// <summary>
+/// Same as [<c>Vec<T></c>][<c>rust::Vec</c>], but with guaranteed <c>#[repr(C)]</c> layout
+/// </summary>
+[StructLayout(LayoutKind.Sequential, Size = 24)]
+public unsafe struct Vec_uint32_t {
+    public UInt32 * ptr;
+
+    public UIntPtr len;
+
+    public UIntPtr cap;
+}
+
+public unsafe partial class Ffi {
+    /// <summary>
+    /// Set a vertex mask from the <c>steps</c>.
+    ///
+    /// - <c>factor</c>: A value between 0 and 1. The number of "true" values will be <c>mask.len() * factor</c>
+    /// - <c>mask_indices</c>: A precalculated array from <c>set_mask_indices</c>.
+    /// This contains all indices in <c>mask</c> in a random order.
+    /// - <c>mask</c> The mask array. Unity wants this to be u32 instead of bool so <c>1</c> is equivalent to <c>true</c>.
+    /// </summary>
+    [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
+    void set_mask (
+        float factor,
+        Vec_size_t /*const*/ * mask_indices,
+        Vec_uint32_t * mask);
+}
+
+public unsafe partial class Ffi {
+    /// <summary>
+    /// Set the <c>mask_indices</c> to index values (0, 1, 2, etc.)
+    /// Then, shuffle <c>mask_indices</c>.
+    /// </summary>
+    [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
+    void set_mask_indices (
+        Vec_size_t * mask_indices);
+}
+
 
 } /* Pincushion */

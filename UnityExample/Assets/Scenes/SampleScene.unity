@@ -233,11 +233,13 @@ MonoBehaviour:
   pointsPerM: 80
   multiplyPointsPerMByCameraDistance: 0
   multiplyPointsPerMByObjectScale: 1
-  renderMode: 4
+  renderMode: 2
   texture: {fileID: 0}
   color: {r: 1, g: 1, b: 1, a: 1}
   pointRadius: 0.02
   constantScaling: 0
+  showEveryNth: 0
+  nth: 1
 --- !u!4 &209450894
 Transform:
   m_ObjectHideFlags: 0

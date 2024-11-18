@@ -57,14 +57,17 @@ This repo has three components:
 | Background Color | The solid color of the background. |
 | Source Meshes Layer Name | All source mesh objects will be set to this layer. |
 | Sampled Meshes Layer Name | All sampled mesh objects will be set to this layer. |
+| Ignore Meshes Layer Name | Meshes in this layer won't be rendered. |
 | Points Per M | The number of sampled points per square meter on the mesh surface. |
 | Multiply Points Per M By Camera Distance | If true, multiply the number of points by the object's initial distance from the camera. |
 | Multiply Points Per M By Object Scale | If true, multiply the number of points by the object's initial uniform scale. |
 | Render Mode | This controls how Pincushion is rendered (see below). |
-| Texture | The texture of each point. |
+| Texture | The texture of each point. Can be null, in which case a default texture is used. |
 | Color | The color of each point. |
 | Point Radius | The radius of each point in meters. |
 | Constant Scaling | If true, every point will render at the same size. |
+| Apply Mask | If true, apply a mask. A fraction of the sampled points defined by `Mask Factor` will be rendered. |
+| Mask Factor | A factor between 0 and 1 that controls how many points will be skipped when rendering. |
 
 ### Render Modes
 
@@ -98,6 +101,13 @@ You can reinitialize Pincushion by doing the following:
 
 This works for all `PincushionManager` parameters, including the Render Mode.
 
+### Examples
+
+Example scenes are in `UnityExample/Assets/Scenes/`
+
+- `SampleScene` has a basic Pincushion setup with two MeshRenderers.
+- `ApplyMask` has a slider that you can drag to adjust the rendering mask.
+
 ## Usage (Rust)
 
 Pincushion can alternatively be used in a native Rust context.
@@ -124,6 +134,7 @@ fn main() {
 ### Features
 
 - `obj` adds a `Mesh::from_obj(path)` function to load a mesh from a .obj file.
+- `mask` adds a few FFI-safe functions to apply a "mask", showing/hiding some elements in an array. This is meant to be used in Unity and probably isn't useful elsewhere. 
 - `cs` should only be enabled when generating the C# code (see below).
 
 ### Create C# Native Bindings
@@ -148,9 +159,9 @@ To run the benchmark: `cargo bench benchmark --features obj`
 
 Results:
 
-Sample points: 44μs
+Sample points: 46μs
 
-Sample triangles: 28μs
+Sample triangles: 39μs
 
 ***
 
