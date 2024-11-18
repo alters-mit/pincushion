@@ -16,8 +16,8 @@ pub fn set_area(mesh: &Mesh, scale: f32, area: &mut Area) {
 ///
 /// - `mesh` The source mesh.
 /// - `area`: The `Area` of the mesh.
-/// - `sampled_points`: A pre-defined slice of vertices that will be filled with points. The size can differ from `triangles` and `areas`.
-/// - `sampled_normals`: A pre-defined slice that will be filled with normals. The size must match that of `points`.
+/// - `sampled_points`: (x, y, z) sampled points. The size can differ from `triangles` and `areas`.
+/// - `sampled_normals`: Normal directional vectors, one per sampled point. This must be the same size as `points`.
 #[ffi_export]
 pub fn sample_points(
     mesh: &Mesh,
@@ -33,7 +33,7 @@ pub fn sample_points(
 ///
 /// - `mesh` The source mesh.
 /// - `area`: The `Area` of the mesh.
-/// - `sampled_triangles`: The triangles that will be sampled.
+/// - `sampled_triangles`: A pre-defined slice of triangles that will be set in this function. The size must match the number of points that will be sampled.
 #[ffi_export]
 pub fn sample_triangles(
     mesh: &Mesh,
@@ -41,14 +41,4 @@ pub fn sample_triangles(
     sampled_triangles: &mut safer_ffi::Vec<Triangle>,
 ) {
     mesh.set_sampled_triangles(area, sampled_triangles);
-}
-
-/// Given pre-sampled triangles, sample vertices.
-/// The position of the vertex relative to the spatial area of the triangle is deterministic.
-///
-/// - `mesh` The source mesh.
-/// - `sampled_mesh`: The sampled mesh, which contains pre-sampled triangles.
-#[ffi_export]
-pub fn set_points_from_sampled_triangles(mesh: &Mesh, sampled_mesh: &mut Mesh) {
-    mesh.set_presampled_mesh(sampled_mesh);
 }

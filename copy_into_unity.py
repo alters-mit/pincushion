@@ -29,7 +29,7 @@ if __name__ == "__main__":
     resources_root = cs_root.joinpath('Resources')
     for src_root, unity_folder in zip([cs_root, shader_root, resources_root], ['', 'Shaders', 'Resources']):
         for src in src_root.iterdir():
-            if not src.is_file() or src.suffix == '.config':
+            if not src.is_file() or src.suffix == '.config' or src.suffix == '.csproj':
                 continue
             dst = f'{unity_root}{unity_folder}/{src.name}'
             copy(src.as_posix(), dst)

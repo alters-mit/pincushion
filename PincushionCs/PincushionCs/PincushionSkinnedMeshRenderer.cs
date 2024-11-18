@@ -22,14 +22,6 @@ namespace Pincushion
         /// </summary>
         private SkinnedMeshRenderer skinnedMeshRenderer;
         /// <summary>
-        /// The source mesh data.
-        /// </summary>
-        private PincushionMesh sourceMeshData;
-        /// <summary>
-        /// The sampled mesh data.
-        /// </summary>
-        private PincushionMesh sampledMeshData;
-        /// <summary>
         /// The MeshFilter that handles the sampled points.
         /// </summary>
         private MeshFilter sampledMeshFilter;
@@ -41,6 +33,51 @@ namespace Pincushion
         /// This is used to re-sample points.
         /// </summary>
         private Mesh sourceMesh;
+        /// <summary>
+        /// The buffer used to store the vertices of the source mesh.
+        /// </summary>
+        private ComputeBuffer sourceVerticesBuffer;
+        /// <summary>
+        /// The buffer used to store the normals of the source mesh.
+        /// </summary>
+        private ComputeBuffer sourceNormalsBuffer;
+        /// <summary>
+        /// The buffer used to store the sampled triangles.
+        /// </summary>
+        private ComputeBuffer sampledTrianglesBuffer;
+        /// <summary>
+        /// The property ID of the source vertices buffer.
+        /// </summary>
+        private int sourceVerticesId;
+        /// <summary>
+        /// The property ID of the source normals buffer.
+        /// </summary>
+        private int sourceNormalsId;
+
+
+        /// <summary>
+        /// Update this renderer.
+        /// This gets called on Update() or in PincushionManager.Instance.ManuallyUpdate(),
+        /// depending on whether PincushionManager.Instance.autoUpdate == true.
+        /// </summary>
+        /// <param name="renderMode">The current render mode.</param>
+        public void DoUpdate(PincushionRenderMode renderMode)
+        {
+            if (renderMode != PincushionRenderMode.DoNot)
+            {
+                // Bake the mesh to get the vertices and normals.
+                skinnedMeshRenderer.BakeMesh(sourceMesh);
+                
+                // Set the vertex and normal buffers.
+                sourceVerticesBuffer.SetData(sourceMesh.vertices);
+
+                // We only care about normals when we have to find backfacing points.
+                if (renderMode == PincushionRenderMode.HideBackfacing)
+                {
+                    sourceNormalsBuffer.SetData(sourceMesh.normals);
+                }
+            }
+        }
         
         
         public override void Initialize()
@@ -54,43 +91,61 @@ namespace Pincushion
         }
 
 
-        protected override void SampleMesh(float pointsPerM, PincushionManager instance)
+        protected override int SampleMesh(float pointsPerM)
         {
-            sampledMeshRenderer.sharedMaterial = instance.material;
+            sampledMeshRenderer.sharedMaterial = material;
             // Sample the triangles.
-            UIntPtr[] sourceTriangles = skinnedMeshRenderer.sharedMesh.GetTriangles();
-            UIntPtr[] sampledTriangles = skinnedMeshRenderer.sharedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude, sourceTriangles);
-            // Allocate the sampling data.
-            sourceMeshData = new PincushionMesh
-            {
-                vertices = new Vector3[skinnedMeshRenderer.sharedMesh.vertexCount],
-                normals = new Vector3[skinnedMeshRenderer.sharedMesh.vertexCount],
-                triangles = sourceTriangles,
-            };
-            sampledMeshData = new PincushionMesh
-            {
-                vertices = new Vector3[sampledTriangles.Length / 3],
-                triangles = sampledTriangles,
-                normals = new Vector3[sampledTriangles.Length / 3],
-            };
+            Mesh skinnedMesh = skinnedMeshRenderer.sharedMesh;
+            UIntPtr[] sourceTriangles = skinnedMesh.GetTriangles();
+            int[] sampledTriangles = skinnedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude, sourceTriangles);
+            int numSourceVertices = skinnedMesh.vertexCount;
+
+            sourceVerticesBuffer = new ComputeBuffer(numSourceVertices, 12);
+            sourceNormalsBuffer = new ComputeBuffer(numSourceVertices, 12);
+            sampledTrianglesBuffer = new ComputeBuffer(sampledTriangles.Length / 3, 12);
+            
+            // Set the triangles buffer.
+            sampledTrianglesBuffer.SetData(sampledTriangles);
+            sourceVerticesId = Shader.PropertyToID("_PincushionSourceVertices");
+            sourceNormalsId = Shader.PropertyToID("_PincushionSourceNormals");
+            int sourceTrianglesId = Shader.PropertyToID("_PincushionSampledTriangles");
+            material.SetBuffer(sourceVerticesId, sourceVerticesBuffer);
+            material.SetBuffer(sourceNormalsId, sourceNormalsBuffer);
+            material.SetBuffer(sourceTrianglesId, sampledTrianglesBuffer);
+            
             // Create the mesh.
             Mesh mesh = new Mesh();
-            mesh.vertices = new Vector3[sourceMeshData.vertices.Length];
-            mesh.normals = new Vector3[sourceMeshData.normals.Length];
-            mesh.triangles = new int[sourceMeshData.triangles.Length];
+            mesh.vertices = new Vector3[sampledTriangles.Length / 3];
+            mesh.normals = new Vector3[sampledTriangles.Length / 3];
+            mesh.triangles = new int[sampledTriangles.Length];
+            mesh.SetPointTopology();
             sampledMeshFilter.mesh = mesh;
+
+            return mesh.vertexCount;
         }
 
 
-        private void OnRenderObject()
+        protected override string GetShaderName()
         {
-            if (sampledMeshRenderer.enabled)
+            return "PincushionDynamic";
+        }
+
+
+        private void Update()
+        {
+            PincushionManager instance = PincushionManager.Instance;
+            if (instance.autoUpdate)
             {
-                skinnedMeshRenderer.BakeMesh(sourceMesh);
-                // Set the positions of the points.
-                sampledMeshFilter.mesh.SetVerticesFromSampledTriangles(sourceMesh, sourceMeshData, sampledMeshData);
-                sampledMeshFilter.mesh.SetPointTopology();           
+                DoUpdate(instance.renderMode);
             }
+        }
+
+
+        private void OnDestroy()
+        {
+            sourceVerticesBuffer.Release();
+            sourceNormalsBuffer.Release();
+            sampledTrianglesBuffer.Release();
         }
     }
 }

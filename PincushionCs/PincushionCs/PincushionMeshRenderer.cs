@@ -8,17 +8,45 @@ namespace Pincushion
     /// The mesh is sampled exactly once unless manually resampled from PincushionManager.
     /// </summary>
     [RequireComponent(typeof(MeshFilter))]
-    [RequireComponent(typeof(Renderer))]
     public class PincushionMeshRenderer : PincushionRenderer
     {
-        protected override void SampleMesh(float pointsPerM, PincushionManager instance)
+        /// <summary>
+        /// The source MeshFilter.
+        /// </summary>
+        private MeshFilter meshFilter;
+        /// <summary>
+        /// The sampled points MeshFilter.
+        /// </summary>
+        private MeshFilter pointsMeshFilter;
+        /// <summary>
+        /// The sampled points MeshRenderer.
+        /// </summary>
+        private MeshRenderer pointsMeshRenderer;
+
+        
+        public override void Initialize()
+        {
+            base.Initialize();
+            meshFilter = GetComponent<MeshFilter>();
+            pointsMeshFilter = points.AddComponent<MeshFilter>();
+            pointsMeshRenderer = points.AddComponent<MeshRenderer>();
+        }
+
+        
+        protected override int SampleMesh(float pointsPerM)
         {
             // Sample the points.
-            Mesh mesh = GetComponent<MeshFilter>().mesh.GetSampledMesh(
-                pointsPerM, transform.localScale.magnitude);
-            points.AddComponent<MeshFilter>().mesh = mesh;
+            Mesh mesh = meshFilter.mesh.GetSampledMesh(pointsPerM, transform.localScale.magnitude);
+            pointsMeshFilter.mesh = mesh;
             // Set the material.
-            points.AddComponent<MeshRenderer>().sharedMaterial = instance.material;
+            pointsMeshRenderer.sharedMaterial = material;
+            return mesh.vertexCount;
+        }
+
+
+        protected override string GetShaderName()
+        {
+            return "PincushionStatic";
         }
     }
 }

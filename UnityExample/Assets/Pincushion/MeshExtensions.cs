@@ -119,7 +119,7 @@ namespace Pincushion
         /// <param name="pointsPerM">Points per meter squared of the mesh's surface area.</param>
         /// <param name="scale">The uniform scale of the mesh.</param>
         /// <param name="sourceTriangles">The source mesh's triangles as UIntPtr values.</param>
-        public static UIntPtr[] GetSampledTriangles(this Mesh mesh, float pointsPerM, float scale, UIntPtr[] sourceTriangles)
+        public static int[] GetSampledTriangles(this Mesh mesh, float pointsPerM, float scale, UIntPtr[] sourceTriangles)
         {
             UIntPtr verticesLength = (UIntPtr)mesh.vertices.Length;
             int numTriangles = mesh.triangles.Length / 3;
@@ -188,99 +188,13 @@ namespace Pincushion
                                 };
                                 Ffi.sample_triangles(&meshT, &areaT, &sampledTrianglesVec);
                             }
-                            return sampledTriangles;
+                            return Array.ConvertAll(sampledTriangles, uIntPtrToInt);
                         }
                     }
                 }
             }
         }
         
-        
-        /// <summary>
-        /// Given a pre-sampled array of triangles, sample points on the original mesh.
-        /// The sampled points will be vertices on this mesh.
-        /// </summary>
-        /// <param name="mesh">(this)</param>
-        /// <param name="sourceMesh">The source mesh.</param>
-        /// <param name="sourceMeshData">The source mesh data.</param>
-        /// <param name="sampledMeshData">The sampled mesh data.</param>
-        public static void SetVerticesFromSampledTriangles(this Mesh mesh, Mesh sourceMesh,
-            PincushionMesh sourceMeshData, PincushionMesh sampledMeshData)
-        {
-            UIntPtr pointsLength = (UIntPtr)sampledMeshData.vertices.Length;
-            // Copy the vertices to skip a lot of allocations.
-            Array.Copy(sourceMesh.vertices, sourceMeshData.vertices, sourceMeshData.vertices.Length);
-            Array.Copy(sourceMesh.normals, sourceMeshData.normals, sourceMeshData.normals.Length);
-            UIntPtr sourceMeshVerticesLength = (UIntPtr)sourceMeshData.vertices.Length;
-            UIntPtr sourceMeshTrianglesLength = (UIntPtr)(sampledMeshData.triangles.Length / 3);
-            unsafe
-            {
-                fixed (Vector3* pointsPtr = sampledMeshData.vertices,
-                       normalsPtr = sampledMeshData.normals,
-                       sourceVerticesPtr = sourceMeshData.vertices,
-                       sourceNormalsPtr = sourceMeshData.normals)
-                {
-                    Vec_Vertex_t pointsV = new Vec_Vertex_t
-                    {
-                        ptr = (Vertex_t*)pointsPtr,
-                        len = pointsLength,
-                        cap = pointsLength
-                    };
-                    Vec_Vertex_t normalsV = new Vec_Vertex_t
-                    {
-                        ptr = (Vertex_t*)normalsPtr,
-                        len = pointsLength,
-                        cap = pointsLength
-                    };
-                    Vec_Vertex_t sourceVerticesV = new Vec_Vertex_t
-                    {
-                        ptr = (Vertex_t*)sourceVerticesPtr,
-                        len = sourceMeshVerticesLength,
-                        cap = sourceMeshVerticesLength
-                    };
-                    Vec_Vertex_t sourceNormalsV = new Vec_Vertex_t
-                    {
-                        ptr = (Vertex_t*)sourceNormalsPtr,
-                        len = sourceMeshVerticesLength,
-                        cap = sourceMeshVerticesLength
-                    };
-                    // Deterministically sample the points.
-                    fixed (UIntPtr* sampledTrianglesPtr = sampledMeshData.triangles, 
-                           sourceMeshTrianglesPtr = sourceMeshData.triangles) 
-                    {
-                        Vec_Triangle_t sampledTrianglesV = new Vec_Triangle_t
-                        {
-                            ptr = (Triangle_t*)sampledTrianglesPtr,
-                            len = pointsLength,
-                            cap = pointsLength
-                        };
-                        Vec_Triangle_t sourceTrianglesV = new Vec_Triangle_t
-                        {
-                            ptr = (Triangle_t*)sourceMeshTrianglesPtr,
-                            len = sourceMeshTrianglesLength,
-                            cap = sourceMeshTrianglesLength
-                        };
-                        // Get the original mesh and the sampled mesh.
-                        Mesh_t sourceMeshT = new Mesh_t
-                        {
-                            vertices = sourceVerticesV,
-                            triangles = sourceTrianglesV,
-                            normals = sourceNormalsV
-                        };
-                        Mesh_t sampledMeshT = new Mesh_t
-                        {
-                            vertices = pointsV,
-                            normals = normalsV,
-                            triangles = sampledTrianglesV
-                        };
-                        Ffi.set_points_from_sampled_triangles(&sourceMeshT, &sampledMeshT);
-                    }
-                }
-            }
-            mesh.SetVertices(sampledMeshData.vertices);
-            mesh.SetNormals(sampledMeshData.normals);
-        }
-
 
         /// <summary>
         /// Set the mesh topology of the sampled points.
@@ -306,6 +220,12 @@ namespace Pincushion
         private static UIntPtr intToUIntPtr(int i)
         {
             return (UIntPtr)i;
+        }
+        
+        
+        private static int uIntPtrToInt(UIntPtr i)
+        {
+            return (int)i;
         }
     } 
 }

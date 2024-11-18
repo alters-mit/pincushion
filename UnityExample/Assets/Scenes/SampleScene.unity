@@ -228,16 +228,18 @@ MonoBehaviour:
   mainCamera: {fileID: 963194227}
   setBackgroundColor: 1
   backgroundColor: {r: 0, g: 0, b: 0, a: 1}
-  renderMode: 4
   sourceMeshesLayerName: Default
   sampledMeshesLayerName: TransparentFX
+  pointsPerM: 80
+  multiplyPointsPerMByCameraDistance: 0
+  multiplyPointsPerMByObjectScale: 1
+  renderMode: 2
   texture: {fileID: 0}
   color: {r: 1, g: 1, b: 1, a: 1}
-  pointsPerM: 80
   pointRadius: 0.02
   constantScaling: 0
-  scalePointsPerMByCameraDistance: 0
-  material: {fileID: 0}
+  showEveryNth: 0
+  nth: 1
 --- !u!4 &209450894
 Transform:
   m_ObjectHideFlags: 0

@@ -11,8 +11,6 @@ pub(crate) trait Sampler {
         &mut self,
         triangle: &Triangle,
         point_index: usize,
-        start_index_point: usize,
-        i: usize,
         rng: &mut ThreadRng,
     );
 
@@ -26,30 +24,35 @@ pub(crate) trait Sampler {
         let mut start_index_triangle = 0;
         // The accumulated triangle area. This is used to set the end indices.
         let mut total_accumulated_area = 0.0;
-        for (index, area) in area.areas.iter().enumerate() {
+        for (area_index, area) in area.areas.iter().enumerate() {
             // Add area.
             total_accumulated_area += *area;
             // We have enough area.
             if total_accumulated_area >= area_per_point {
                 // Derive how many points we can fit in the accumulated area.
-                let num_points = (total_accumulated_area / area_per_point) as usize;
+                let num_points_in_area_f = (total_accumulated_area / area_per_point).ceil();
+                let mut num_points_in_area = num_points_in_area_f as usize;
+                // Clamp to avoid exceeding the total number of points.
+                if start_index_point + num_points_in_area >= num_points {
+                    num_points_in_area = num_points - start_index_point;
+                }
                 // Sample some points.
-                for i in 0..num_points {
+                for i in 0..num_points_in_area {
                     // Get a random triangle, bounded by the start index and the current index in `areas`.
-                    let triangle = if start_index_triangle == index {
+                    let triangle = if start_index_triangle == area_index {
                         &triangles[start_index_triangle]
                     } else {
-                        &triangles[rng.gen_range(start_index_triangle..=index)]
+                        &triangles[rng.gen_range(start_index_triangle..=area_index)]
                     };
                     let point_index = start_index_point + i;
-                    self.sample(triangle, point_index, start_index_point, i, &mut rng);
+                    self.sample(triangle, point_index, &mut rng);
                 }
                 // Start adding points at the offset.
-                start_index_point += num_points;
-                // Reset the accumulated area.
-                total_accumulated_area = 0.0;
+                start_index_point += num_points_in_area;
+                // Reset the accumulated area, keeping the remainder.
+                total_accumulated_area -= area_per_point * num_points_in_area_f;
                 // Increment to the next starting triangle.
-                start_index_triangle = index + 1;
+                start_index_triangle = area_index + 1;
             }
         }
     }

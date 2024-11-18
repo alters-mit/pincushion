@@ -12,6 +12,26 @@ namespace Pincushion
     public class PincushionManager : MonoBehaviour
     {
         /// <summary>
+        /// The shader keyword corresponding the render mode HideBackfacing.
+        /// </summary>
+        private const string OCCLUDE_BACKFACING = "_PINCUSHION_OCCLUDE_BACKFACING";
+        /// <summary>
+        /// The shader keyword corresponding the render mode OccludeBehind.
+        /// </summary>
+        private const string OCCLUDE_BEHIND = "_PINCUSHION_OCCLUDE_BEHIND";
+        /// <summary>
+        /// The shader keyword that enables constant point scaling.
+        /// </summary>
+        private const string CONSTANT_SCALING = "_PINCUSHION_CONSTANT_SCALING";
+
+
+        /// <summary>
+        /// If true, Pincushion will update on Update().
+        /// If false, you must manually call ManuallyUpdate() to update Pincushion.
+        /// </summary>
+        [Header("Unity")]
+        public bool autoUpdate = true;
+        /// <summary>
         /// The main camera used for viewing the sampled points.
         /// </summary>
         [Header("Camera")]
@@ -32,6 +52,10 @@ namespace Pincushion
         /// All sampled mesh objects will be set to this layer.
         /// </summary>
         public string sampledMeshesLayerName = "TransparentFX";
+        /// <summary>
+        /// Meshes in this layer won't be rendered.
+        /// </summary>
+        public string ignoreMeshesLayerName = "Water";
         /// <summary>
         /// The number of points per square meter.
         /// </summary>
@@ -69,10 +93,15 @@ namespace Pincushion
         /// </summary>
         public bool constantScaling;
         /// <summary>
-        /// Set the objects to this material.
+        /// If true, apply a mask.
+        /// A fraction of the sampled points defined by `maskFactor` will be rendered.
         /// </summary>
-        [HideInInspector]
-        public Material material;
+        public bool applyMask;
+        /// <summary>
+        /// A factor between 0 and 1 that controls how many points will be skipped when rendering.
+        /// </summary>
+        [Range(0, 1)]
+        public float maskFactor = 1;
         /// <summary>
         /// The source meshes' layer.
         /// </summary>
@@ -82,6 +111,10 @@ namespace Pincushion
         /// </summary>
         public static int sampledMeshesLayer;
         /// <summary>
+        /// The shader property ID for the mask buffer.
+        /// </summary>
+        public static int maskId;
+        /// <summary>
         /// A layer mask for culling everything except the source meshes.
         /// </summary>
         private int sourceMeshesCullingMask;
@@ -89,6 +122,10 @@ namespace Pincushion
         /// A layer mask for culling everything except the sample meshes.
         /// </summary>
         private int sampledMeshesCullingMask;
+        /// <summary>
+        /// A layer mask for culling everything except the meshes in their original shaders.
+        /// </summary>
+        private int ignoreMeshesCullingMask;
         /// <summary>
         /// The camera used for getting the distance of everything in the scene.
         /// </summary>
@@ -101,6 +138,14 @@ namespace Pincushion
         /// The original clear flags of the camera.
         /// </summary>
         private CameraClearFlags mainCameraClearFlags;
+        /// <summary>
+        /// All PincushionSkinnedMeshRenderers in the scene.
+        /// </summary>
+        private PincushionSkinnedMeshRenderer[] pincushionSkinnedMeshRenderers;
+        /// <summary>
+        /// The ignore meshes' layer.
+        /// </summary>
+        private static int ignoreMeshesLayer;
         /// <summary>
         /// Singleton instance. Never call this directly!
         /// </summary>
@@ -134,6 +179,12 @@ namespace Pincushion
             {
                 texture = Resources.Load<Texture2D>("pincushion_point");
             }
+            
+            // Set global shader properties.
+            SetShader();
+            
+            // Set the background.
+            SetPincushionBackground();
 
             // Show the source meshes.
             if (renderMode == PincushionRenderMode.DoNot)
@@ -175,46 +226,40 @@ namespace Pincushion
                     distanceCamera.targetTexture = rt;
                 }
                 
-                // Set global shader properties.
-                SetShader();
-                
-                // Set the background.
-                SetPincushionBackground();
-                
                 // Set the culling masks.
-                mainCamera.cullingMask = sampledMeshesCullingMask;
-                distanceCamera.cullingMask = sourceMeshesCullingMask;
-                
-                // Set the main camera's replacement shader.
-                mainCamera.SetReplacementShader(Shader.Find("Pincushion/PincushionReplacement"), "");
+                mainCamera.cullingMask = sampledMeshesCullingMask | ignoreMeshesCullingMask;
+                distanceCamera.cullingMask = sourceMeshesCullingMask | ignoreMeshesCullingMask;
             }
             else
             {
-                // Prepare the Pincushion shader.
-                if (material == null)
-                {
-                    material = new Material(Shader.Find("Pincushion/Pincushion"));          
-                }
-                
-                SetShader();
-                
-                if (renderMode == PincushionRenderMode.HideBackfacing)
-                {
-                    Shader.EnableKeyword("_OCCLUDE_BACKFACING");   
-                }
-
                 // Hide the distance camera.
                 if (distanceCamera != null)
                 {
                     distanceCamera.enabled = false;
                 }
-                
-                SetPincushionBackground();
-                
+
                 // Set the main camera to see everything.
                 mainCamera.cullingMask = ~0;
-                // Remove the replacement shader.
-                mainCamera.ResetReplacementShader();
+            }
+            
+            maskId = Shader.PropertyToID("_PincushionMask");
+
+            // Set or unset shader keywords depending on the render mode.
+            if (renderMode == PincushionRenderMode.HideBackfacing)
+            {
+                Shader.EnableKeyword(OCCLUDE_BACKFACING);   
+            }
+            else
+            {
+                Shader.DisableKeyword(OCCLUDE_BACKFACING);  
+            }
+            if (renderMode == PincushionRenderMode.OccludeBehind)
+            {
+                Shader.EnableKeyword(OCCLUDE_BEHIND);
+            }
+            else
+            {
+                Shader.DisableKeyword(OCCLUDE_BEHIND);  
             }
 
             // Decide which meshes to render.
@@ -231,6 +276,48 @@ namespace Pincushion
                 // Set visibility.
                 pincushions[i].SetSourceMeshVisibility(showSourceMeshes);
                 pincushions[i].SetSampledMeshVisibility(showSampledMeshes);
+
+                if (applyMask)
+                {
+                    pincushions[i].SetMask(maskFactor);
+                }
+                else
+                {
+                    pincushions[i].ShowAll();
+                }
+            }
+            pincushionSkinnedMeshRenderers = FindObjectsOfType<PincushionSkinnedMeshRenderer>(true);
+        }
+
+
+        /// <summary>
+        /// Apply a mask, revealing only some of the sampled points.
+        /// </summary>
+        public void SetMask()
+        {
+            PincushionRenderer[] pincushions = FindObjectsOfType<PincushionRenderer>(true);
+            for (int i = 0; i < pincushions.Length; i++)
+            {
+                if (applyMask)
+                {
+                    pincushions[i].SetMask(maskFactor);
+                }
+                else
+                {
+                    pincushions[i].ShowAll();
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Manually update Pincushion.
+        /// </summary>
+        public void ManuallyUpdate()
+        {
+            for (int i = 0; i < pincushionSkinnedMeshRenderers.Length; i++)
+            {
+                pincushionSkinnedMeshRenderers[i].DoUpdate(renderMode);
             }
         }
 
@@ -243,33 +330,33 @@ namespace Pincushion
             // Set the layers. For now, we're using the names of some default layers.
             sourceMeshesLayer = LayerMask.NameToLayer(sourceMeshesLayerName);
             sampledMeshesLayer = LayerMask.NameToLayer(sampledMeshesLayerName);
+            ignoreMeshesLayer = LayerMask.NameToLayer(ignoreMeshesLayerName);
             sourceMeshesCullingMask = 1 << sourceMeshesLayer;
             sampledMeshesCullingMask = 1 << sampledMeshesLayer;
+            ignoreMeshesCullingMask = 1 << ignoreMeshesLayer;
 
             // Get all renderers in the source meshes layer and add Pincushion renderers.
             foreach (Renderer r in FindObjectsOfType<Renderer>().Where(r => r.gameObject.layer == sourceMeshesLayer))
             {
-                PincushionRenderer pincushion;
                 if (r is MeshRenderer)
                 {
-                    pincushion = r.gameObject.AddComponent<PincushionMeshRenderer>();
+                    PincushionMeshRenderer pincushion = r.gameObject.AddComponent<PincushionMeshRenderer>();
+                    // Initialize the renderer.
+                    pincushion.Initialize();
                 }
                 else if (r is SkinnedMeshRenderer)
                 {
-                    pincushion = r.gameObject.AddComponent<PincushionSkinnedMeshRenderer>();
+                    PincushionSkinnedMeshRenderer pincushion = r.gameObject.AddComponent<PincushionSkinnedMeshRenderer>();
+                    // Initialize the renderer.
+                    pincushion.Initialize();
                 }
-                else
-                {
-                    continue;
-                }
-                // Initialize the renderer.
-                pincushion.Initialize();
             }
 
             // Initialize Pincushion.
             Set();
         }
 
+        
         /// <summary>
         /// Set the global shader values.
         /// </summary>
@@ -280,8 +367,12 @@ namespace Pincushion
             Shader.SetGlobalFloat("_PincushionPointSize", pointRadius);
             if (constantScaling)
             {
-                Shader.EnableKeyword("_CONSTANT_SCALING");
-            }  
+                Shader.EnableKeyword(CONSTANT_SCALING);
+            }
+            else
+            {
+                Shader.DisableKeyword(CONSTANT_SCALING);
+            }
         }
 
 
