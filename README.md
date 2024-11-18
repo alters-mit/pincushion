@@ -45,7 +45,7 @@ This repo has three components:
 4. Copy the `PincushionCs/` folder into your Unity project
 5. Project Settings -> Player -> Allow 'unsafe'  Code
 6. Add a new GameObject with a `PincushionManager` component to the scene.
-7. Assign the `PincushionManager a `Main Camera`.
+7. Assign the `Main Camera` in `PincushionManager`.
 8. Set all other values as-needed:
 
 ![The PincushionManager Inspector panel.](doc/images/pincushion_manager.png)
@@ -168,7 +168,7 @@ Sample triangles: 39μs
 
 [^1]: We need to resample deformable meshes per-frame because the points need to move.
 
-[^2]: See benchmarks! Points code also be resampled with a compute shader but it's *very* fast as-is. I haven't benchmarked compute shader resampling yet but my guess is that the overhead dispatching the shader to and from the CPU might make it slower than the Rust implementation.
+[^2]: Pincushion samples the indices of the triangles exactly once on the CPU and then per-frame on the GPU samples points from the vertices at those indices.
 
 [^3]: You will need to do this for each platform you intend to develop on. Rust cannot cross-compile like Unity can.
 
