@@ -9,7 +9,7 @@ pub(crate) struct PointSampler<'mesh> {
     pub normals: &'mesh [Vertex],
     pub sampled_points: &'mesh mut [Vertex],
     pub sampled_normals: &'mesh mut [Vertex],
-    pub range: &'mesh Uniform<f32>,
+    pub range: Uniform<f32>,
 }
 
 impl<'mesh> Sampler for PointSampler<'mesh> {

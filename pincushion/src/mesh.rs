@@ -96,14 +96,14 @@ impl Mesh {
         sampled_points: &mut [Vertex],
         sampled_normals: &mut [Vertex],
     ) {
-        let range = Uniform::new(0., 1.);
+
         let num_points = sampled_points.len();
         let mut sampler = PointSampler {
             vertices: &self.vertices,
             normals: &self.normals,
             sampled_points,
             sampled_normals,
-            range: &range,
+            range: Uniform::new(0., 1.),
         };
         sampler.sample_points(area, num_points, &self.triangles);
     }
