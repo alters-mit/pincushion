@@ -40,8 +40,8 @@ This repo has three components:
 ## How to add `Pincushion` to your Unity project
 
 1. Download and install Rust
-2. Within this repo, `cd pincushion` and `cargo build --release`[^3]
-3. Copy the library into your Unity project's `Assets/` folder.[^4] It's located in: `pincushion/target/release/`
+2. Within this repo, `cd pincushion` and `cargo build --release`
+3. Copy the library into your Unity project's `Assets/` folder.[^3] It's located in: `pincushion/target/release/`
 4. Copy the `PincushionCs/` folder into your Unity project
 5. Project Settings -> Player -> Allow 'unsafe'  Code
 6. Add a new GameObject with a `PincushionManager` component to the scene.
@@ -164,12 +164,21 @@ Sample points: 46μs
 
 Sample triangles: 39μs
 
+## Known limitations
+
+- The native `pincushion` library must be compiled separately for each target platform (Windows, MacOS, Linux) and you have to compile on that platform (no cross-compilation like in Unity).
+- I haven't tried Pincushion in WebGL but it probably doesn't work.
+- To render a Pincushion mesh, the source mesh be readable (see Unity's documentation for mesh import options).
+- `PincushionSkinnedMeshRenderer` has a suboptimal step that is somewhat slow.[^4] There is a better, faster way to do things, but Pincushion was built for an older project that uses Unity 2020. If I ever upgrade that project, I'll upgrade Pincushion too.[^5]
+
 ***
 
 [^1]: We need to resample deformable meshes per-frame because the points need to move.
 
 [^2]: Pincushion samples the indices of the triangles exactly once on the CPU and then per-frame on the GPU samples points from the vertices at those indices.
 
-[^3]: You will need to do this for each platform you intend to develop on. Rust cannot cross-compile like Unity can.
+[^3]: Native libraries work like any other file in Unity. Stick it within `Assets/` or any subdirectory thereof and Unity will be able to find it.
 
-[^4]: Native libraries work like any other file in Unity. Stick it within `Assets/` or any subdirectory thereof and Unity will be able to find it.
+[^4]: It's `BakeMesh(mesh)`, which copies data into a new mesh. Conceptually, we should be able to reference mesh vertex data (which is on the GPU) in a compute buffer (which is also on the GPU).
+
+[^5]: Yes, I could use `#if` blocks to handle multiple Unity versions, but it ain't gonna happen until I need to.
