@@ -1,4 +1,4 @@
-use rand::{rngs::ThreadRng, thread_rng, Rng};
+use rand::{distributions::Uniform, rngs::ThreadRng, thread_rng, Rng};
 
 use crate::{Area, Triangle, Vertex};
 
@@ -32,15 +32,16 @@ pub(crate) trait Sampler {
                     num_points_in_area = num_points - start_index_point;
                 }
                 // Sample some points.
-                for i in 0..num_points_in_area {
-                    // Get a random triangle, bounded by the start index and the current index in `areas`.
-                    let triangle = if start_index_triangle == area_index {
-                        &triangles[start_index_triangle]
-                    } else {
-                        &triangles[rng.gen_range(start_index_triangle..=area_index)]
-                    };
-                    let point_index = start_index_point + i;
-                    self.sample(triangle, point_index, &mut rng);
+                if start_index_triangle == area_index {
+                    let triangle = &triangles[start_index_triangle];
+                    (0..num_points_in_area)
+                        .for_each(|i| self.sample(triangle, start_index_point + i, &mut rng));
+                } else {
+                    let range = Uniform::new_inclusive(start_index_triangle, area_index);
+                    (0..num_points_in_area).for_each(|i| {
+                        let triangle = &triangles[rng.sample(range)];
+                        self.sample(triangle, start_index_point + i, &mut rng);
+                    });
                 }
                 // Start adding points at the offset.
                 start_index_point += num_points_in_area;
