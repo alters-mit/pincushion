@@ -2,11 +2,12 @@
 
 **Uniform mesh sampler in Rust and Unity.**
 
-![Suzanne test mesh on the left, and Suzanne as sampled points on the right.](doc/images/pincushion_banner.png)
-
 ## Overview
 
-@ OVERVIEW @
+- What if you wanted to render a little dot at every vertex of a mesh because it looks cool?
+- Hmm those dots sure are bunching up around complex geometry. Like, there are way more dots on the ears than on the legs.
+- It would look a lot better if the dots were *uniformly* (evenly) (sorta) dispersed around the mesh.
+- Within each patch of similar-sized surface area, we'll add a dot. For spice, the position within that patch of area is randomly *sampled*.
 
 [Changelog is here](changelog.md)
 
@@ -41,11 +42,7 @@ This repo has three components:
 1. Allow 'unsafe' code: Project Settings -> Player -> Allow 'unsafe' Code
 2. Open the package manager.
 
-![A screenshot of how to open the package manager. It's a drop-down menu in Unity. Window, then Package Manager.](doc/window_package_manager.jpg)
-
 3. Click the + sign and select "Add package from git URL..."
-
-![A screenshot of how to add a package from a git repo.](doc/git_url.jpg)
 
 4. Enter this URL:
 
@@ -56,8 +53,6 @@ https://github.com/alters-mit/pincushion.git?path=com.mit.pincushion
 5. Add a new GameObject with a `PincushionManager` component to the scene.
 6. Assign the `Main Camera` in `PincushionManager`.
 7.  Set all other values as-needed.
-
-![The PincushionManager Inspector panel.](doc/images/pincushion_manager.png)
 
 | Parameter | Description |
 | --- | --- |
@@ -83,23 +78,13 @@ https://github.com/alters-mit/pincushion.git?path=com.mit.pincushion
 
 `Do Not` will render the scene as-is. This is useful if you want to toggle back and forth between the original rendering and pincushion rendering:
 
-![The Do Not rendering mode. There are no dots.](doc/images/do_not.png)
-
 `With Source Meshes` will render the sampled point as well as the original (source) meshes:
-
-![The With Source Meshes rendering mode. There are dots on the meshes.](doc/images/with_source_meshes.png)
 
 `Without Source Meshes` will render the sampled points and hide the source meshes:
 
-![The Without Source Meshes rendering mode. There are dots and only dots.](doc/images/without_source_meshes.png)
-
 `Hide Backfacing` is will render the sampled points and hide the source meshes. Points facing away from the camera will be hidden:
 
-![The Hide Backfacing rendering mode. There are dots and only dots, but not the dots facing away from the camera.](doc/images/hide_backfacing.png)
-
 `Occlude Behind` is will render the sampled points and hide the source meshes. Points will be occluded as if the source mesh was rendered in front of them:
-
-![The Occlude Behind rendering mode. There are dots and only dots, but many of the dots are occluded.](doc/images/occlude_behind.png)
 
 ### Reinitialize
 
@@ -128,10 +113,49 @@ Documentation for the Rust codebase can be found on [docs.rs](https://docs.rs/pi
 ### Example Usage
 
 ```rust
-@ RUST_EXAMPLE @
+use pincushion::Mesh;
+
+fn main() {
+    // Add feature "obj" to enable `from_obj`.
+    let mesh = Mesh::from_obj("tests/suzanne.obj");
+    let points_per_m = 80.;
+    let scale = 1.;
+    let _ = mesh.sample_points(points_per_m, scale);
+}
+
 ```
 
-@ RUST_DOC @
+### Features
+
+- `obj` adds a `Mesh::from_obj(path)` function to load a mesh from a .obj file.
+- `mask` adds a few FFI-safe functions to apply a "mask", showing/hiding some elements in an array. This is meant to be used in Unity and probably isn't useful elsewhere. 
+- `cs` should only be enabled when generating the C# code (see below).
+
+### Create C# Native Bindings
+
+The `PincushionCs` code can call the native `pincushion` Rust library via auto-generated native binding methods.
+
+To regenerate the native bindings:
+
+```sh
+cargo run --bin cs --features cs
+```
+
+The file will be at `../PincushionCs/NativeBindings.cs`
+
+### Example
+
+To run the example: `cargo run --example suzanne --features obj`
+
+### Benchmarks
+
+To run the benchmark: `cargo bench benchmark --features obj`
+
+Results:
+
+Sample points: 46μs
+
+Sample triangles: 39μs
 
 ## Known limitations
 
