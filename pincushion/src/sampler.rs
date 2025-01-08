@@ -33,17 +33,17 @@ pub(crate) trait Sampler {
                 }
                 // Sample some points.
                 // If there is only one triangle, then sample the points in that triangle repeatedly.
+                let range = start_index_point..start_index_point + num_points_in_area;
                 if start_index_triangle == area_index {
                     let triangle = &triangles[start_index_triangle];
-                    (0..num_points_in_area)
-                        .for_each(|i| self.sample(triangle, start_index_point + i, &mut rng));
+                    range.for_each(|point_index| self.sample(triangle, point_index, &mut rng));
                 }
                 // If there are multiple triangles, get a Uniform distribution (for efficiency) and randomly select triangles.
                 else {
-                    let range = Uniform::new_inclusive(start_index_triangle, area_index);
-                    (0..num_points_in_area).for_each(|i| {
-                        let triangle = &triangles[rng.sample(range)];
-                        self.sample(triangle, start_index_point + i, &mut rng);
+                    let distribution = Uniform::new_inclusive(start_index_triangle, area_index);
+                    range.for_each(|point_index| {
+                        let triangle = &triangles[rng.sample(distribution)];
+                        self.sample(triangle, point_index, &mut rng);
                     });
                 }
                 // Start adding points at the offset.

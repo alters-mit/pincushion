@@ -1,3 +1,3 @@
-Sample points: 27μs
+Sample points: 28μs
 
-Sample triangles: 22μs
+Sample triangles: 23μs
