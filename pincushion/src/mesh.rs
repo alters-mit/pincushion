@@ -96,7 +96,6 @@ impl Mesh {
         sampled_points: &mut [Vertex],
         sampled_normals: &mut [Vertex],
     ) {
-
         let num_points = sampled_points.len();
         let mut sampler = PointSampler {
             vertices: &self.vertices,

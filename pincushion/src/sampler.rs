@@ -7,12 +7,7 @@ pub(crate) mod triangle_sampler;
 
 /// A trait used to sample points or triangles.
 pub(crate) trait Sampler {
-    fn sample(
-        &mut self,
-        triangle: &Triangle,
-        point_index: usize,
-        rng: &mut ThreadRng,
-    );
+    fn sample(&mut self, triangle: &Triangle, point_index: usize, rng: &mut ThreadRng);
 
     fn sample_points(&mut self, area: &Area, num_points: usize, triangles: &[Triangle]) {
         // The area per point is used to uniformly sample the points.
