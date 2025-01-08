@@ -18,5 +18,5 @@ if __name__ == "__main__":
 
     # Copy the library.
     src = f'{rust_root}/target/release/{rust_root}.dll'
-    dst = f'com.mit.pincushion/{rust_root}.dll'
+    dst = f'com.mit.pincushion/Runtime/{rust_root}.dll'
     copy(src, dst)
