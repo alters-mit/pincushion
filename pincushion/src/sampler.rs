@@ -32,11 +32,14 @@ pub(crate) trait Sampler {
                     num_points_in_area = num_points - start_index_point;
                 }
                 // Sample some points.
+                // If there is only one triangle, then sample the points in that triangle repeatedly.
                 if start_index_triangle == area_index {
                     let triangle = &triangles[start_index_triangle];
                     (0..num_points_in_area)
                         .for_each(|i| self.sample(triangle, start_index_point + i, &mut rng));
-                } else {
+                }
+                // If there are multiple triangles, get a Uniform distribution (for efficiency) and randomly select triangles.
+                else {
                     let range = Uniform::new_inclusive(start_index_triangle, area_index);
                     (0..num_points_in_area).for_each(|i| {
                         let triangle = &triangles[rng.sample(range)];
