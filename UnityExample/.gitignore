@@ -1,5 +1,4 @@
 .idea/
-Packages/
 Library/
 Logs/
 obj/
@@ -7,4 +6,4 @@ UserSettings/
 Temp/
 Assets/Test.meta
 Assets/Test/
-Assembly-CSharp.csproj
+*.csproj
