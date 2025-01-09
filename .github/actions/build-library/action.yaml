@@ -23,7 +23,7 @@ runs:
 
         mv pincushion/target/release/${{ inputs.library }} $dest
 
-        if git status --porcelain | grep.; then
+        if git status --porcelain | grep .; then
           git add $dest
           git config --global user.name 'Esther Alter'
           git config --global user.email 'alters@mit.edu'
