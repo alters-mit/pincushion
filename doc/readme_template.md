@@ -8,9 +8,11 @@
 
 @ OVERVIEW @
 
+[Changelog is here](changelog.md)
+
 ## What makes Pincushion special
 
-There are other uniform mesh sampling in Unity but (as far as I know) the all freely-available example has at least one of the following problems:
+There are other Unity uniform mesh sampling libraries but (as far as I know) the all freely-available example has at least one of the following problems:
 
 - The example uses HDRP, which is no good for older projects (such as the ones I work on)
 - The example uses inefficient C# code to sample points
@@ -31,19 +33,29 @@ Pincushion solves these problems with some unusual/novel features:
 This repo has three components:
 
 1. `pincushion` is a Rust library that sample points on a mesh. It has FFI-safe functions that can be used in C#.
-2. `PincushionCs` contains native bindings for `pincushion`, Unity methods for sampling points and rendering them, and specialized shaders.
+2. `com.mit.pinsushion` is a Unity package, which includes binds for the native `pincushion` library, C#-friendly classes and methods, shaders, etc.
 3. `UnityExample` is a small Unity example of Pincushion.
 
 ## How to add `Pincushion` to your Unity project
 
-1. Download and install Rust
-2. Within this repo, `cd pincushion` and `cargo build --release`
-3. Copy the library into your Unity project's `Assets/` folder.[^3] It's located in: `pincushion/target/release/`
-4. Copy the `PincushionCs/` folder into your Unity project
-5. Project Settings -> Player -> Allow 'unsafe'  Code
-6. Add a new GameObject with a `PincushionManager` component to the scene.
-7. Assign the `Main Camera` in `PincushionManager`.
-8. Set all other values as-needed:
+1. Allow 'unsafe' code: Project Settings -> Player -> Allow 'unsafe' Code
+2. Open the package manager.
+
+![A screenshot of how to open the package manager. It's a drop-down menu in Unity. Window, then Package Manager.](doc/window_package_manager.jpg)
+
+3. Click the + sign and select "Add package from git URL..."
+
+![A screenshot of how to add a package from a git repo.](doc/git_url.jpg)
+
+4. Enter this URL:
+
+```
+https://github.com/alters-mit/pincushion.git?path=com.mit.pincushion
+```
+
+5. Add a new GameObject with a `PincushionManager` component to the scene.
+6. Assign the `Main Camera` in `PincushionManager`.
+7.  Set all other values as-needed.
 
 ![The PincushionManager Inspector panel.](doc/images/pincushion_manager.png)
 
@@ -74,7 +86,6 @@ This repo has three components:
 ![The Do Not rendering mode. There are no dots.](doc/images/do_not.png)
 
 `With Source Meshes` will render the sampled point as well as the original (source) meshes:
-
 
 ![The With Source Meshes rendering mode. There are dots on the meshes.](doc/images/with_source_meshes.png)
 
@@ -124,7 +135,11 @@ Documentation for the Rust codebase can be found on [docs.rs](https://docs.rs/pi
 
 ## Known limitations
 
-- The native `pincushion` library must be compiled separately for each target platform (Windows, MacOS, Linux) and you have to compile on that platform (no cross-compilation like in Unity).
+- For now, the Unity package only works on Windows. To run Pincushion on Linux or MacOS:
+  - Clone the repo
+  - Copy com.mit.pincushion into your `Assets/` folder
+  - Create the Rust library (see steps above). Rust can't cross-compile like Unity can so this needs to be run on the target platform.
+  - Move the Rust library into Pincushion
 - I haven't tried Pincushion in WebGL but it probably doesn't work.
 - To render a Pincushion mesh, the source mesh be readable (see Unity's documentation for mesh import options).
 - `PincushionSkinnedMeshRenderer` has a suboptimal step that is somewhat slow.[^4] There is a better, faster way to do things, but Pincushion was built for an older project that uses Unity 2020. If I ever upgrade that project, I'll upgrade Pincushion too.[^5]

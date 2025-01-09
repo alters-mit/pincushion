@@ -1,0 +1,19 @@
+{
+  "name": "com.mit.pincushion",
+  "version": "0.2.0",
+  "displayName": "Pincushion",
+  "description": "Uniform mesh sampler",
+  "unity": "2020.3",
+  "licensesUrl": "https://github.com/alters-mit/pincushion/blob/main/LICENSE",
+  "changelogUrl": "https://github.com/alters-mit/pincushion/blob/main/changelog.md",
+  "keywords": [
+    "rendering",
+    "sampling",
+    "mesh",
+    "shader"
+  ],
+  "author": {
+    "name": "Esther Alter",
+    "email": "alters@mit.edu"
+  }
+}

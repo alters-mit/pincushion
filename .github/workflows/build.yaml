@@ -1,0 +1,37 @@
+name: build
+
+on:
+    push:
+        branches-ignore: ["main"]
+        paths: [pincushion/**, ".github/workflows/build.yaml", ".github/actions/build-library/action.yaml"]
+
+jobs:
+    linux:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - uses: actions/checkout@v4
+            - uses: ./.github/actions/build-library
+              with:
+                library: libpincushion.so
+    macos:
+        needs: linux
+        runs-on: macos-latest
+        permissions:
+            contents: write
+        steps:
+            - uses: actions/checkout@v4
+            - uses: ./.github/actions/build-library
+              with:
+                library: libpincushion.dylib
+    windows:
+        needs: [linux, macos]  
+        runs-on: windows-latest
+        permissions:
+            contents: write
+        steps:
+            - uses: actions/checkout@v4
+            - uses: ./.github/actions/build-library
+              with:
+                library: pincushion.dll

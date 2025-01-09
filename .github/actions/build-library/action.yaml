@@ -1,0 +1,35 @@
+name: 'Build'
+description: 'Build the native pincushion library.'
+inputs:
+  library:
+    required: true
+    description: 'The library filename.'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+    - name: cargo build
+      shell: bash
+      working-directory: pincushion
+      run: cargo build --release
+    - name: mv, diff, commit, push
+      shell: bash
+      run: |
+        dest=com.mit.pincushion/Runtime/${{ inputs.library }}
+
+        mv pincushion/target/release/${{ inputs.library }} $dest
+
+        if git status --porcelain | grep .; then
+          git pull
+          git add $dest
+          git config --global user.name 'Esther Alter'
+          git config --global user.email 'alters@mit.edu'
+          git commit -m"Rebuilt ${{ inputs.library }}" 
+          git push
+        else
+          echo "No changes, not committing"
+        fi

@@ -2,8 +2,6 @@
 
 **Uniform mesh sampler in Rust and Unity.**
 
-![Suzanne test mesh on the left, and Suzanne as sampled points on the right.](doc/images/pincushion_banner.png)
-
 ## Overview
 
 - What if you wanted to render a little dot at every vertex of a mesh because it looks cool?
@@ -44,11 +42,7 @@ This repo has three components:
 1. Allow 'unsafe' code: Project Settings -> Player -> Allow 'unsafe' Code
 2. Open the package manager.
 
-![A screenshot of how to open the package manager. It's a drop-down menu in Unity. Window, then Package Manager.](doc/window_package_manager.jpg)
-
 3. Click the + sign and select "Add package from git URL..."
-
-![A screenshot of how to add a package from a git repo.](doc/git_url.jpg)
 
 4. Enter this URL:
 
@@ -59,8 +53,6 @@ https://github.com/alters-mit/pincushion.git?path=com.mit.pincushion
 5. Add a new GameObject with a `PincushionManager` component to the scene.
 6. Assign the `Main Camera` in `PincushionManager`.
 7.  Set all other values as-needed.
-
-![The PincushionManager Inspector panel.](doc/images/pincushion_manager.png)
 
 | Parameter | Description |
 | --- | --- |
@@ -86,23 +78,13 @@ https://github.com/alters-mit/pincushion.git?path=com.mit.pincushion
 
 `Do Not` will render the scene as-is. This is useful if you want to toggle back and forth between the original rendering and pincushion rendering:
 
-![The Do Not rendering mode. There are no dots.](doc/images/do_not.png)
-
 `With Source Meshes` will render the sampled point as well as the original (source) meshes:
-
-![The With Source Meshes rendering mode. There are dots on the meshes.](doc/images/with_source_meshes.png)
 
 `Without Source Meshes` will render the sampled points and hide the source meshes:
 
-![The Without Source Meshes rendering mode. There are dots and only dots.](doc/images/without_source_meshes.png)
-
 `Hide Backfacing` is will render the sampled points and hide the source meshes. Points facing away from the camera will be hidden:
 
-![The Hide Backfacing rendering mode. There are dots and only dots, but not the dots facing away from the camera.](doc/images/hide_backfacing.png)
-
 `Occlude Behind` is will render the sampled points and hide the source meshes. Points will be occluded as if the source mesh was rendered in front of them:
-
-![The Occlude Behind rendering mode. There are dots and only dots, but many of the dots are occluded.](doc/images/occlude_behind.png)
 
 ### Reinitialize
 
@@ -177,7 +159,12 @@ Sample triangles: 23μs
 
 ## Known limitations
 
-- Pincushion doesn't work in WebGL.
+- For now, the Unity package only works on Windows. To run Pincushion on Linux or MacOS:
+  - Clone the repo
+  - Copy com.mit.pincushion into your `Assets/` folder
+  - Create the Rust library (see steps above). Rust can't cross-compile like Unity can so this needs to be run on the target platform.
+  - Move the Rust library into Pincushion
+- I haven't tried Pincushion in WebGL but it probably doesn't work.
 - To render a Pincushion mesh, the source mesh be readable (see Unity's documentation for mesh import options).
 - `PincushionSkinnedMeshRenderer` has a suboptimal step that is somewhat slow.[^4] There is a better, faster way to do things, but Pincushion was built for an older project that uses Unity 2020. If I ever upgrade that project, I'll upgrade Pincushion too.[^5]
 

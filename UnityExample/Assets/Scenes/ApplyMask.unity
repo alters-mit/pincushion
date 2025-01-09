@@ -225,8 +225,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 206541241}
-  - component: {fileID: 206541240}
   - component: {fileID: 206541242}
+  - component: {fileID: 206541240}
   m_Layer: 0
   m_Name: PincushionManager
   m_TagString: Untagged
@@ -243,24 +243,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 206541239}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b85ed196132d8664ebfa9dd5e76f4d32, type: 3}
+  m_Script: {fileID: 11500000, guid: 00540943a93c50f40a266c862d028e53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  autoUpdate: 1
   mainCamera: {fileID: 362688361}
   setBackgroundColor: 1
   backgroundColor: {r: 0, g: 0, b: 0, a: 1}
   sourceMeshesLayerName: Default
   sampledMeshesLayerName: TransparentFX
+  ignoreMeshesLayerName: Water
   pointsPerM: 80
   multiplyPointsPerMByCameraDistance: 0
   multiplyPointsPerMByObjectScale: 1
-  renderMode: 2
+  renderMode: 4
   texture: {fileID: 0}
   color: {r: 1, g: 1, b: 1, a: 1}
   pointRadius: 0.02
   constantScaling: 0
-  showEveryNth: 0
-  nthFactor: 1
+  applyMask: 0
+  maskFactor: 1
 --- !u!4 &206541241
 Transform:
   m_ObjectHideFlags: 0

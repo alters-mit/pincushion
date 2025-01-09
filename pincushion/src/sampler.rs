@@ -1,4 +1,4 @@
-use rand::{rngs::ThreadRng, thread_rng, Rng};
+use rand::{distributions::Uniform, rngs::ThreadRng, thread_rng, Rng};
 
 use crate::{Area, Triangle, Vertex};
 
@@ -7,12 +7,7 @@ pub(crate) mod triangle_sampler;
 
 /// A trait used to sample points or triangles.
 pub(crate) trait Sampler {
-    fn sample(
-        &mut self,
-        triangle: &Triangle,
-        point_index: usize,
-        rng: &mut ThreadRng,
-    );
+    fn sample(&mut self, triangle: &Triangle, point_index: usize, rng: &mut ThreadRng);
 
     fn sample_points(&mut self, area: &Area, num_points: usize, triangles: &[Triangle]) {
         // The area per point is used to uniformly sample the points.
@@ -37,15 +32,19 @@ pub(crate) trait Sampler {
                     num_points_in_area = num_points - start_index_point;
                 }
                 // Sample some points.
-                for i in 0..num_points_in_area {
-                    // Get a random triangle, bounded by the start index and the current index in `areas`.
-                    let triangle = if start_index_triangle == area_index {
-                        &triangles[start_index_triangle]
-                    } else {
-                        &triangles[rng.gen_range(start_index_triangle..=area_index)]
-                    };
-                    let point_index = start_index_point + i;
-                    self.sample(triangle, point_index, &mut rng);
+                // If there is only one triangle, then sample the points in that triangle repeatedly.
+                let range = start_index_point..start_index_point + num_points_in_area;
+                if start_index_triangle == area_index {
+                    let triangle = &triangles[start_index_triangle];
+                    range.for_each(|point_index| self.sample(triangle, point_index, &mut rng));
+                }
+                // If there are multiple triangles, get a Uniform distribution (for efficiency) and randomly select triangles.
+                else {
+                    let distribution = Uniform::new_inclusive(start_index_triangle, area_index);
+                    range.for_each(|point_index| {
+                        let triangle = &triangles[rng.sample(distribution)];
+                        self.sample(triangle, point_index, &mut rng);
+                    });
                 }
                 // Start adding points at the offset.
                 start_index_point += num_points_in_area;

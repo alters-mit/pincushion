@@ -12,13 +12,8 @@ pub(crate) struct PointSampler<'mesh> {
     pub range: Uniform<f32>,
 }
 
-impl<'mesh> Sampler for PointSampler<'mesh> {
-    fn sample(
-        &mut self,
-        triangle: &Triangle,
-        point_index: usize,
-        rng: &mut ThreadRng,
-    ) {
+impl Sampler for PointSampler<'_> {
+    fn sample(&mut self, triangle: &Triangle, point_index: usize, rng: &mut ThreadRng) {
         // Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
         let t = f32::sqrt(rng.sample(self.range));
         let u = 1. - t;
