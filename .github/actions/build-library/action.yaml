@@ -4,14 +4,11 @@ inputs:
   library:
     required: true
     description: 'The library filename.'
-  mv-flag:
-    required: true
-    default: ''
-    description: 'An optional mv flag. For Windows, this needs to be -y'
-  shell:
-    required: true
-    default: 'bash'
-    description: 'The shell that will run the commands'
+outputs:
+  dest: 
+    value: com.mit.pincushion/Runtime/${{ inputs.library }}
+    description: "Destination path of the library."
+
 runs:
   using: "composite"
   steps:
@@ -20,14 +17,17 @@ runs:
       with:
         toolchain: stable
     - name: cargo build
-      shell: ${{ inputs.shell }}
+      shell: bash
       working-directory: pincushion
       run: cargo build --release
     - name: mv
-      shell: ${{ inputs.shell }}
-      run: mv pincushion/target/release/${{ inputs.library }} com.mit.pincushion/Runtime/${{ inputs.library }}${{ inputs.mv-flag }}
-    - name: Commit and push
-      uses: stefanzweifel/git-auto-commit-action@v5
-      with:
-        commit_message: Rebuilt ${{ inputs.library }}
-
+      shell: bash
+      run: mv pincushion/target/release/${{ inputs.library }} ${{ outputs.dest }}
+    - name: diff, commit, push
+      shell: bash
+      run: |
+        if [[ $(git diff --exit-code ${{ outputs.dest }} -eq 1 ]]; then
+          git add ${{ outputs.dest }}
+          git commit -m"Rebuilt ${{ inputs.library }}" 
+          git push
+        fi

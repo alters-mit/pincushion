@@ -35,6 +35,3 @@ jobs:
             - uses: ./.github/actions/build-library
               with:
                 library: pincushion.dll
-                mv-flag: ' -Force'
-                shell: 'pwsh'
- 
