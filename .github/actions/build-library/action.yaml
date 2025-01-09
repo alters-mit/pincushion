@@ -23,7 +23,7 @@ runs:
 
         mv pincushion/target/release/${{ inputs.library }} $dest
 
-        if [[ $(git diff --exit-code $dest -eq 1 ]]; then
+        if [ $(git diff --exit-code $dest -eq 1 ]; then
           git add $dest
           git commit -m"Rebuilt ${{ inputs.library }}" 
           git push
