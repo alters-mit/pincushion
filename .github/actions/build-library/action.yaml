@@ -4,10 +4,6 @@ inputs:
   library:
     required: true
     description: 'The library filename.'
-outputs:
-  dest: 
-    value: com.mit.pincushion/Runtime/${{ inputs.library }}
-    description: "Destination path of the library."
 
 runs:
   using: "composite"
@@ -20,14 +16,15 @@ runs:
       shell: bash
       working-directory: pincushion
       run: cargo build --release
-    - name: mv
-      shell: bash
-      run: mv pincushion/target/release/${{ inputs.library }} ${{ outputs.dest }}
-    - name: diff, commit, push
+    - name: mv, diff, commit, push
       shell: bash
       run: |
-        if [[ $(git diff --exit-code ${{ outputs.dest }} -eq 1 ]]; then
-          git add ${{ outputs.dest }}
+        dest=com.mit.pincushion/Runtime/${{ inputs.library }}
+
+        mv pincushion/target/release/${{ inputs.library }} $dest
+
+        if [[ $(git diff --exit-code $dest -eq 1 ]]; then
+          git add $dest
           git commit -m"Rebuilt ${{ inputs.library }}" 
           git push
         fi
