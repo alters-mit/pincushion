@@ -23,8 +23,12 @@ runs:
 
         mv pincushion/target/release/${{ inputs.library }} $dest
 
-        if [[ $(git diff --exit-code $dest) -eq 1 ]]; then
+        if git status --porcelain | grep.; then
           git add $dest
+          git config --global user.name 'Esther Alter'
+          git config --global user.email 'alters@mit.edu'
           git commit -m"Rebuilt ${{ inputs.library }}" 
           git push
+        else
+          echo "No changes, not committing"
         fi
