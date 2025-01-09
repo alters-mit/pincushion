@@ -1,0 +1,34 @@
+name: 'Build'
+description: 'Build the native pincushion library.'
+inputs:
+  library:
+    required: true
+    description: 'The library filename.'
+  mv-flag:
+    required: true
+    default: ''
+    description: 'An optional mv flag. For Windows, this needs to be -y'
+  shell:
+    required: true
+    default: 'bash'
+    description: 'The shell that will run the commands'
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+    - name: cargo build
+      shell: ${{ inputs.shell }}
+      working-directory: pincushion
+      run: cargo build --release
+    - name: mv
+      shell: ${{ inputs.shell }}
+      run: mv pincushion/target/release/${{ inputs.library }} com.mit.pincushion/Runtime/${{ inputs.library }}${{ inputs.mv-flag }}
+    - name: Commit and push
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: Rebuilt ${{ inputs.library }}
+

@@ -3,37 +3,35 @@ name: build
 on:
     push:
         branches-ignore: ["main"]
-        paths: [pincushion/**, ".github/workflows/build.yaml"]
+        paths: [pincushion/**, ".github/workflows/build.yaml", ".github/actions/build-library/action.yaml"]
 
 jobs:
-    build:
-        strategy:
-            matrix:
-                include:
-                    - os: ubuntu-latest
-                      library: libpincushion.so
-                    - os: windows-latest
-                      library: pincushion.dll
-                    - os: macos-latest
-                      library: libpincushion.dylib
-        runs-on: ${{ matrix.os }}
+    linux:
+        runs-on: ubuntu-latest
         permissions:
             contents: write
         steps:
-            - uses: actions/checkout@v4
-            - name: Install Rust
-              uses: dtolnay/rust-toolchain@stable
+            - uses: ./.github/actions/build-library
               with:
-                toolchain: stable
-            - name: cargo build
-              working-directory: pincushion
-              run: cargo build --release
-            - name: mv
-              run: mv pincushion/target/release/${{ matrix.library }} com.mit.pincushion/Runtime/${{ matrix.library }}
-            - name: Checkout again so we're up to date
-              uses: actions/checkout@v4
-            - name: Commit and push
-              uses: stefanzweifel/git-auto-commit-action@v5
+                library: libpincushion.so
+    macos:
+        needs: linux
+        runs-on: macos-latest
+        permissions:
+            contents: write
+        steps:
+            - uses: ./.github/actions/build-library
               with:
-                commit_message: Rebuilt native ${{ matrix.os }} library
-
+                library: libpincushion.dylib
+    windows:
+        needs: [linux, macos]  
+        runs-on: windows-latest
+        permissions:
+            contents: write
+        steps:
+            - uses: ./.github/actions/build-library
+              with:
+                library: pincushion.dll
+                mv-flag: ' -y'
+                shell: 'pwsh'
+ 
