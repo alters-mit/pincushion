@@ -17,6 +17,8 @@ jobs:
                     - os: macos-latest
                       library: libpincushion.dylib
         runs-on: ${{ matrix.os }}
+        permissions:
+            contents: write
         steps:
             - uses: actions/checkout@v4
             - name: Install Rust
@@ -31,5 +33,5 @@ jobs:
             - name: Commit and push
               uses: stefanzweifel/git-auto-commit-action@v5
               with:
-                commit_message: Rebuilt native libraries
+                commit_message: Rebuilt native ${{ matrix.os }} library
 
