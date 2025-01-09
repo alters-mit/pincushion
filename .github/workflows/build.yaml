@@ -30,6 +30,8 @@ jobs:
               run: cargo build --release
             - name: mv
               run: mv pincushion/target/release/${{ matrix.library }} com.mit.pincushion/Runtime/${{ matrix.library }}
+            - name: Checkout again so we're up to date
+              uses: actions/checkout@v4
             - name: Commit and push
               uses: stefanzweifel/git-auto-commit-action@v5
               with:
