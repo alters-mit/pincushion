@@ -1,0 +1,35 @@
+name: build
+
+on:
+    push:
+        branches-ignore: ["main"]
+        paths: [pincushion/**, ".github/workflows/build.yaml"]
+
+jobs:
+    build:
+        strategy:
+            matrix:
+                include:
+                    - os: ubuntu-latest
+                      library: libpincushion.so
+                    - os: windows-latest
+                      library: pincushion.dll
+                    - os: macos-latest
+                      library: libpincushion.dylib
+        runs-on: ${{ matrix.os }}
+        steps:
+            - uses: actions/checkout@v4
+            - name: Install Rust
+              uses: dtolnay/rust-toolchain@stable
+              with:
+                toolchain: stable
+            - name: cargo build
+              working-directory: pincushion
+              run: cargo build --release
+            - name: mv
+              run: mv pincushion/target/release/${{ matrix.library }} com.mit.pincushion/Runtime/${{ matrix.library }}
+            - name: Commit and push
+              uses: stefanzweifel/git-auto-commit-action@v5
+              with:
+                commit_message: Rebuilt native libraries
+
