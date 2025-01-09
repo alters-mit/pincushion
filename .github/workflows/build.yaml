@@ -11,6 +11,7 @@ jobs:
         permissions:
             contents: write
         steps:
+            - uses: actions/checkout@v4
             - uses: ./.github/actions/build-library
               with:
                 library: libpincushion.so
@@ -20,6 +21,7 @@ jobs:
         permissions:
             contents: write
         steps:
+            - uses: actions/checkout@v4
             - uses: ./.github/actions/build-library
               with:
                 library: libpincushion.dylib
@@ -29,6 +31,7 @@ jobs:
         permissions:
             contents: write
         steps:
+            - uses: actions/checkout@v4
             - uses: ./.github/actions/build-library
               with:
                 library: pincushion.dll
