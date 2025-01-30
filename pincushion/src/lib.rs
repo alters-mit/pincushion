@@ -15,6 +15,7 @@
 //!
 #![doc = include_str!("../../doc/readme_rs.md")]
 
+use fastrand::Rng;
 use safer_ffi::ffi_export;
 
 pub use area::Area;
@@ -39,4 +40,11 @@ mod vecs;
 #[ffi_export]
 pub fn get_num_points(total_area: f32, points_per_m: f32) -> usize {
     (total_area * points_per_m) as usize
+}
+
+pub(crate) fn get_rng(seed: Option<u64>) -> Rng {
+    match seed {
+        Some(seed) => Rng::with_seed(seed),
+        None => Rng::new()
+    }
 }

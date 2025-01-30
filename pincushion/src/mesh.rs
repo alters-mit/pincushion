@@ -1,6 +1,5 @@
 use std::f32::consts::FRAC_1_SQRT_2;
 
-use rand::distributions::Uniform;
 use safer_ffi::derive_ReprC;
 
 use crate::{
@@ -74,14 +73,15 @@ impl Mesh {
     ///
     /// - `points_per_m`: The number of points per square meter.
     /// - `scale`: The uniform scale of the mesh.
+    /// - `seed`: An optional random seed.
     ///
     /// Returns: An vec of sampled points and a vec of normals for each point.
-    pub fn sample_points(&self, points_per_m: f32, scale: f32) -> (Vec<Vertex>, Vec<Vertex>) {
+    pub fn sample_points(&self, points_per_m: f32, scale: f32, seed: Option<u64>) -> (Vec<Vertex>, Vec<Vertex>) {
         let area = self.get_area(scale);
         let num_points = get_num_points(area.total_area, points_per_m);
         let mut sampled_points = vec![Vertex::default(); num_points];
         let mut sampled_normals = sampled_points.clone();
-        self.set_sampled_points(&area, &mut sampled_points, &mut sampled_normals);
+        self.set_sampled_points(&area, &mut sampled_points, &mut sampled_normals, seed);
         (sampled_points, sampled_normals)
     }
 
@@ -90,11 +90,13 @@ impl Mesh {
     /// - `area`: The `Area` of the mesh.
     /// - `sampled_points`: (x, y, z) sampled points. The size can differ from `triangles` and `areas`.
     /// - `sampled_normals`: Normal directional vectors, one per sampled point. This must be the same size as `points`.
+    /// - `seed`: An optional random seed.
     pub fn set_sampled_points(
         &self,
         area: &Area,
         sampled_points: &mut [Vertex],
         sampled_normals: &mut [Vertex],
+        seed: Option<u64>
     ) {
         let num_points = sampled_points.len();
         let mut sampler = PointSampler {
@@ -102,9 +104,8 @@ impl Mesh {
             normals: &self.normals,
             sampled_points,
             sampled_normals,
-            range: Uniform::new(0., 1.),
         };
-        sampler.sample_points(area, num_points, &self.triangles);
+        sampler.sample_points(area, num_points, &self.triangles, seed);
     }
 
     /// Get the triangles at which points can be sampled.
@@ -112,11 +113,12 @@ impl Mesh {
     ///
     /// - `points_per_m`: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
     /// - `area`: The `Area` of the mesh.
+    /// - `seed`: An optional random seed.
     ///
     /// Returns: The sampled triangles.
-    pub fn sample_triangles(&self, points_per_m: f32, area: &Area) -> Vec<Triangle> {
+    pub fn sample_triangles(&self, points_per_m: f32, area: &Area, seed: Option<u64>) -> Vec<Triangle> {
         let mut samples = vec![Triangle::default(); get_num_points(area.total_area, points_per_m)];
-        self.set_sampled_triangles(area, &mut samples);
+        self.set_sampled_triangles(area, &mut samples, seed);
         samples
     }
 
@@ -125,10 +127,11 @@ impl Mesh {
     ///
     /// - `area`: The `Area` of the mesh.
     /// - `sampled_triangles`: A pre-defined slice of triangles that will be set in this function. The size must match the number of points that will be sampled.
-    pub fn set_sampled_triangles(&self, area: &Area, sampled_triangles: &mut [Triangle]) {
+    /// - `seed`: An optional random seed.
+    pub fn set_sampled_triangles(&self, area: &Area, sampled_triangles: &mut [Triangle], seed: Option<u64>) {
         let num_points = sampled_triangles.len();
         let mut sampler = TriangleSampler { sampled_triangles };
-        sampler.sample_points(area, num_points, &self.triangles);
+        sampler.sample_points(area, num_points, &self.triangles, seed);
     }
 
     /// Given pre-sampled triangles, sample vertices.
@@ -203,7 +206,7 @@ mod tests {
     #[test]
     fn test_sample_points() {
         let mesh = super::Mesh::from_obj("tests/suzanne.obj");
-        let (points, _) = mesh.sample_points(80., 1.);
+        let (points, _) = mesh.sample_points(80., 1., Some(0));
         assert_eq!(points.len(), 997);
     }
 }

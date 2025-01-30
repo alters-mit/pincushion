@@ -3,15 +3,19 @@
 //! "True" is in quotes because we're using u32s, not booleans.
 //! We're not using booleans because this is meant to be used in Unity for a rendering shader, and shaders want 32bit types.
 
-use rand::{seq::SliceRandom, thread_rng};
-use safer_ffi::ffi_export;
+use fastrand::Rng;
+use safer_ffi::{ffi_export, option::TaggedOption};
 
 /// Set the `mask_indices` to index values (0, 1, 2, etc.)
 /// Then, shuffle `mask_indices`.
 #[ffi_export]
-pub fn set_mask_indices(mask_indices: &mut safer_ffi::Vec<usize>) {
+pub fn set_mask_indices(mask_indices: &mut safer_ffi::Vec<usize>, seed: TaggedOption<u64>) {
     let mut vec = Vec::from_iter(0..mask_indices.len());
-    vec.shuffle(&mut thread_rng());
+    let mut rng =    match seed {
+        TaggedOption::Some(seed) => Rng::with_seed(seed),
+        TaggedOption::None => Rng::new()
+    };
+    rng.shuffle(&mut vec);
     mask_indices.copy_from_slice(&vec[0..]);
 }
 
@@ -32,13 +36,15 @@ pub fn set_mask(factor: f32, mask_indices: &safer_ffi::Vec<usize>, mask: &mut sa
 
 #[cfg(test)]
 mod tests {
+    use safer_ffi::option::TaggedOption;
+
     use super::{set_mask, set_mask_indices};
 
     #[test]
     fn test_nths() {
         let num_points = 997;
         let mut mask_indices = vec![0; num_points].into();
-        set_mask_indices(&mut mask_indices);
+        set_mask_indices(&mut mask_indices, TaggedOption::Some(0));
         let mut mask = vec![0; num_points].into();
         for factor in [0., 0.1, 0.5, 1.] {
             set_mask(factor, &mask_indices, &mut mask);

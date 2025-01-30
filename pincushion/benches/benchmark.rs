@@ -29,12 +29,12 @@ fn benchmark(mesh: &Mesh) -> (Duration, Duration) {
     const SCALE: f32 = 1.;
 
     let t0 = Instant::now();
-    let _ = mesh.sample_points(POINTS_PER_M, SCALE);
+    let _ = mesh.sample_points(POINTS_PER_M, SCALE, Some(0));
     let dt_sample = Instant::now() - t0;
 
     let t0 = Instant::now();
     let area = mesh.get_area(SCALE);
-    let _ = mesh.sample_triangles(POINTS_PER_M, &area);
+    let _ = mesh.sample_triangles(POINTS_PER_M, &area, Some(0));
     let dt_triangles = Instant::now() - t0;
 
     (dt_sample, dt_triangles)
