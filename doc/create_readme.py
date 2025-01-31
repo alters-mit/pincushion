@@ -19,5 +19,5 @@ if __name__ == '__main__':
     Path('../README.md').write_text(readme)
 
     # Remove images for the package README.
-    readme_package = re.sub('(\n!\[.*?\]\(.*?\)\n)', '', readme)
+    readme_package = re.sub(r'(\n!\[.*?\]\(.*?\)\n)', '', readme)
     Path('../com.mit.pincushion/README.md').resolve().write_text(readme_package)

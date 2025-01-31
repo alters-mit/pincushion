@@ -66,6 +66,7 @@ https://github.com/alters-mit/pincushion.git?path=com.mit.pincushion
 | Points Per M | The number of sampled points per square meter on the mesh surface. |
 | Multiply Points Per M By Camera Distance | If true, multiply the number of points by the object's initial distance from the camera. |
 | Multiply Points Per M By Object Scale | If true, multiply the number of points by the object's initial uniform scale. |
+| Auto Seed | If true, generate a new random seed every time a mesh is sampled. |
 | Render Mode | This controls how Pincushion is rendered (see below). |
 | Texture | The texture of each point. Can be null, in which case a default texture is used. |
 | Color | The color of each point. |
@@ -120,7 +121,8 @@ fn main() {
     let mesh = Mesh::from_obj("tests/suzanne.obj");
     let points_per_m = 80.;
     let scale = 1.;
-    let _ = mesh.sample_points(points_per_m, scale);
+    let seed = Some(0);
+    let _ = mesh.sample_points(points_per_m, scale, seed);
 }
 
 ```
@@ -153,9 +155,9 @@ To run the benchmark: `cargo bench benchmark --features obj`
 
 Results:
 
-Sample points: 28μs
+Sample points: 24μs
 
-Sample triangles: 23μs
+Sample triangles: 17μs
 
 ## Known limitations
 
