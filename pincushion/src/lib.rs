@@ -45,6 +45,6 @@ pub fn get_num_points(total_area: f32, points_per_m: f32) -> usize {
 pub(crate) fn get_rng(seed: Option<u64>) -> Rng {
     match seed {
         Some(seed) => Rng::with_seed(seed),
-        None => Rng::new()
+        None => Rng::new(),
     }
 }

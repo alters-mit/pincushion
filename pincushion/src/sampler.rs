@@ -9,7 +9,13 @@ pub(crate) mod triangle_sampler;
 pub(crate) trait Sampler {
     fn sample(&mut self, triangle: &Triangle, point_index: usize, rng: &mut Rng);
 
-    fn sample_points(&mut self, area: &Area, num_points: usize, triangles: &[Triangle], seed: Option<u64>) {
+    fn sample_points(
+        &mut self,
+        area: &Area,
+        num_points: usize,
+        triangles: &[Triangle],
+        seed: Option<u64>,
+    ) {
         // The area per point is used to uniformly sample the points.
         let area_per_point = area.total_area / num_points as f32;
         let mut rng = get_rng(seed);

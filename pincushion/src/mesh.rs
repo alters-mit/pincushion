@@ -76,7 +76,12 @@ impl Mesh {
     /// - `seed`: An optional random seed.
     ///
     /// Returns: An vec of sampled points and a vec of normals for each point.
-    pub fn sample_points(&self, points_per_m: f32, scale: f32, seed: Option<u64>) -> (Vec<Vertex>, Vec<Vertex>) {
+    pub fn sample_points(
+        &self,
+        points_per_m: f32,
+        scale: f32,
+        seed: Option<u64>,
+    ) -> (Vec<Vertex>, Vec<Vertex>) {
         let area = self.get_area(scale);
         let num_points = get_num_points(area.total_area, points_per_m);
         let mut sampled_points = vec![Vertex::default(); num_points];
@@ -96,7 +101,7 @@ impl Mesh {
         area: &Area,
         sampled_points: &mut [Vertex],
         sampled_normals: &mut [Vertex],
-        seed: Option<u64>
+        seed: Option<u64>,
     ) {
         let num_points = sampled_points.len();
         let mut sampler = PointSampler {
@@ -116,7 +121,12 @@ impl Mesh {
     /// - `seed`: An optional random seed.
     ///
     /// Returns: The sampled triangles.
-    pub fn sample_triangles(&self, points_per_m: f32, area: &Area, seed: Option<u64>) -> Vec<Triangle> {
+    pub fn sample_triangles(
+        &self,
+        points_per_m: f32,
+        area: &Area,
+        seed: Option<u64>,
+    ) -> Vec<Triangle> {
         let mut samples = vec![Triangle::default(); get_num_points(area.total_area, points_per_m)];
         self.set_sampled_triangles(area, &mut samples, seed);
         samples
@@ -128,7 +138,12 @@ impl Mesh {
     /// - `area`: The `Area` of the mesh.
     /// - `sampled_triangles`: A pre-defined slice of triangles that will be set in this function. The size must match the number of points that will be sampled.
     /// - `seed`: An optional random seed.
-    pub fn set_sampled_triangles(&self, area: &Area, sampled_triangles: &mut [Triangle], seed: Option<u64>) {
+    pub fn set_sampled_triangles(
+        &self,
+        area: &Area,
+        sampled_triangles: &mut [Triangle],
+        seed: Option<u64>,
+    ) {
         let num_points = sampled_triangles.len();
         let mut sampler = TriangleSampler { sampled_triangles };
         sampler.sample_points(area, num_points, &self.triangles, seed);
