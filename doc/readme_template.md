@@ -71,6 +71,7 @@ https://github.com/alters-mit/pincushion.git?path=com.mit.pincushion
 | Points Per M | The number of sampled points per square meter on the mesh surface. |
 | Multiply Points Per M By Camera Distance | If true, multiply the number of points by the object's initial distance from the camera. |
 | Multiply Points Per M By Object Scale | If true, multiply the number of points by the object's initial uniform scale. |
+| Auto Seed | If true, generate a new random seed every time a mesh is sampled. |
 | Render Mode | This controls how Pincushion is rendered (see below). |
 | Texture | The texture of each point. Can be null, in which case a default texture is used. |
 | Color | The color of each point. |

@@ -1,5 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
+using Random = System.Random;
 
 
 namespace Pincushion
@@ -70,6 +73,10 @@ namespace Pincushion
         /// </summary>
         public bool multiplyPointsPerMByObjectScale = true;
         /// <summary>
+        /// If true, generate new random seeds every time a mesh is resampled.
+        /// </summary>
+        public bool autoSeed = true;
+        /// <summary>
         /// This controls how Pincushion is rendered.
         /// </summary>
         [Header("Rendering")]
@@ -139,9 +146,17 @@ namespace Pincushion
         /// </summary>
         private CameraClearFlags mainCameraClearFlags;
         /// <summary>
+        /// The random number generator.
+        /// </summary>
+        private Random rng = new Random();
+        /// <summary>
         /// All PincushionSkinnedMeshRenderers in the scene.
         /// </summary>
         private PincushionSkinnedMeshRenderer[] pincushionSkinnedMeshRenderers;
+        /// <summary>
+        /// This is used to get a new random seed.
+        /// </summary>
+        private static readonly byte[] u64 = new byte[8];
         /// <summary>
         /// The ignore meshes' layer.
         /// </summary>
@@ -271,6 +286,11 @@ namespace Pincushion
             PincushionRenderer[] pincushions = FindObjectsOfType<PincushionRenderer>(true);
             for (int i = 0; i < pincushions.Length; i++)
             {
+                // Reseed.
+                if (autoSeed)
+                {
+                    pincushions[i].seed = GetRandomSeed();
+                }
                 // Sample the mesh and apply rendering settings.
                 pincushions[i].Sample(mainCamera);
                 // Set visibility.
@@ -386,6 +406,16 @@ namespace Pincushion
                 mainCamera.clearFlags = CameraClearFlags.SolidColor;
                 mainCamera.backgroundColor = backgroundColor;
             }
+        }
+
+
+        /// <summary>
+        /// Returns a new random seed.
+        /// </summary>
+        private ulong GetRandomSeed()
+        {
+            rng.NextBytes(u64);
+            return BitConverter.ToUInt64(u64, 0);
         }
         
 

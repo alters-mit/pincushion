@@ -16,6 +16,11 @@ namespace Pincushion
         
         
         /// <summary>
+        /// The random seed used to sample points.
+        /// This changes every time points are resampled.
+        /// </summary>
+        public ulong seed;
+        /// <summary>
         /// The material used to render the points.
         /// </summary>
         protected Material material;
@@ -87,7 +92,7 @@ namespace Pincushion
                         len = num,
                         cap = num
                     };
-                    Ffi.set_mask_indices(&indices);
+                    Ffi.set_mask_indices(&indices, seed);
                 }
             }
         }
@@ -183,10 +188,11 @@ namespace Pincushion
             material.DisableKeyword(APPLY_MASK);
         }
 
-
+        
         /// <summary>
         /// Sample points, create the sampled mesh, and set the material.
         /// </summary>
+        /// <param name="pointsPerM">The number of points per square meter.</param>
         protected abstract int SampleMesh(float pointsPerM);
 
 

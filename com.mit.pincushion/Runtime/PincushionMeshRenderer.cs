@@ -36,7 +36,7 @@ namespace Pincushion
         protected override int SampleMesh(float pointsPerM)
         {
             // Sample the points.
-            Mesh mesh = meshFilter.mesh.GetSampledMesh(pointsPerM, transform.localScale.magnitude);
+            Mesh mesh = meshFilter.mesh.GetSampledMesh(pointsPerM, transform.localScale.magnitude, seed);
             pointsMeshFilter.mesh = mesh;
             // Set the material.
             pointsMeshRenderer.sharedMaterial = material;
