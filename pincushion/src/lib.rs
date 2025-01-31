@@ -15,6 +15,9 @@
 //!
 #![doc = include_str!("../../doc/readme_rs.md")]
 
+use std::slice::from_raw_parts_mut;
+
+use glam::{Mat4, Vec3};
 use safer_ffi::ffi_export;
 
 pub use area::Area;
@@ -81,4 +84,53 @@ pub fn sample_triangles(
     seed: u64,
 ) {
     mesh.set_sampled_triangles(area, sampled_triangles, Some(seed));
+}
+
+/// Apply a transform matrix to transform sampled points.
+///
+/// - `matrix`: A 4x4 transform matrix. The length is assumed to always be 16.
+/// - `points`: The points that will be transformed.
+#[ffi_export]
+pub fn transform_points(matrix: &safer_ffi::Vec<f32>, points: &mut safer_ffi::Vec<Vertex>) {
+    let matrix = Mat4::from_cols_slice(matrix);
+
+    // Cast `points` as `glam::Vec3`.
+    // This is very, very safe because both structs are repr(C).
+    let ptr = points.as_mut_ptr().cast::<Vec3>();
+    let len = points.len();
+    unsafe {
+        // Cast, and then transform.
+        from_raw_parts_mut(ptr, len)
+            .iter_mut()
+            .for_each(|p| *p = matrix.transform_point3(*p));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use glam::{Mat4, Vec3};
+
+    #[test]
+    fn glam_test() {
+        let point = Vec3::new(1.5, 0., 0.);
+        let matrix = Mat4::from_cols_array(&[
+            0.9552104,
+            -0.1993398,
+            -0.2187162,
+            0.,
+            0.2042859,
+            0.9789113,
+            -3.72529E-09,
+            0.,
+            0.2141038,
+            -0.04468064,
+            0.9757885,
+            0.,
+            1.04,
+            1.34,
+            1.93,
+            1.,
+        ]);
+        println!("TRANSFORM {}", matrix.transform_point3(point));
+    }
 }

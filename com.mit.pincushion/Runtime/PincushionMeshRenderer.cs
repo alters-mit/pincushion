@@ -32,7 +32,7 @@ namespace Pincushion
             pointsMeshRenderer = points.AddComponent<MeshRenderer>();
         }
 
-        
+
         protected override int SampleMesh(float pointsPerM)
         {
             // Sample the points.
@@ -47,6 +47,12 @@ namespace Pincushion
         protected override string GetShaderName()
         {
             return "PincushionStatic";
+        }
+
+
+        protected override Mesh GetSampledMesh()
+        {
+            return pointsMeshFilter.mesh;
         }
     }
 }

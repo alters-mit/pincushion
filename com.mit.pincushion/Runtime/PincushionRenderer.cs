@@ -188,7 +188,23 @@ namespace Pincushion
             material.DisableKeyword(APPLY_MASK);
         }
 
+
+        /// <summary>
+        /// Returns a mesh's points, transformed by the transform matrix.
+        /// </summary>
+        public Vector3[] GetTransformedPoints()
+        {
+            return GetSampledMesh().GetTransformedPoints(transform.localToWorldMatrix);
+        }
+
+
+        /// <summary>
+        /// Returns the mesh of sampled points.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract Mesh GetSampledMesh();
         
+
         /// <summary>
         /// Sample points, create the sampled mesh, and set the material.
         /// </summary>

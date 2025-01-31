@@ -196,6 +196,53 @@ namespace Pincushion
                 }
             }
         }
+
+
+        /// <summary>
+        /// Returns a mesh's sampled points, transformed by a matrix.
+        /// </summary>
+        /// <param name="mesh">(this)</param>
+        /// <param name="transformMatrix">The transform matrix.</param>
+        public static Vector3[] GetTransformedPoints(this Mesh mesh, Matrix4x4 transformMatrix)
+        {
+            int length = mesh.vertexCount;
+            // Get a copy of the vertices.
+            Vector3[] vertices = new Vector3[length];
+            Array.Copy(mesh.vertices, vertices, length);
+            UIntPtr verticesLength = (UIntPtr)length;
+            // Reserve this for the transform matrix.
+            float[] matrix = new float[16];
+
+            unsafe
+            {
+                fixed (Vector3* verticesPtr = mesh.vertices)
+                {
+                    Vec_Vertex_t verticesT = new Vec_Vertex_t
+                    {
+                        ptr = (Vertex_t*)verticesPtr,
+                        len = verticesLength,
+                        cap = verticesLength
+                    };
+                    // Get the transform matrix.
+                    fixed (float* matrixPtr = matrix)
+                    {
+                        // Convert the matrix to float[], then to Vec<f32>.
+                        *(Matrix4x4*)matrixPtr = transformMatrix;
+                        UIntPtr len = (UIntPtr)16;
+                        Vec_float_t matrixT = new Vec_float_t
+                        {
+                            ptr = matrixPtr,
+                            len = len,
+                            cap = len
+                        };
+                        
+                        // Transform the points.
+                        Ffi.transform_points(&matrixT, &verticesT);
+                    }
+                }
+            }
+            return vertices;
+        }
         
 
         /// <summary>

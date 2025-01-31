@@ -131,6 +131,12 @@ namespace Pincushion
         }
 
 
+        protected override Mesh GetSampledMesh()
+        {
+            return sourceMesh;
+        }
+
+
         private void Update()
         {
             PincushionManager instance = PincushionManager.Instance;

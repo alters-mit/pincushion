@@ -7,6 +7,7 @@ description = "Uniformly sample points on a mesh. Includes FFI-safe functions fo
 
 [dependencies]
 fastrand = "2.3.0"
+glam = "0.29.2"
 safer-ffi = "0.1.13"
 tobj = { version = "4.0.0", optional = true }
 

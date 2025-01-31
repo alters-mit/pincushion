@@ -233,5 +233,18 @@ public unsafe partial class Ffi {
         UInt64 seed);
 }
 
+public unsafe partial class Ffi {
+    /// <summary>
+    /// Apply a transform matrix to transform sampled points.
+    ///
+    /// - <c>matrix</c>: A 4x4 transform matrix. The length is assumed to always be 16.
+    /// - <c>points</c>: The points that will be transformed.
+    /// </summary>
+    [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
+    void transform_points (
+        Vec_float_t /*const*/ * matrix,
+        Vec_Vertex_t * points);
+}
+
 
 } /* Pincushion */
