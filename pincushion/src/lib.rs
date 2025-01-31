@@ -31,15 +31,6 @@ mod mesh;
 mod sampler;
 mod vecs;
 
-/// - `total_area`: The total area of the triangles in square meters. See: `get_areas(vertices, triangles)` and `get_areas_in_place(vertices, triangles, areas)`
-/// - `points_per_m`: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
-///
-/// Returns: The number of points to be sampled.
-#[ffi_export]
-pub fn get_num_points(total_area: f32, points_per_m: f32) -> usize {
-    (total_area * points_per_m) as usize
-}
-
 /// - `mesh` The source mesh.
 /// - `scale` The uniform scale of the mesh.
 /// - `area`: The `Area` of the mesh.
@@ -48,12 +39,21 @@ pub fn set_area(mesh: &Mesh, scale: f32, area: &mut Area) {
     mesh.set_area(scale, area)
 }
 
+/// - `total_area`: The total area of the triangles in square meters. See: `set_area(mesh, scale, area)`.
+/// - `points_per_m`: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
+///
+/// Returns: The number of points to be sampled.
+#[ffi_export]
+pub fn get_num_points(total_area: f32, points_per_m: f32) -> usize {
+    (total_area * points_per_m) as usize
+}
+
 /// Sample random points on the mesh.
 ///
 /// - `mesh` The source mesh.
 /// - `area`: The `Area` of the mesh.
-/// - `sampled_points`: (x, y, z) sampled points. The size can differ from `triangles` and `areas`.
-/// - `sampled_normals`: Normal directional vectors, one per sampled point. This must be the same size as `points`.
+/// - `sampled_points`: (x, y, z) sampled points.
+/// - `sampled_normals`: Normal directional vectors, one per sampled point. This must be the same size as `sampled_points`.
 /// - `seed`: A random seed used for sampling.
 #[ffi_export]
 pub fn sample_points(
