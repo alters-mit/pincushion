@@ -32,11 +32,11 @@ namespace Pincushion
             pointsMeshRenderer = points.AddComponent<MeshRenderer>();
         }
 
-        
+
         protected override int SampleMesh(float pointsPerM)
         {
             // Sample the points.
-            Mesh mesh = meshFilter.mesh.GetSampledMesh(pointsPerM, transform.localScale.magnitude);
+            Mesh mesh = meshFilter.mesh.GetSampledMesh(pointsPerM, transform.localScale.magnitude, seed);
             pointsMeshFilter.mesh = mesh;
             // Set the material.
             pointsMeshRenderer.sharedMaterial = material;
@@ -47,6 +47,12 @@ namespace Pincushion
         protected override string GetShaderName()
         {
             return "PincushionStatic";
+        }
+
+
+        protected override Mesh GetSampledMesh()
+        {
+            return pointsMeshFilter.mesh;
         }
     }
 }

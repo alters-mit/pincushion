@@ -26,6 +26,6 @@ To run the benchmark: `cargo bench benchmark --features obj`
 
 Results:
 
-Sample points: 28μs
+Sample points: 24μs
 
-Sample triangles: 23μs
+Sample triangles: 17μs

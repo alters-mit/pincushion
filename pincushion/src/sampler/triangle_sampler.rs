@@ -1,4 +1,4 @@
-use rand::rngs::ThreadRng;
+use fastrand::Rng;
 
 use crate::Triangle;
 
@@ -9,7 +9,7 @@ pub(crate) struct TriangleSampler<'mesh> {
 }
 
 impl Sampler for TriangleSampler<'_> {
-    fn sample(&mut self, triangle: &Triangle, point_index: usize, _: &mut ThreadRng) {
+    fn sample(&mut self, triangle: &Triangle, point_index: usize, _: &mut Rng) {
         self.sampled_triangles[point_index] = *triangle;
     }
 }

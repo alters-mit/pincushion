@@ -97,7 +97,7 @@ namespace Pincushion
             // Sample the triangles.
             Mesh skinnedMesh = skinnedMeshRenderer.sharedMesh;
             UIntPtr[] sourceTriangles = skinnedMesh.GetTriangles();
-            int[] sampledTriangles = skinnedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude, sourceTriangles);
+            int[] sampledTriangles = skinnedMesh.GetSampledTriangles(pointsPerM, transform.localScale.magnitude, sourceTriangles, seed);
             int numSourceVertices = skinnedMesh.vertexCount;
 
             sourceVerticesBuffer = new ComputeBuffer(numSourceVertices, 12);
@@ -128,6 +128,12 @@ namespace Pincushion
         protected override string GetShaderName()
         {
             return "PincushionDynamic";
+        }
+
+
+        protected override Mesh GetSampledMesh()
+        {
+            return sourceMesh;
         }
 
 

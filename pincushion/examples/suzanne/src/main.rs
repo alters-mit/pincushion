@@ -28,7 +28,7 @@ async fn main() {
     };
     // Sample the points and convert to macroquad Vec3's.
     let points = pincushion_mesh
-        .sample_points(30., 1.)
+        .sample_points(30., 1., None)
         .0
         .iter()
         .map(|point| vec3(point.x, point.y, point.z))

@@ -1,4 +1,4 @@
-use rand::{distributions::Uniform, rngs::ThreadRng, Rng};
+use fastrand::Rng;
 
 use crate::{Triangle, Vertex};
 
@@ -9,15 +9,14 @@ pub(crate) struct PointSampler<'mesh> {
     pub normals: &'mesh [Vertex],
     pub sampled_points: &'mesh mut [Vertex],
     pub sampled_normals: &'mesh mut [Vertex],
-    pub range: Uniform<f32>,
 }
 
 impl Sampler for PointSampler<'_> {
-    fn sample(&mut self, triangle: &Triangle, point_index: usize, rng: &mut ThreadRng) {
+    fn sample(&mut self, triangle: &Triangle, point_index: usize, rng: &mut Rng) {
         // Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
-        let t = f32::sqrt(rng.sample(self.range));
+        let t = f32::sqrt(rng.f32());
         let u = 1. - t;
-        let v = (1. - rng.sample(self.range)) * t;
+        let v = (1. - rng.f32()) * t;
         let w = 1. - u - v;
 
         sample_point(

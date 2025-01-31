@@ -17,7 +17,8 @@ namespace Pincushion
         /// <param name="mesh">(this)</param>
         /// <param name="pointsPerM">The number of points per square meter.</param>
         /// <param name="scale">The uniform scale of the mesh.</param>
-        public static Mesh GetSampledMesh(this Mesh mesh, float pointsPerM, float scale) 
+        /// <param name="seed">The random seed.</param>
+        public static Mesh GetSampledMesh(this Mesh mesh, float pointsPerM, float scale, ulong seed)
         {
             // Get the casted indices.
             UIntPtr[] indices = mesh.GetTriangles();
@@ -95,7 +96,7 @@ namespace Pincushion
                                     len = sampledNormalsLength,
                                     cap = sampledNormalsLength
                                 };
-                                Ffi.sample_points(&meshT, &areaT,  &pointsV, &sampledNormalsV);
+                                Ffi.sample_points(&meshT, &areaT,  &pointsV, &sampledNormalsV, seed);
 
                                 Mesh sampledMesh = new Mesh();
                                 sampledMesh.vertices = sampledPoints;
@@ -119,7 +120,8 @@ namespace Pincushion
         /// <param name="pointsPerM">Points per meter squared of the mesh's surface area.</param>
         /// <param name="scale">The uniform scale of the mesh.</param>
         /// <param name="sourceTriangles">The source mesh's triangles as UIntPtr values.</param>
-        public static int[] GetSampledTriangles(this Mesh mesh, float pointsPerM, float scale, UIntPtr[] sourceTriangles)
+        /// <param name="seed">The random seed.</param>
+        public static int[] GetSampledTriangles(this Mesh mesh, float pointsPerM, float scale, UIntPtr[] sourceTriangles, ulong seed)
         {
             UIntPtr verticesLength = (UIntPtr)mesh.vertices.Length;
             int numTriangles = mesh.triangles.Length / 3;
@@ -186,13 +188,60 @@ namespace Pincushion
                                     len = sampledTrianglesLength,
                                     cap = sampledTrianglesLength
                                 };
-                                Ffi.sample_triangles(&meshT, &areaT, &sampledTrianglesVec);
+                                Ffi.sample_triangles(&meshT, &areaT, &sampledTrianglesVec, seed);
                             }
                             return Array.ConvertAll(sampledTriangles, uIntPtrToInt);
                         }
                     }
                 }
             }
+        }
+
+
+        /// <summary>
+        /// Returns a mesh's sampled points, transformed by a matrix.
+        /// </summary>
+        /// <param name="mesh">(this)</param>
+        /// <param name="transformMatrix">The transform matrix.</param>
+        public static Vector3[] GetTransformedPoints(this Mesh mesh, Matrix4x4 transformMatrix)
+        {
+            int length = mesh.vertexCount;
+            // Get a copy of the vertices.
+            Vector3[] vertices = new Vector3[length];
+            Array.Copy(mesh.vertices, vertices, length);
+            UIntPtr verticesLength = (UIntPtr)length;
+            // Reserve this for the transform matrix.
+            float[] matrix = new float[16];
+
+            unsafe
+            {
+                fixed (Vector3* verticesPtr = mesh.vertices)
+                {
+                    Vec_Vertex_t verticesT = new Vec_Vertex_t
+                    {
+                        ptr = (Vertex_t*)verticesPtr,
+                        len = verticesLength,
+                        cap = verticesLength
+                    };
+                    // Get the transform matrix.
+                    fixed (float* matrixPtr = matrix)
+                    {
+                        // Convert the matrix to float[], then to Vec<f32>.
+                        *(Matrix4x4*)matrixPtr = transformMatrix;
+                        UIntPtr len = (UIntPtr)16;
+                        Vec_float_t matrixT = new Vec_float_t
+                        {
+                            ptr = matrixPtr,
+                            len = len,
+                            cap = len
+                        };
+                        
+                        // Transform the points.
+                        Ffi.transform_points(&matrixT, &verticesT);
+                    }
+                }
+            }
+            return vertices;
         }
         
 

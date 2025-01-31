@@ -66,6 +66,7 @@ https://github.com/alters-mit/pincushion.git?path=com.mit.pincushion
 | Points Per M | The number of sampled points per square meter on the mesh surface. |
 | Multiply Points Per M By Camera Distance | If true, multiply the number of points by the object's initial distance from the camera. |
 | Multiply Points Per M By Object Scale | If true, multiply the number of points by the object's initial uniform scale. |
+| Auto Seed | If true, generate a new random seed every time a mesh is sampled. |
 | Render Mode | This controls how Pincushion is rendered (see below). |
 | Texture | The texture of each point. Can be null, in which case a default texture is used. |
 | Color | The color of each point. |
@@ -120,7 +121,8 @@ fn main() {
     let mesh = Mesh::from_obj("tests/suzanne.obj");
     let points_per_m = 80.;
     let scale = 1.;
-    let _ = mesh.sample_points(points_per_m, scale);
+    let seed = Some(0);
+    let _ = mesh.sample_points(points_per_m, scale, seed);
 }
 
 ```
@@ -153,18 +155,13 @@ To run the benchmark: `cargo bench benchmark --features obj`
 
 Results:
 
-Sample points: 28μs
+Sample points: 24μs
 
-Sample triangles: 23μs
+Sample triangles: 17μs
 
 ## Known limitations
 
-- For now, the Unity package only works on Windows. To run Pincushion on Linux or MacOS:
-  - Clone the repo
-  - Copy com.mit.pincushion into your `Assets/` folder
-  - Create the Rust library (see steps above). Rust can't cross-compile like Unity can so this needs to be run on the target platform.
-  - Move the Rust library into Pincushion
-- I haven't tried Pincushion in WebGL but it probably doesn't work.
+- Pincushion doesn't work in WebGL.
 - To render a Pincushion mesh, the source mesh be readable (see Unity's documentation for mesh import options).
 - `PincushionSkinnedMeshRenderer` has a suboptimal step that is somewhat slow.[^4] There is a better, faster way to do things, but Pincushion was built for an older project that uses Unity 2020. If I ever upgrade that project, I'll upgrade Pincushion too.[^5]
 

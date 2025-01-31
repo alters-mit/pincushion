@@ -1,4 +1,4 @@
-use rand::{distributions::Uniform, rngs::ThreadRng, thread_rng, Rng};
+use fastrand::Rng;
 
 use crate::{Area, Triangle, Vertex};
 
@@ -7,12 +7,21 @@ pub(crate) mod triangle_sampler;
 
 /// A trait used to sample points or triangles.
 pub(crate) trait Sampler {
-    fn sample(&mut self, triangle: &Triangle, point_index: usize, rng: &mut ThreadRng);
+    fn sample(&mut self, triangle: &Triangle, point_index: usize, rng: &mut Rng);
 
-    fn sample_points(&mut self, area: &Area, num_points: usize, triangles: &[Triangle]) {
+    fn sample_points(
+        &mut self,
+        area: &Area,
+        num_points: usize,
+        triangles: &[Triangle],
+        seed: Option<u64>,
+    ) {
         // The area per point is used to uniformly sample the points.
         let area_per_point = area.total_area / num_points as f32;
-        let mut rng = thread_rng();
+        let mut rng = match seed {
+            Some(seed) => Rng::with_seed(seed),
+            None => Rng::new(),
+        };
         // When sampling points, start at this index.
         let mut start_index_point = 0;
         // When choosing trandom triangles, start at this index.
@@ -40,9 +49,8 @@ pub(crate) trait Sampler {
                 }
                 // If there are multiple triangles, get a Uniform distribution (for efficiency) and randomly select triangles.
                 else {
-                    let distribution = Uniform::new_inclusive(start_index_triangle, area_index);
                     range.for_each(|point_index| {
-                        let triangle = &triangles[rng.sample(distribution)];
+                        let triangle = &triangles[rng.usize(start_index_triangle..=area_index)];
                         self.sample(triangle, point_index, &mut rng);
                     });
                 }

@@ -3,15 +3,16 @@
 //! "True" is in quotes because we're using u32s, not booleans.
 //! We're not using booleans because this is meant to be used in Unity for a rendering shader, and shaders want 32bit types.
 
-use rand::{seq::SliceRandom, thread_rng};
+use fastrand::Rng;
 use safer_ffi::ffi_export;
 
 /// Set the `mask_indices` to index values (0, 1, 2, etc.)
 /// Then, shuffle `mask_indices`.
+/// `seed` is the random seed.
 #[ffi_export]
-pub fn set_mask_indices(mask_indices: &mut safer_ffi::Vec<usize>) {
+pub fn set_mask_indices(mask_indices: &mut safer_ffi::Vec<usize>, seed: u64) {
     let mut vec = Vec::from_iter(0..mask_indices.len());
-    vec.shuffle(&mut thread_rng());
+    Rng::with_seed(seed).shuffle(&mut vec);
     mask_indices.copy_from_slice(&vec[0..]);
 }
 
@@ -38,7 +39,7 @@ mod tests {
     fn test_nths() {
         let num_points = 997;
         let mut mask_indices = vec![0; num_points].into();
-        set_mask_indices(&mut mask_indices);
+        set_mask_indices(&mut mask_indices, 0);
         let mut mask = vec![0; num_points].into();
         for factor in [0., 0.1, 0.5, 1.] {
             set_mask(factor, &mask_indices, &mut mask);
