@@ -5,7 +5,7 @@ pub fn generate() {
     builder()
         .with_language(CSharp)
         .to_file(&format!(
-            "../PincushionCs/PincushionCs/PincushionNativeBindings.cs"
+            "../com.mit.pincushion/Runtime/PincushionNativeBindings.cs"
         ))
         .unwrap()
         .generate()

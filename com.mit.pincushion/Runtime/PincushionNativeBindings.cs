@@ -29,7 +29,7 @@ public unsafe partial class Ffi {
 
 public unsafe partial class Ffi {
     /// <summary>
-    /// - <c>total_area</c>: The total area of the triangles in square meters. See: <c>get_areas(vertices, triangles)</c> and <c>get_areas_in_place(vertices, triangles, areas)</c>
+    /// - <c>total_area</c>: The total area of the triangles in square meters. See: <c>set_area(mesh, scale, area)</c>.
     /// - <c>points_per_m</c>: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
     ///
     /// Returns: The number of points to be sampled.
@@ -137,15 +137,17 @@ public unsafe partial class Ffi {
     ///
     /// - <c>mesh</c> The source mesh.
     /// - <c>area</c>: The <c>Area</c> of the mesh.
-    /// - <c>sampled_points</c>: A pre-defined slice of vertices that will be filled with points. The size can differ from <c>triangles</c> and <c>areas</c>.
-    /// - <c>sampled_normals</c>: A pre-defined slice that will be filled with normals. The size must match that of <c>points</c>.
+    /// - <c>sampled_points</c>: (x, y, z) sampled points.
+    /// - <c>sampled_normals</c>: Normal directional vectors, one per sampled point. This must be the same size as <c>sampled_points</c>.
+    /// - <c>seed</c>: A random seed used for sampling.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void sample_points (
         Mesh_t /*const*/ * mesh,
         Area_t /*const*/ * area,
         Vec_Vertex_t * sampled_points,
-        Vec_Vertex_t * sampled_normals);
+        Vec_Vertex_t * sampled_normals,
+        UInt64 seed);
 }
 
 public unsafe partial class Ffi {
@@ -155,13 +157,15 @@ public unsafe partial class Ffi {
     ///
     /// - <c>mesh</c> The source mesh.
     /// - <c>area</c>: The <c>Area</c> of the mesh.
-    /// - <c>sampled_triangles</c>: The triangles that will be sampled.
+    /// - <c>sampled_triangles</c>: A pre-defined slice of triangles that will be set in this function. The size must match the number of points that will be sampled.
+    /// - <c>seed</c>: A random seed used for sampling.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void sample_triangles (
         Mesh_t /*const*/ * mesh,
         Area_t /*const*/ * area,
-        Vec_Triangle_t * sampled_triangles);
+        Vec_Triangle_t * sampled_triangles,
+        UInt64 seed);
 }
 
 public unsafe partial class Ffi {
@@ -221,10 +225,12 @@ public unsafe partial class Ffi {
     /// <summary>
     /// Set the <c>mask_indices</c> to index values (0, 1, 2, etc.)
     /// Then, shuffle <c>mask_indices</c>.
+    /// <c>seed</c> is the random seed.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void set_mask_indices (
-        Vec_size_t * mask_indices);
+        Vec_size_t * mask_indices,
+        UInt64 seed);
 }
 
 
