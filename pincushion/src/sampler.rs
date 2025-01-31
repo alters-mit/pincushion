@@ -1,6 +1,6 @@
 use fastrand::Rng;
 
-use crate::{get_rng, Area, Triangle, Vertex};
+use crate::{Area, Triangle, Vertex};
 
 pub(crate) mod point_sampler;
 pub(crate) mod triangle_sampler;
@@ -18,7 +18,10 @@ pub(crate) trait Sampler {
     ) {
         // The area per point is used to uniformly sample the points.
         let area_per_point = area.total_area / num_points as f32;
-        let mut rng = get_rng(seed);
+        let mut rng = match seed {
+            Some(seed) => Rng::with_seed(seed),
+            None => Rng::new(),
+        };
         // When sampling points, start at this index.
         let mut start_index_point = 0;
         // When choosing trandom triangles, start at this index.
