@@ -28,7 +28,7 @@ cargo_lock_path = Path("pincushion/Cargo.lock").resolve()
 cargo_lock = cargo_lock_path.read_text()
 for text, path in zip([cargo_toml, cargo_lock], [cargo_toml_path, cargo_lock_path]):
     text = re.sub(re_cargo, r'\1"' + str(version) + '"', text)
-    # path.write_text(text)
+    path.write_text(text)
 
 # Set the C# package.json
 package_path = Path("com.mit.pincushion/package.json").resolve()
