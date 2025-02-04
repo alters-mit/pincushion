@@ -7,7 +7,7 @@ description = "Uniformly sample points on a mesh. Includes FFI-safe functions fo
 
 [dependencies]
 fastrand = "2.3.0"
-glam = "0.29.2"
+glam = { version = "0.29.2", optional = true }
 safer-ffi = "0.1.13"
 tobj = { version = "4.0.0", optional = true }
 
@@ -18,9 +18,10 @@ macroquad = "0.4.13"
 crate-type = ["lib", "cdylib"]
 
 [features]
-default = ["mask"]
+default = ["mask", "transform"]
 mask = []
 obj = ["dep:tobj"]
+transform = ["dep:glam"]
 cs = ["safer-ffi/headers"]
 
 [[bin]]

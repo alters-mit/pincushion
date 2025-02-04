@@ -4,6 +4,8 @@
 
 - (C#)  Added: `PincushionRenderer.GetNumSampledPoints()`
 - (Rust) Added a benchmark for `transform_points(matrix, points)`.
+- (Rust) Moved the code in `mask.rs` to `lib.rs` and clarified what it does in the comments.
+- (Rust) Added a new `transform` feature which enables `transform_points(matrix, points)`
 
 ## 0.2.1
 
