@@ -100,7 +100,7 @@ This works for all `PincushionManager` parameters, including the Render Mode.
 
 Example scenes are in `UnityExample/Assets/Scenes/`
 
-- `SampleScene` has a basic Pincushion setup with two MeshRenderers.
+- `SampleScene` has a basic Pincushion setup with two MeshRenderers..
 - `ApplyMask` has a slider that you can drag to adjust the rendering mask.
 
 ## Usage (Rust)

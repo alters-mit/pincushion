@@ -41,11 +41,11 @@ This repo has three components:
 1. Allow 'unsafe' code: Project Settings -> Player -> Allow 'unsafe' Code
 2. Open the package manager.
 
-![A screenshot of how to open the package manager. It's a drop-down menu in Unity. Window, then Package Manager.](doc/window_package_manager.jpg)
+![A screenshot of how to open the package manager. It's a drop-down menu in Unity. Window, then Package Manager.](doc/images/window_package_manager.jpg)
 
 3. Click the + sign and select "Add package from git URL..."
 
-![A screenshot of how to add a package from a git repo.](doc/git_url.jpg)
+![A screenshot of how to add a package from a git repo.](doc/images/git_url.jpg)
 
 4. Enter this URL:
 
@@ -115,7 +115,7 @@ This works for all `PincushionManager` parameters, including the Render Mode.
 
 Example scenes are in `UnityExample/Assets/Scenes/`
 
-- `SampleScene` has a basic Pincushion setup with two MeshRenderers.
+- `SampleScene` has a basic Pincushion setup with two MeshRenderers..
 - `ApplyMask` has a slider that you can drag to adjust the rendering mask.
 
 ## Usage (Rust)
