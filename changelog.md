@@ -1,5 +1,10 @@
 # 0.2.x
 
+## 0.2.2
+
+- (C#)  Added: `PincushionRenderer.GetNumSampledPoints()`
+- (Rust) Added a benchmark for `transform_points(matrix, points)`.
+
 ## 0.2.1
 
 - Added random seed parameters to each of the sampling functions in both the C# and Rust code. These random seeds can be used to deterministically recreate sampled points.
