@@ -199,6 +199,15 @@ namespace Pincushion
 
 
         /// <summary>
+        /// Returns the number of sampled points.
+        /// </summary>
+        public int GetNumSampledPoints()
+        {
+            return GetSampledMesh().vertexCount;
+        }
+
+
+        /// <summary>
         /// Returns the mesh of sampled points.
         /// </summary>
         /// <returns></returns>

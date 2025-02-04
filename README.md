@@ -177,6 +177,8 @@ Sample points: 24μs
 
 Sample triangles: 17μs
 
+Transformed points: 0.8395μs
+
 ## Known limitations
 
 - Pincushion doesn't work in WebGL.
