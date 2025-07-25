@@ -84,9 +84,14 @@ impl Mesh {
     ///
     /// Returns: The `Area` of the mesh.
     pub fn get_area(&self, scale: f32) -> Area {
+        #[cfg(feature = "ffi")]
+        let areas = vec![0.0; self.triangles.len()].into();
+        #[cfg(not(feature = "ffi"))]
+        let areas = vec![0.0; self.triangles.len()];
+
         let mut area = Area {
             total_area: 0.,
-            areas: vec![0.0; self.triangles.len()].into(),
+            areas,
         };
         self.set_area(scale, &mut area);
         area

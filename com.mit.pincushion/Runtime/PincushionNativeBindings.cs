@@ -61,6 +61,9 @@ public unsafe struct Vec_Vertex_t {
     public UIntPtr cap;
 }
 
+/// <summary>
+/// Indices of three vertices that comprise a triangle in a mesh.
+/// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 24)]
 public unsafe struct Triangle_t {
     public UIntPtr a;
@@ -207,12 +210,12 @@ public unsafe struct Vec_uint32_t {
 
 public unsafe partial class Ffi {
     /// <summary>
-    /// Set a vertex mask from the <c>steps</c>.
+    /// Set a sampled points mask.
     ///
-    /// - <c>factor</c>: A value between 0 and 1. The number of "true" values will be <c>mask.len() * factor</c>
+    /// - <c>factor</c>: A value between 0 and 1. The number of "true" values will be <c>mask.len() * factor</c>.
     /// - <c>mask_indices</c>: A precalculated array from <c>set_mask_indices</c>.
-    /// This contains all indices in <c>mask</c> in a random order.
-    /// - <c>mask</c> The mask array. Unity wants this to be u32 instead of bool so <c>1</c> is equivalent to <c>true</c>.
+    /// - <c>mask</c> The mask array. Values will be set to 0 or 1.
+    /// This is a vec of u32s because on the Unity side, Pincushion will send this data to the GPU, and the GPU wants 32bit types.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void set_mask (
@@ -223,9 +226,12 @@ public unsafe partial class Ffi {
 
 public unsafe partial class Ffi {
     /// <summary>
-    /// Set the <c>mask_indices</c> to index values (0, 1, 2, etc.)
-    /// Then, shuffle <c>mask_indices</c>.
-    /// <c>seed</c> is the random seed.
+    /// In Pincushion, a "mask" can be used to filter out some pre-sampled points.
+    /// To do this in a way that is visually appealing, <c>set_mask_indices</c> is called to:
+    ///
+    /// - Get the indices of each point (i.e. <c>[0, 1, 2, ...]</c>)
+    /// - Shuffle those indices. <c>seed</c> is the random seed.
+    /// - Copy the shuffled indices into <c>mask_indices</c>.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void set_mask_indices (
@@ -236,6 +242,13 @@ public unsafe partial class Ffi {
 public unsafe partial class Ffi {
     /// <summary>
     /// Apply a transform matrix to transform sampled points.
+    /// This is meant to be used in a Unity context to transform a mesh by a position and rotation.
+    ///
+    /// Unity *does* have two ways to do this: <c>Transform.TransformPoint(Vector3)</c> and <c>Transform.TransformPoints(Span<Vector3>)</c>.
+    /// <c>TransformPoint</c> is relatively slow. <c>TransformPoints</c> isn't available in the version of Unity I'm using for the project that Pincushion was originally intended for.
+    /// That said: Unity's <c>TransformPoints</c> is *probably* slower than Pincushion's <c>transform_points</c>.
+    /// This is because Unity seems to cast each float (f32) to a double (f64) to avoid imprecision problems.
+    /// In Pincushion, only f32s are used, the assumption being that <c>points</c> isn't going to be used repeatedly so there won't be accumulated error.
     ///
     /// - <c>matrix</c>: A 4x4 transform matrix. The length is assumed to always be 16.
     /// - <c>points</c>: The points that will be transformed.
