@@ -18,24 +18,24 @@
 mod area;
 #[cfg(feature = "cs")]
 pub mod cs;
+#[cfg(feature = "ffi")]
+mod ffi;
 mod mesh;
 mod sampler;
 mod triangle;
 #[cfg(feature = "ffi")]
 mod vertex;
-#[cfg(feature = "ffi")]
-mod ffi;
 
-#[cfg(feature = "ffi")]
-use safer_ffi::ffi_export;
 #[cfg(not(feature = "ffi"))]
 pub use glam;
+#[cfg(feature = "ffi")]
+use safer_ffi::ffi_export;
 
 pub use area::Area;
-pub use mesh::Mesh;
-pub use triangle::Triangle;
 #[cfg(feature = "ffi")]
 pub use ffi::*;
+pub use mesh::Mesh;
+pub use triangle::Triangle;
 #[cfg(feature = "ffi")]
 pub use vertex::Vertex;
 

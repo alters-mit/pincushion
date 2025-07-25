@@ -1,8 +1,8 @@
-use std::slice::from_raw_parts_mut;
+use crate::{Area, Mesh, Triangle, Vertex};
 use fastrand::Rng;
 use glam::{Mat4, Vec3};
 use safer_ffi::ffi_export;
-use crate::{Area, Mesh, Triangle, Vertex};
+use std::slice::from_raw_parts_mut;
 
 /// - `mesh` The source mesh.
 /// - `scale` The uniform scale of the mesh.

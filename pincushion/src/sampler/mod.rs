@@ -1,9 +1,9 @@
-use fastrand::Rng;
-#[cfg(not(feature = "ffi"))]
-use glam::Vec3A;
 #[cfg(feature = "ffi")]
 use crate::Vertex;
 use crate::{Area, Triangle};
+use fastrand::Rng;
+#[cfg(not(feature = "ffi"))]
+use glam::Vec3A;
 
 pub(crate) mod point_sampler;
 pub(crate) mod triangle_sampler;
@@ -111,7 +111,5 @@ pub(crate) fn sample_normal(normal: &mut Vertex, triangle: &Triangle, normals: &
 /// Set the average normal of a triangle.
 #[cfg(not(feature = "ffi"))]
 pub(crate) fn sample_normal(normal: &mut Vec3A, triangle: &Triangle, normals: &[Vec3A]) {
-    *normal = (normals[triangle.a]
-        + normals[triangle.b]
-        + normals[triangle.c]) / 3.;
+    *normal = (normals[triangle.a] + normals[triangle.b] + normals[triangle.c]) / 3.;
 }

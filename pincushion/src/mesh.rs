@@ -1,6 +1,6 @@
-use std::f32::consts::FRAC_1_SQRT_2;
 #[cfg(not(feature = "ffi"))]
 use glam::Vec3A;
+use std::f32::consts::FRAC_1_SQRT_2;
 
 macro_rules! sample_points_inner {
     ($self:ident, $vec:ident) => {
@@ -21,17 +21,21 @@ macro_rules! sample_points_inner {
         let mut sampled_points = vec![$vec::default(); num_points];
         let mut sampled_normals = sampled_points.clone();
         $self.set_sampled_points(&area, &mut sampled_points, &mut sampled_normals, seed);
-        
+
         (sampled_points, sampled_normals)
     }};
 }
 
-use crate::{get_num_points, sampler::{
-    point_sampler::PointSampler, sample_normal, sample_point,
-    triangle_sampler::TriangleSampler, Sampler,
-}, Area, Triangle};
 #[cfg(feature = "ffi")]
 use crate::Vertex;
+use crate::{
+    get_num_points,
+    sampler::{
+        point_sampler::PointSampler, sample_normal, sample_point,
+        triangle_sampler::TriangleSampler, Sampler,
+    },
+    Area, Triangle,
+};
 
 /// A mesh has vertices, triangles, and normals.
 #[cfg(feature = "ffi")]
@@ -66,7 +70,7 @@ impl Mesh {
             normals: normals.into(),
         }
     }
-    
+
     #[cfg(not(feature = "ffi"))]
     pub fn new(vertices: Vec<Vec3A>, triangles: Vec<Triangle>, normals: Vec<Vec3A>) -> Self {
         Self {
@@ -103,18 +107,25 @@ impl Mesh {
             .for_each(|(triangle, ar)| {
                 // Get this triangle's area.
                 let p0 = self.vertices[triangle.a];
-                
+
                 #[cfg(feature = "ffi")]
-                let a = half_scale * self.vertices[triangle.b].sub(&p0).cross(&self.vertices[triangle.c].sub(&p0)).magnitude();
+                let a = half_scale
+                    * self.vertices[triangle.b]
+                        .sub(&p0)
+                        .cross(&self.vertices[triangle.c].sub(&p0))
+                        .magnitude();
                 #[cfg(not(feature = "ffi"))]
-                let a = half_scale * (self.vertices[triangle.b] - p0).cross(self.vertices[triangle.c] - p0).length();
-                
+                let a = half_scale
+                    * (self.vertices[triangle.b] - p0)
+                        .cross(self.vertices[triangle.c] - p0)
+                        .length();
+
                 // Add to the total.
                 area.total_area += a;
                 *ar = a;
             });
     }
-    
+
     #[cfg(feature = "ffi")]
     sample_points_inner!(self, Vertex);
 
@@ -130,14 +141,10 @@ impl Mesh {
     pub fn set_sampled_points(
         &self,
         area: &Area,
-        #[cfg(feature = "ffi")]
-        sampled_points: &mut [Vertex],
-        #[cfg(feature = "ffi")]
-        sampled_normals: &mut [Vertex],
-        #[cfg(not(feature = "ffi"))]
-        sampled_points: &mut [Vec3A],
-        #[cfg(not(feature = "ffi"))]
-        sampled_normals: &mut [Vec3A],
+        #[cfg(feature = "ffi")] sampled_points: &mut [Vertex],
+        #[cfg(feature = "ffi")] sampled_normals: &mut [Vertex],
+        #[cfg(not(feature = "ffi"))] sampled_points: &mut [Vec3A],
+        #[cfg(not(feature = "ffi"))] sampled_normals: &mut [Vec3A],
         seed: Option<u64>,
     ) {
         let num_points = sampled_points.len();
