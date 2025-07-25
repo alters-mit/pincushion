@@ -36,6 +36,12 @@ This repo has three components:
 2. `com.mit.pinsushion` is a Unity package, which includes binds for the native `pincushion` library, C#-friendly classes and methods, shaders, etc.
 3. `UnityExample` is a small Unity example of Pincushion.
 
+## Compatability
+
+I've tested Pincushion with Unity 2020.3 and Unity 6.1 and it works in both.
+
+I've tested Pincushion on Windows and Linux, but not MacOS. It's probably OK???
+
 ## How to add `Pincushion` to your Unity project
 
 1. Allow 'unsafe' code: Project Settings -> Player -> Allow 'unsafe' Code
@@ -138,7 +144,7 @@ Documentation for the Rust codebase can be found on [docs.rs](https://docs.rs/pi
 
 - Pincushion doesn't work in WebGL.
 - To render a Pincushion mesh, the source mesh be readable (see Unity's documentation for mesh import options).
-- `PincushionSkinnedMeshRenderer` has a suboptimal step that is somewhat slow.[^4] There is a better, faster way to do things, but Pincushion was built for an older project that uses Unity 2020. If I ever upgrade that project, I'll upgrade Pincushion too.[^5]
+- I guess it would be nice to read vertices directly off the GPU as Vector4s, but I tried it and it's at best very complicated.
 
 ***
 
@@ -147,7 +153,3 @@ Documentation for the Rust codebase can be found on [docs.rs](https://docs.rs/pi
 [^2]: Pincushion samples the indices of the triangles exactly once on the CPU and then per-frame on the GPU samples points from the vertices at those indices.
 
 [^3]: Native libraries work like any other file in Unity. Stick it within `Assets/` or any subdirectory thereof and Unity will be able to find it.
-
-[^4]: It's `BakeMesh(mesh)`, which copies data into a new mesh. Conceptually, we should be able to reference mesh vertex data (which is on the GPU) in a compute buffer (which is also on the GPU).
-
-[^5]: Yes, I could use `#if` blocks to handle multiple Unity versions, but it ain't gonna happen until I need to.
