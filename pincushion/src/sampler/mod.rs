@@ -1,12 +1,12 @@
+pub(crate) mod point_sampler;
+pub(crate) mod triangle_sampler;
+
 #[cfg(feature = "ffi")]
 use crate::Vertex;
 use crate::{Area, Triangle};
 use fastrand::Rng;
 #[cfg(not(feature = "ffi"))]
 use glam::Vec3A;
-
-pub(crate) mod point_sampler;
-pub(crate) mod triangle_sampler;
 
 /// A trait used to sample points or triangles.
 pub(crate) trait Sampler {

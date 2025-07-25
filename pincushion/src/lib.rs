@@ -39,10 +39,10 @@ pub use triangle::Triangle;
 #[cfg(feature = "ffi")]
 pub use vertex::Vertex;
 
-/// - `total_area`: The total area of the triangles in square meters. See: `set_area(mesh, scale, area)`.
-/// - `points_per_m`: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
+/// Returns the number of points to be sampled.
 ///
-/// Returns: The number of points to be sampled.
+/// - `total_area`: The total area of the triangles in square meters. See: [`set_area`]
+/// - `points_per_m`: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
 #[cfg_attr(feature = "ffi", ffi_export)]
 pub fn get_num_points(total_area: f32, points_per_m: f32) -> usize {
     (total_area * points_per_m) as usize

@@ -80,9 +80,9 @@ impl Mesh {
         }
     }
 
-    /// - `scale`: The uniform scale of the mesh.
+    /// Returns the mesh's [`Area`]
     ///
-    /// Returns: The `Area` of the mesh.
+    /// - `scale`: The uniform scale of the mesh.
     pub fn get_area(&self, scale: f32) -> Area {
         #[cfg(feature = "ffi")]
         let areas = vec![0.0; self.triangles.len()].into();
@@ -97,12 +97,10 @@ impl Mesh {
         area
     }
 
-    /// Set a pre-allocated slice of areas on the mesh.
+    /// Set the [`Area`] of this mesh.
     ///
     /// - `scale`: The uniform scale of the mesh.
-    /// - `area`: The `Area` of the mesh.
-    ///
-    /// Returns: The total surface area of the mesh in square meters.
+    /// - `area`: The [`Area`] of the mesh.
     pub fn set_area(&self, scale: f32, area: &mut Area) {
         area.total_area = 0.;
         let half_scale = scale * 0.5;
@@ -141,7 +139,7 @@ impl Mesh {
     ///
     /// - `area`: The `Area` of the mesh.
     /// - `sampled_points`: (x, y, z) sampled points. The size can differ from `triangles` and `areas`.
-    /// - `sampled_normals`: Normal directional vectors, one per sampled point. This must be the same size as `points`.
+    /// - `sampled_normals`: Normal directional vectors, one per sampled point. This must be the same length as `sampled_points`.
     /// - `seed`: An optional random seed.
     pub fn set_sampled_points(
         &self,
@@ -168,8 +166,6 @@ impl Mesh {
     /// - `points_per_m`: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
     /// - `area`: The `Area` of the mesh.
     /// - `seed`: An optional random seed.
-    ///
-    /// Returns: The sampled triangles.
     pub fn sample_triangles(
         &self,
         points_per_m: f32,
@@ -200,7 +196,7 @@ impl Mesh {
 
     /// Given pre-sampled triangles, sample vertices.
     /// The position of the vertex relative to the spatial area of the triangle is deterministic.
-    /// In contrast, points sampled via `sample_points` and `set_sampled_points` will be at a random point on a sampled triangle.
+    /// In contrast, points sampled via [`Self::sample_points`] and [`Self::set_sampled_points`] will be at a random point on a sampled triangle.
     ///
     /// - `sampled_mesh`: The mesh with the sampled points, triangles, and normals.
     pub fn set_presampled_mesh(&self, sampled_mesh: &mut Mesh) {
@@ -225,8 +221,7 @@ impl Mesh {
     }
 
     /// Load a .obj file.
-    ///
-    /// Returns: The vertices, the triangles, and the normals.
+    /// Returns the vertices, the triangles, and the normals.
     #[cfg(feature = "obj")]
     pub fn from_obj<P>(path: P) -> Self
     where

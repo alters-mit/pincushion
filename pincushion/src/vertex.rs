@@ -63,7 +63,7 @@ impl Vertex {
     }
 
     /// Returns the area of a triangle.
-    /// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/90714a3b61dbc731d9e8dc4c4ca93c2ba1da5156/Assets/Script/VFXMeshBakingHelper.cs#L202
+    /// Source: <https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/90714a3b61dbc731d9e8dc4c4ca93c2ba1da5156/Assets/Script/VFXMeshBakingHelper.cs#L202>
     pub fn get_triangle_area(p0: &Self, p1: &Self, p2: &Self) -> f32
     where
         Self: Sized,

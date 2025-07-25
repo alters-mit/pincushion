@@ -8,21 +8,22 @@ use crate::Vertex;
 
 use super::{sample_normal, sample_point, Sampler};
 
-#[cfg(feature = "ffi")]
-pub(crate) struct PointSampler<'mesh> {
-    pub vertices: &'mesh [Vertex],
-    pub normals: &'mesh [Vertex],
-    pub sampled_points: &'mesh mut [Vertex],
-    pub sampled_normals: &'mesh mut [Vertex],
+macro_rules! point_sampler {
+    ($point:ident) => {
+        pub(crate) struct PointSampler<'mesh> {
+            pub vertices: &'mesh [$point],
+            pub normals: &'mesh [$point],
+            pub sampled_points: &'mesh mut [$point],
+            pub sampled_normals: &'mesh mut [$point],
+        }
+    };
 }
 
+#[cfg(feature = "ffi")]
+point_sampler!(Vertex);
+
 #[cfg(not(feature = "ffi"))]
-pub(crate) struct PointSampler<'mesh> {
-    pub vertices: &'mesh [Vec3A],
-    pub normals: &'mesh [Vec3A],
-    pub sampled_points: &'mesh mut [Vec3A],
-    pub sampled_normals: &'mesh mut [Vec3A],
-}
+point_sampler!(Vec3A);
 
 impl Sampler for PointSampler<'_> {
     fn sample(&mut self, triangle: &Triangle, point_index: usize, rng: &mut Rng) {
