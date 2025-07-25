@@ -1,14 +1,27 @@
 use fastrand::Rng;
+#[cfg(not(feature = "ffi"))]
+use glam::Vec3A;
 
-use crate::{Triangle, Vertex};
+use crate::Triangle;
+#[cfg(feature = "ffi")]
+use crate::Vertex;
 
 use super::{sample_normal, sample_point, Sampler};
 
+#[cfg(feature = "ffi")]
 pub(crate) struct PointSampler<'mesh> {
     pub vertices: &'mesh [Vertex],
     pub normals: &'mesh [Vertex],
     pub sampled_points: &'mesh mut [Vertex],
     pub sampled_normals: &'mesh mut [Vertex],
+}
+
+#[cfg(not(feature = "ffi"))]
+pub(crate) struct PointSampler<'mesh> {
+    pub vertices: &'mesh [Vec3A],
+    pub normals: &'mesh [Vec3A],
+    pub sampled_points: &'mesh mut [Vec3A],
+    pub sampled_normals: &'mesh mut [Vec3A],
 }
 
 impl Sampler for PointSampler<'_> {

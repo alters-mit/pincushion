@@ -1,6 +1,9 @@
 use fastrand::Rng;
-
-use crate::{Area, Triangle, Vertex};
+#[cfg(not(feature = "ffi"))]
+use glam::Vec3A;
+#[cfg(feature = "ffi")]
+use crate::Vertex;
+use crate::{Area, Triangle};
 
 pub(crate) mod point_sampler;
 pub(crate) mod triangle_sampler;
@@ -24,7 +27,7 @@ pub(crate) trait Sampler {
         };
         // When sampling points, start at this index.
         let mut start_index_point = 0;
-        // When choosing trandom triangles, start at this index.
+        // When choosing random triangles, start at this index.
         let mut start_index_triangle = 0;
         // The accumulated triangle area. This is used to set the end indices.
         let mut total_accumulated_area = 0.0;
@@ -66,7 +69,8 @@ pub(crate) trait Sampler {
 }
 
 /// Get a point on a triangle.
-/// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/master/Assets/Script/VFXMeshBakingHelper.cs
+/// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/90714a3b61dbc731d9e8dc4c4ca93c2ba1da5156/Assets/Script/VFXMeshBakingHelper.cs#L167
+#[cfg(feature = "ffi")]
 pub(crate) fn sample_point(
     point: &mut Vertex,
     u: f32,
@@ -81,10 +85,33 @@ pub(crate) fn sample_point(
         .add(&vertices[triangle.c].mul(w));
 }
 
+/// Get a point on a triangle.
+/// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/90714a3b61dbc731d9e8dc4c4ca93c2ba1da5156/Assets/Script/VFXMeshBakingHelper.cs#L167
+#[cfg(not(feature = "ffi"))]
+pub(crate) fn sample_point(
+    point: &mut Vec3A,
+    u: f32,
+    v: f32,
+    w: f32,
+    triangle: &Triangle,
+    vertices: &[Vec3A],
+) {
+    *point = u * vertices[triangle.a] + v * vertices[triangle.b] + w * vertices[triangle.c];
+}
+
 /// Set the average normal of a triangle.
+#[cfg(feature = "ffi")]
 pub(crate) fn sample_normal(normal: &mut Vertex, triangle: &Triangle, normals: &[Vertex]) {
     *normal = normals[triangle.a]
         .add(&normals[triangle.b])
         .add(&normals[triangle.c])
         .div(3.)
+}
+
+/// Set the average normal of a triangle.
+#[cfg(not(feature = "ffi"))]
+pub(crate) fn sample_normal(normal: &mut Vec3A, triangle: &Triangle, normals: &[Vec3A]) {
+    *normal = (normals[triangle.a]
+        + normals[triangle.b]
+        + normals[triangle.c]) / 3.;
 }

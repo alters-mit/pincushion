@@ -1,6 +1,6 @@
-#[safer_ffi::derive_ReprC]
+#[cfg_attr(feature = "ffi", derive_ReprC)]
+#[cfg_attr(feature = "ffi", repr(C))]
 #[derive(Copy, Clone, Default)]
-#[repr(C)]
 pub struct Triangle {
     pub a: usize,
     pub b: usize,
