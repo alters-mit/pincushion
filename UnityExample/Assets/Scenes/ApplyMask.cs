@@ -10,7 +10,7 @@ public class ApplyMask : MonoBehaviour
     
     private void Start()
     {
-        slider = FindObjectOfType<Slider>();
+        slider = FindAnyObjectByType<Slider>();
         slider.onValueChanged.AddListener(Resample);
     }
 

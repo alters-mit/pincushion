@@ -7,3 +7,4 @@ Temp/
 Assets/Test.meta
 Assets/Test/
 *.csproj
+.vscode/

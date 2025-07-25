@@ -147,7 +147,7 @@ namespace Pincushion
         /// <summary>
         /// The random number generator.
         /// </summary>
-        private Random rng = new Random();
+        private Random rng = new();
         /// <summary>
         /// All PincushionSkinnedMeshRenderers in the scene.
         /// </summary>
@@ -159,7 +159,7 @@ namespace Pincushion
         /// <summary>
         /// The ignore meshes' layer.
         /// </summary>
-        private static int ignoreMeshesLayer;
+        private static int _ignoreMeshesLayer;
         /// <summary>
         /// Singleton instance. Never call this directly!
         /// </summary>
@@ -173,7 +173,7 @@ namespace Pincushion
             {
                 if (_instance == null)
                 {
-                    _instance = FindObjectOfType<PincushionManager>();
+                    _instance = FindAnyObjectByType<PincushionManager>();
                 }
                 return _instance;
             }
@@ -282,7 +282,7 @@ namespace Pincushion
                                     renderMode == PincushionRenderMode.OccludeBehind;
             bool showSampledMeshes = renderMode != PincushionRenderMode.DoNot;
             // Find the pincushions, including those that are inactive.
-            PincushionRenderer[] pincushions = FindObjectsOfType<PincushionRenderer>(true);
+            PincushionRenderer[] pincushions = FindObjectsByType<PincushionRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             for (int i = 0; i < pincushions.Length; i++)
             {
                 // Reseed.
@@ -305,7 +305,7 @@ namespace Pincushion
                     pincushions[i].ShowAll();
                 }
             }
-            pincushionSkinnedMeshRenderers = FindObjectsOfType<PincushionSkinnedMeshRenderer>(true);
+            pincushionSkinnedMeshRenderers = FindObjectsByType<PincushionSkinnedMeshRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         }
 
 
@@ -314,7 +314,7 @@ namespace Pincushion
         /// </summary>
         public void SetMask()
         {
-            PincushionRenderer[] pincushions = FindObjectsOfType<PincushionRenderer>(true);
+            PincushionRenderer[] pincushions = FindObjectsByType<PincushionRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             for (int i = 0; i < pincushions.Length; i++)
             {
                 if (applyMask)
@@ -349,13 +349,14 @@ namespace Pincushion
             // Set the layers. For now, we're using the names of some default layers.
             sourceMeshesLayer = LayerMask.NameToLayer(sourceMeshesLayerName);
             sampledMeshesLayer = LayerMask.NameToLayer(sampledMeshesLayerName);
-            ignoreMeshesLayer = LayerMask.NameToLayer(ignoreMeshesLayerName);
+            _ignoreMeshesLayer = LayerMask.NameToLayer(ignoreMeshesLayerName);
             sourceMeshesCullingMask = 1 << sourceMeshesLayer;
             sampledMeshesCullingMask = 1 << sampledMeshesLayer;
-            ignoreMeshesCullingMask = 1 << ignoreMeshesLayer;
+            ignoreMeshesCullingMask = 1 << _ignoreMeshesLayer;
 
             // Get all renderers in the source meshes layer and add Pincushion renderers.
-            foreach (Renderer r in FindObjectsOfType<Renderer>().Where(r => r.gameObject.layer == sourceMeshesLayer))
+            foreach (Renderer r in FindObjectsByType<Renderer>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                         .Where(r => r.gameObject.layer == sourceMeshesLayer))
             {
                 if (r is MeshRenderer)
                 {

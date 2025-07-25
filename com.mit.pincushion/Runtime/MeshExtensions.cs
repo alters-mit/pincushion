@@ -190,7 +190,7 @@ namespace Pincushion
                                 };
                                 Ffi.sample_triangles(&meshT, &areaT, &sampledTrianglesVec, seed);
                             }
-                            return Array.ConvertAll(sampledTriangles, uIntPtrToInt);
+                            return Array.ConvertAll(sampledTriangles, UintPtrToInt);
                         }
                     }
                 }
@@ -262,17 +262,17 @@ namespace Pincushion
         /// <param name="mesh">(this)</param>
         public static UIntPtr[] GetTriangles(this Mesh mesh)
         {
-            return Array.ConvertAll(mesh.triangles, intToUIntPtr);
+            return Array.ConvertAll(mesh.triangles, IntToUIntPtr);
         }
 
 
-        private static UIntPtr intToUIntPtr(int i)
+        private static UIntPtr IntToUIntPtr(int i)
         {
             return (UIntPtr)i;
         }
         
         
-        private static int uIntPtrToInt(UIntPtr i)
+        private static int UintPtrToInt(UIntPtr i)
         {
             return (int)i;
         }
