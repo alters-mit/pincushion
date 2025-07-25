@@ -2,6 +2,30 @@ use std::f32::consts::FRAC_1_SQRT_2;
 #[cfg(not(feature = "ffi"))]
 use glam::Vec3A;
 
+macro_rules! sample_points_inner {
+    ($self:ident, $vec:ident) => {
+            /// Sample points on a mesh, given a density of points.
+            /// Returns a vec of sampled points and a vec of the normals of those points.
+            ///
+            /// - `points_per_m`: The number of points per square meter.
+            /// - `scale`: The uniform scale of the mesh.
+            /// - `seed`: An optional random seed.
+           pub fn sample_points(
+        &$self,
+        points_per_m: f32,
+        scale: f32,
+        seed: Option<u64>,
+    ) -> (Vec<$vec>, Vec<$vec>) {
+        let area = $self.get_area(scale);
+        let num_points = get_num_points(area.total_area, points_per_m);
+        let mut sampled_points = vec![$vec::default(); num_points];
+        let mut sampled_normals = sampled_points.clone();
+        $self.set_sampled_points(&area, &mut sampled_points, &mut sampled_normals, seed);
+        
+        (sampled_points, sampled_normals)
+    }};
+}
+
 use crate::{get_num_points, sampler::{
     point_sampler::PointSampler, sample_normal, sample_point,
     triangle_sampler::TriangleSampler, Sampler,
@@ -11,7 +35,7 @@ use crate::Vertex;
 
 /// A mesh has vertices, triangles, and normals.
 #[cfg(feature = "ffi")]
-#[derive_ReprC]
+#[safer_ffi::derive_ReprC]
 #[repr(C)]
 pub struct Mesh {
     /// The (x, y, z) vertices of the mesh.
@@ -81,7 +105,7 @@ impl Mesh {
                 let p0 = self.vertices[triangle.a];
                 
                 #[cfg(feature = "ffi")]
-                let a = &self.vertices[triangle.b].sub(p0).cross(&self.vertices[triangle.c].sub(p0)).magnitude();
+                let a = half_scale * self.vertices[triangle.b].sub(&p0).cross(&self.vertices[triangle.c].sub(&p0)).magnitude();
                 #[cfg(not(feature = "ffi"))]
                 let a = half_scale * (self.vertices[triangle.b] - p0).cross(self.vertices[triangle.c] - p0).length();
                 
@@ -90,30 +114,12 @@ impl Mesh {
                 *ar = a;
             });
     }
+    
+    #[cfg(feature = "ffi")]
+    sample_points_inner!(self, Vertex);
 
-    /// Sample points on a mesh, given a density of points.
-    ///
-    /// - `points_per_m`: The number of points per square meter.
-    /// - `scale`: The uniform scale of the mesh.
-    /// - `seed`: An optional random seed.
-    ///
-    /// Returns: An vec of sampled points and a vec of normals for each point.
-    pub fn sample_points(
-        &self,
-        points_per_m: f32,
-        scale: f32,
-        seed: Option<u64>,
-    ) -> (Vec<Vec3A>, Vec<Vec3A>) {
-        let area = self.get_area(scale);
-        let num_points = get_num_points(area.total_area, points_per_m);
-        #[cfg(feature = "ffi")]
-        let mut sampled_points = vec![Vertex::default(); num_points];
-        #[cfg(not(feature = "ffi"))]
-        let mut sampled_points = vec![Vec3A::default(); num_points];
-        let mut sampled_normals = sampled_points.clone();
-        self.set_sampled_points(&area, &mut sampled_points, &mut sampled_normals, seed);
-        (sampled_points, sampled_normals)
-    }
+    #[cfg(not(feature = "ffi"))]
+    sample_points_inner!(self, Vec3A);
 
     /// Fill pre-allocated slices with sampled points and normals.
     ///
@@ -182,7 +188,7 @@ impl Mesh {
 
     /// Given pre-sampled triangles, sample vertices.
     /// The position of the vertex relative to the spatial area of the triangle is deterministic.
-    /// In constrast, points sampled via `sample_points` and `set_sampled_points` will be at a random point on a sampled triangle.
+    /// In contrast, points sampled via `sample_points` and `set_sampled_points` will be at a random point on a sampled triangle.
     ///
     /// - `sampled_mesh`: The mesh with the sampled points, triangles, and normals.
     pub fn set_presampled_mesh(&self, sampled_mesh: &mut Mesh) {
