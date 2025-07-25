@@ -1,6 +1,6 @@
 {
   "name": "com.mit.pincushion",
-  "version": "0.2.2",
+  "version": "0.1.0",
   "displayName": "Pincushion",
   "description": "Uniform mesh sampler",
   "unity": "2020.3",

@@ -1,6 +1,6 @@
 [package]
 name = "pincushion"
-version = "0.2.2"
+version = "0.1.0"
 edition = "2021"
 authors = ["Esther Alter <alters@mit.edu>"]
 description = "Uniformly sample points on a mesh. Includes FFI-safe functions for Unity/C# bindings."

@@ -1,7 +1,7 @@
 ### Features
 
+- `ffi` is enabled by default, and adds the FFI-safe functions that allow Pincushion to interface with C#. If you're planning to use Pincushion in a Rust-only project, you should remove this flag, as doing so will let Pincushion use SIMD-capable structs instead of FFI-safe structs. For example, removing the `ffi` features replaces `safer_ffi::Vec<Vertex>` with `Vec<glam::Vec3A>`.
 - `obj` adds a `Mesh::from_obj(path)` function to load a mesh from a .obj file.
-- `mask` adds a few FFI-safe functions to apply a "mask", showing/hiding some elements in an array. This is meant to be used in Unity and probably isn't useful elsewhere. 
 - `cs` should only be enabled when generating the C# code (see below).
 
 ### Create C# Native Bindings
@@ -18,16 +18,24 @@ The file will be at `../PincushionCs/NativeBindings.cs`
 
 ### Example
 
-To run the example: `cargo run --example suzanne --features obj`
+To run the example:
+
+```sh
+cargo run --example suzanne --features obj
+```
 
 ### Benchmarks
 
-To run the benchmark: `cargo bench benchmark --features obj`
+To run the benchmark:
+
+```sh
+cargo bench benchmark --features obj
+```
 
 Results:
 
-Sample points: 24μs
+Sample points: 9μs
 
-Sample triangles: 17μs
+Sample triangles: 5μs
 
-Transformed points: 0.8395μs
+Transformed points: 0.408762μs
