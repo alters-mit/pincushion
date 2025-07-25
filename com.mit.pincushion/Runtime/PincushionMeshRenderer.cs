@@ -43,13 +43,7 @@ namespace Pincushion
             return mesh.vertexCount;
         }
 
-
-        protected override string GetShaderName()
-        {
-            return "PincushionStatic";
-        }
-
-
+        
         protected override Mesh GetSampledMesh()
         {
             return pointsMeshFilter.mesh;

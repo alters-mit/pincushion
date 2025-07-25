@@ -125,9 +125,10 @@ namespace Pincushion
         }
 
 
-        protected override string GetShaderName()
+        protected override void SetMaterial()
         {
-            return "PincushionDynamic";
+            base.SetMaterial();
+            material.EnableKeyword("_PINCUSHION_SKINNED_MESH");
         }
 
 

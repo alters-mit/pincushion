@@ -140,7 +140,7 @@ namespace Pincushion
             points.name = "Sampled Mesh";
             
             // Set the material.
-            material = new Material(Shader.Find("Pincushion/" + GetShaderName()));
+            material = new Material(Shader.Find("Pincushion/Pincushion"));
         }
 
 
@@ -208,6 +208,15 @@ namespace Pincushion
 
 
         /// <summary>
+        /// Set the Pincushion material.
+        /// </summary>
+        protected virtual void SetMaterial()
+        {
+            material = new Material(Shader.Find("Pincushion/Pincushion"));
+        }
+
+
+        /// <summary>
         /// Returns the mesh of sampled points.
         /// </summary>
         /// <returns></returns>
@@ -219,13 +228,6 @@ namespace Pincushion
         /// </summary>
         /// <param name="pointsPerM">The number of points per square meter.</param>
         protected abstract int SampleMesh(float pointsPerM);
-
-
-        /// <summary>
-        /// Returns the name of the shader used to render the sampled points.
-        /// </summary>
-        /// <returns></returns>
-        protected abstract string GetShaderName();
         
 
         private void OnDestroy()
