@@ -5,20 +5,32 @@ use glam::Vec3A;
 use crate::{get_num_points, sampler::{
     point_sampler::PointSampler, sample_normal, sample_point,
     triangle_sampler::TriangleSampler, Sampler,
-}, Area, Points, Triangle, Triangles};
+}, Area, Triangle};
 #[cfg(feature = "ffi")]
 use crate::Vertex;
 
 /// A mesh has vertices, triangles, and normals.
-#[cfg_attr(feature = "ffi", derive_ReprC)]
-#[cfg_attr(feature = "ffi", repr(C))]
+#[cfg(feature = "ffi")]
+#[derive_ReprC]
+#[repr(C)]
 pub struct Mesh {
     /// The (x, y, z) vertices of the mesh.
-    pub vertices: Points,
+    pub vertices: safer_ffi::Vec<Vertex>,
     /// (x, y, z) groups of indices of `vertices`, comprising triangles.
-    pub triangles: Triangles,
+    pub triangles: safer_ffi::Vec<Triangle>,
     /// (x, y, z) normal directional vectors.
-    pub normals: Points,
+    pub normals: safer_ffi::Vec<Vertex>,
+}
+
+/// A mesh has vertices, triangles, and normals.
+#[cfg(not(feature = "ffi"))]
+pub struct Mesh {
+    /// The (x, y, z) vertices of the mesh.
+    pub vertices: Vec<Vec3A>,
+    /// (x, y, z) groups of indices of `vertices`, comprising triangles.
+    pub triangles: Vec<Triangle>,
+    /// (x, y, z) normal directional vectors.
+    pub normals: Vec<Vec3A>,
 }
 
 impl Mesh {
@@ -91,7 +103,7 @@ impl Mesh {
         points_per_m: f32,
         scale: f32,
         seed: Option<u64>,
-    ) -> (Points, Points) {
+    ) -> (Vec<Vec3A>, Vec<Vec3A>) {
         let area = self.get_area(scale);
         let num_points = get_num_points(area.total_area, points_per_m);
         #[cfg(feature = "ffi")]

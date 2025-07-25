@@ -16,6 +16,8 @@
 #![doc = include_str!("../../doc/readme_rs.md")]
 
 mod area;
+#[cfg(feature = "cs")]
+pub mod cs;
 mod mesh;
 mod sampler;
 mod triangle;
@@ -26,35 +28,16 @@ mod ffi;
 
 #[cfg(feature = "ffi")]
 use safer_ffi::ffi_export;
+#[cfg(not(feature = "ffi"))]
+pub use glam;
 
 pub use area::Area;
 pub use mesh::Mesh;
 pub use triangle::Triangle;
 #[cfg(feature = "ffi")]
 pub use ffi::*;
-
-#[cfg(feature = "cs")]
-pub mod cs;
-
-
 #[cfg(feature = "ffi")]
-mod vecs {
-    pub use crate::vertex::Vertex;
-    pub type Floats = safer_ffi::Vec<f32>;
-    pub type Points = safer_ffi::Vec<Vertex>;
-    pub type Triangles = safer_ffi::Vec<crate::Triangle>;
-}
-
-#[cfg(not(feature = "ffi"))]
-mod vecs {
-    pub use glam;
-    
-    pub type Floats = Vec<f32>;
-    pub type Points = Vec<glam::Vec3A>;
-    pub type Triangles = Vec<crate::Triangle>;
-}
-
-pub use vecs::*;
+pub use vertex::Vertex;
 
 /// - `total_area`: The total area of the triangles in square meters. See: `set_area(mesh, scale, area)`.
 /// - `points_per_m`: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
