@@ -6,6 +6,7 @@ authors = ["Esther Alter <alters@mit.edu>"]
 description = "Uniformly sample points on a mesh. Includes FFI-safe functions for Unity/C# bindings."
 
 [dependencies]
+embed-doc-image = "0.1.4"
 fastrand = "2.3.0"
 glam = "0.30.4"
 safer-ffi = { version = "0.1.13", optional = true }
