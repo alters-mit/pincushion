@@ -29,10 +29,10 @@ public unsafe partial class Ffi {
 
 public unsafe partial class Ffi {
     /// <summary>
-    /// - <c>total_area</c>: The total area of the triangles in square meters. See: <c>set_area(mesh, scale, area)</c>.
-    /// - <c>points_per_m</c>: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
+    /// Returns the number of points to be sampled.
     ///
-    /// Returns: The number of points to be sampled.
+    /// - <c>total_area</c>: The total area of the triangles in square meters. See: [<c>set_area</c>]
+    /// - <c>points_per_m</c>: The number of points per square meter. The mesh's unit of measurement is assumed to be meters.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     UIntPtr get_num_points (
@@ -119,17 +119,17 @@ public unsafe struct Vec_float_t {
 }
 
 /// <summary>
-/// The surface area of a mesh and of its triangles.
+/// The surface area of a mesh and of each of its triangles.
 /// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 32)]
 public unsafe struct Area_t {
     /// <summary>
-    /// The total surface area of the mesh in square meters.
+    /// The total surface area of the mesh.
     /// </summary>
     public float total_area;
 
     /// <summary>
-    /// The area of each triangle in the mesh in square meters.
+    /// The area of each triangle in the mesh.
     /// </summary>
     public Vec_float_t areas;
 }
@@ -137,11 +137,12 @@ public unsafe struct Area_t {
 public unsafe partial class Ffi {
     /// <summary>
     /// Sample random points on the mesh.
+    /// Requires the <c>ffi</c> feature.
     ///
-    /// - <c>mesh</c> The source mesh.
-    /// - <c>area</c>: The <c>Area</c> of the mesh.
+    /// - <c>mesh</c> The source [<c>Mesh</c>].
+    /// - <c>area</c>: The [<c>Area</c>] of the mesh.
     /// - <c>sampled_points</c>: (x, y, z) sampled points.
-    /// - <c>sampled_normals</c>: Normal directional vectors, one per sampled point. This must be the same size as <c>sampled_points</c>.
+    /// - <c>sampled_normals</c>: Normal directional vectors, one per sampled point. This must be the same length as <c>sampled_points</c>.
     /// - <c>seed</c>: A random seed used for sampling.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
@@ -156,11 +157,14 @@ public unsafe partial class Ffi {
 public unsafe partial class Ffi {
     /// <summary>
     /// Set the triangles at which points can be sampled.
-    /// This is useful for deformable meshes in situations where the positions will change but not the triangles we want to derive positions from.
+    /// This is useful for deformable meshes in situations where the positions will change but
+    /// not the triangles we want to derive positions from.
+    /// Requires the <c>ffi</c> feature.
     ///
-    /// - <c>mesh</c> The source mesh.
-    /// - <c>area</c>: The <c>Area</c> of the mesh.
-    /// - <c>sampled_triangles</c>: A pre-defined slice of triangles that will be set in this function. The size must match the number of points that will be sampled.
+    /// - <c>mesh</c> The source [<c>Mesh</c>].
+    /// - <c>area</c>: The [<c>Area</c>] of the mesh.
+    /// - <c>sampled_triangles</c>: A pre-defined slice of triangles that will be set in this function.
+    /// The length must equal number of points that will be sampled.
     /// - <c>seed</c>: A random seed used for sampling.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
@@ -173,9 +177,12 @@ public unsafe partial class Ffi {
 
 public unsafe partial class Ffi {
     /// <summary>
+    /// Set the values of an existing [<c>Area</c>].
+    /// Requires the <c>ffi</c> feature.
+    ///
     /// - <c>mesh</c> The source mesh.
     /// - <c>scale</c> The uniform scale of the mesh.
-    /// - <c>area</c>: The <c>Area</c> of the mesh.
+    /// - <c>area</c>: The [<c>Area</c>] of the mesh.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void set_area (
@@ -210,12 +217,12 @@ public unsafe struct Vec_uint32_t {
 
 public unsafe partial class Ffi {
     /// <summary>
-    /// Set a sampled points mask.
+    /// Convert <c>mask_indices</c> (see [<c>set_mask_indices</c>]) to <c>mask</c>, a vec of 0s and 1s.
+    /// Requires the <c>ffi</c> feature.
     ///
-    /// - <c>factor</c>: A value between 0 and 1. The number of "true" values will be <c>mask.len() * factor</c>.
-    /// - <c>mask_indices</c>: A precalculated array from <c>set_mask_indices</c>.
-    /// - <c>mask</c> The mask array. Values will be set to 0 or 1.
-    /// This is a vec of u32s because on the Unity side, Pincushion will send this data to the GPU, and the GPU wants 32bit types.
+    /// - <c>mask_indices</c> is a  randomly shuffled vec of indices of vertices.
+    /// - <c>factor</c> is a value between 0. and 1. The number of "true" values will be <c>mask.len() * factor</c>.
+    /// - <c>mask</c> is a vec of u32s because that's what the GPU wants. It must be the same length as <c>mask_indices</c>.
     /// </summary>
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void set_mask (
@@ -226,7 +233,10 @@ public unsafe partial class Ffi {
 
 public unsafe partial class Ffi {
     /// <summary>
-    /// In Pincushion, a "mask" can be used to filter out some pre-sampled points.
+    /// Apply a "mask" to filter out some sampled points.
+    /// Requires the <c>ffi</c> feature.
+    ///
+    /// <c>mask_indices</c> must be the same length as the number of sampled points.
     /// To do this in a way that is visually appealing, <c>set_mask_indices</c> is called to:
     ///
     /// - Get the indices of each point (i.e. <c>[0, 1, 2, ...]</c>)
@@ -241,14 +251,15 @@ public unsafe partial class Ffi {
 
 public unsafe partial class Ffi {
     /// <summary>
-    /// Apply a transform matrix to transform sampled points.
-    /// This is meant to be used in a Unity context to transform a mesh by a position and rotation.
+    /// Apply a transform matrix to transform sampled points (modify its position and rotation).
+    /// Requires the <c>ffi</c> feature.
     ///
-    /// Unity *does* have two ways to do this: <c>Transform.TransformPoint(Vector3)</c> and <c>Transform.TransformPoints(Span<Vector3>)</c>.
-    /// <c>TransformPoint</c> is relatively slow. <c>TransformPoints</c> isn't available in the version of Unity I'm using for the project that Pincushion was originally intended for.
-    /// That said: Unity's <c>TransformPoints</c> is *probably* slower than Pincushion's <c>transform_points</c>.
-    /// This is because Unity seems to cast each float (f32) to a double (f64) to avoid imprecision problems.
-    /// In Pincushion, only f32s are used, the assumption being that <c>points</c> isn't going to be used repeatedly so there won't be accumulated error.
+    /// Unity has two built-in ways to do the same operation, but they are slower than Pincushion:
+    ///
+    /// - <c>Transform.TransformPoint(Vector3)</c> is definitely slower because it's not a bulk operation.
+    /// - <c>Transform.TransformPoints(Span<Vector3>)</c> is *probably* slower because it casts each float (f32) to a double (f64) and back again.
+    /// This function doesn't perform that cast because it assumes that you won't continuously do math on its output,
+    /// and therefore there's no need to worry about precision problems.
     ///
     /// - <c>matrix</c>: A 4x4 transform matrix. The length is assumed to always be 16.
     /// - <c>points</c>: The points that will be transformed.
