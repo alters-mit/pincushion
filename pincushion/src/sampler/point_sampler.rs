@@ -29,7 +29,6 @@ impl PointSampler<'_> {
     /// Get a point on a triangle.
     /// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/90714a3b61dbc731d9e8dc4c4ca93c2ba1da5156/Assets/Script/VFXMeshBakingHelper.cs#L167
     #[cfg(feature = "ffi")]
-    #[inline]
     fn sample_point(&self, u: f32, v: f32, w: f32, triangle: &Triangle) -> Vertex {
         self.vertices[triangle.a]
             .mul(u)
@@ -40,7 +39,6 @@ impl PointSampler<'_> {
     /// Get a point on a triangle.
     /// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/90714a3b61dbc731d9e8dc4c4ca93c2ba1da5156/Assets/Script/VFXMeshBakingHelper.cs#L167
     #[cfg(not(feature = "ffi"))]
-    #[inline]
     fn sample_point(&self, u: f32, v: f32, w: f32, triangle: &Triangle) -> Vec3A {
         u * self.vertices[triangle.a]
             + v * self.vertices[triangle.b]
@@ -49,7 +47,6 @@ impl PointSampler<'_> {
 
     /// Set the average normal of a triangle.
     #[cfg(feature = "ffi")]
-    #[inline]
     fn sample_normal(&self, triangle: &Triangle) -> Vertex {
         self.normals[triangle.a]
             .add(&self.normals[triangle.b])
@@ -59,7 +56,6 @@ impl PointSampler<'_> {
 
     /// Set the average normal of a triangle.
     #[cfg(not(feature = "ffi"))]
-    #[inline]
     fn sample_normal(&self, triangle: &Triangle) -> Vec3A {
         (self.normals[triangle.a] + self.normals[triangle.b] + self.normals[triangle.c]) / 3.
     }
