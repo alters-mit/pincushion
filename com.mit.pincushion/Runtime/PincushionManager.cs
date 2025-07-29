@@ -195,7 +195,17 @@ namespace Pincushion
             }
             
             // Set global shader properties.
-            SetShader();
+            Shader.SetGlobalColor("_PincushionColor", color);
+            Shader.SetGlobalTexture("_PincushionMainTex", texture);
+            Shader.SetGlobalFloat("_PincushionPointSize", pointRadius);
+            if (constantScaling)
+            {
+                Shader.EnableKeyword(CONSTANT_SCALING);
+            }
+            else
+            {
+                Shader.DisableKeyword(CONSTANT_SCALING);
+            }
             
             // Set the background.
             SetPincushionBackground();
@@ -375,26 +385,6 @@ namespace Pincushion
             // Initialize Pincushion.
             Set();
         }
-
-        
-        /// <summary>
-        /// Set the global shader values.
-        /// </summary>
-        private void SetShader()
-        {
-            Shader.SetGlobalColor("_PincushionColor", color);
-            Shader.SetGlobalTexture("_PincushionMainTex", texture);
-            Shader.SetGlobalFloat("_PincushionPointSize", pointRadius);
-            if (constantScaling)
-            {
-                Shader.EnableKeyword(CONSTANT_SCALING);
-            }
-            else
-            {
-                Shader.DisableKeyword(CONSTANT_SCALING);
-            }
-        }
-
 
         /// <summary>
         /// Set a solid background color.
