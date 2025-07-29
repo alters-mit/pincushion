@@ -84,9 +84,9 @@ Shader "Pincushion/Pincushion" {
 			static const float v = 0.5 * t;
 			static const float w = 1 - u - v;
 
-			Buffer<float3> _PincushionSourceVertices;
-			Buffer<float3> _PincushionSourceNormals;
-			Buffer<int3> _PincushionSampledTriangles;
+			StructuredBuffer<float3> _PincushionSourceVertices;
+			StructuredBuffer<float3> _PincushionSourceNormals;
+			StructuredBuffer<int3> _PincushionSampledTriangles;
 
 			inline float4 get_vertex(in appdata i, in uint vid)
 			{
@@ -202,7 +202,12 @@ Shader "Pincushion/Pincushion" {
 			{
 				float3 right = normalize(UNITY_MATRIX_IT_MV[0].xyz);
 				float3 up = normalize(UNITY_MATRIX_IT_MV[1].xyz);
+
+				#if _PINCUSHION_CONSTANT_SCALING || _PINCUSHION_OCCLUDE_BEHIND
+				
 				float distanceToCamera = distance(mul(unity_ObjectToWorld, p[0].vertex), _WorldSpaceCameraPos);
+
+				#endif
 
 				#if _PINCUSHION_OCCLUDE_BEHIND
 

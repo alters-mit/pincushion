@@ -208,15 +208,6 @@ namespace Pincushion
 
 
         /// <summary>
-        /// Set the Pincushion material.
-        /// </summary>
-        protected virtual void SetMaterial()
-        {
-            material = new Material(Shader.Find("Pincushion/Pincushion"));
-        }
-
-
-        /// <summary>
         /// Returns the mesh of sampled points.
         /// </summary>
         /// <returns></returns>

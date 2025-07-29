@@ -88,12 +88,13 @@ namespace Pincushion
             sourceMesh = new Mesh();
             sampledMeshFilter = points.AddComponent<MeshFilter>();
             sampledMeshRenderer = points.AddComponent<MeshRenderer>();
+            
+            material.EnableKeyword("_PINCUSHION_SKINNED_MESH");
         }
 
 
         protected override int SampleMesh(float pointsPerM)
         {
-            sampledMeshRenderer.sharedMaterial = material;
             // Sample the triangles.
             Mesh skinnedMesh = skinnedMeshRenderer.sharedMesh;
             UIntPtr[] sourceTriangles = skinnedMesh.GetTriangles();
@@ -120,15 +121,10 @@ namespace Pincushion
             mesh.triangles = new int[sampledTriangles.Length];
             mesh.SetPointTopology();
             sampledMeshFilter.mesh = mesh;
+            
+            sampledMeshRenderer.sharedMaterial = material;
 
             return mesh.vertexCount;
-        }
-
-
-        protected override void SetMaterial()
-        {
-            base.SetMaterial();
-            material.EnableKeyword("_PINCUSHION_SKINNED_MESH");
         }
 
 
@@ -146,7 +142,7 @@ namespace Pincushion
                 DoUpdate(instance.renderMode);
             }
         }
-
+        
 
         private void OnDestroy()
         {
