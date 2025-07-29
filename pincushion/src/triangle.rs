@@ -7,3 +7,13 @@ pub struct Triangle {
     pub b: usize,
     pub c: usize,
 }
+
+impl From<&[u32]> for Triangle {
+    fn from(value: &[u32]) -> Self {
+        Self {
+            a: value[0] as usize,
+            b: value[1] as usize,
+            c: value[2] as usize,
+        }
+    }
+}

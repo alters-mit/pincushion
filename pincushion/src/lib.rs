@@ -3,7 +3,7 @@
 #![cfg_attr(all(), doc = embed_doc_image::embed_image!("suzanne", "../doc/images/pincushion_banner.png"))]
 //!
 //! ![suzanne]
-//! 
+//!
 #![doc = include_str!("../../doc/overview.md")]
 //!
 //! Pincushion can be used as a typical Rust crate or as a native library in Unity.

@@ -71,3 +71,13 @@ impl Vertex {
         0.5 * &p1.sub(p0).cross(&p2.sub(p0)).magnitude()
     }
 }
+
+impl From<&[f32]> for Vertex {
+    fn from(value: &[f32]) -> Self {
+        Self {
+            x: value[0],
+            y: value[1],
+            z: value[2],
+        }
+    }
+}

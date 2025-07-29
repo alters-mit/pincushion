@@ -1,6 +1,12 @@
+#[cfg(feature = "ffi")]
+use crate::Vertex;
+use crate::{
+    get_num_points,
+    sampler::{point_sampler::PointSampler, triangle_sampler::TriangleSampler, Sampler},
+    Area, Triangle,
+};
 #[cfg(not(feature = "ffi"))]
 use glam::Vec3A;
-use std::f32::consts::FRAC_1_SQRT_2;
 
 macro_rules! sample_points_inner {
     ($self:ident, $vec:ident) => {
@@ -25,17 +31,6 @@ macro_rules! sample_points_inner {
         (sampled_points, sampled_normals)
     }};
 }
-
-#[cfg(feature = "ffi")]
-use crate::Vertex;
-use crate::{
-    get_num_points,
-    sampler::{
-        point_sampler::PointSampler, sample_normal, sample_point,
-        triangle_sampler::TriangleSampler, Sampler,
-    },
-    Area, Triangle,
-};
 
 /// A mesh has vertices, triangles, and normals.
 #[cfg(feature = "ffi")]
@@ -194,32 +189,6 @@ impl Mesh {
         sampler.sample_points(area, num_points, &self.triangles, seed);
     }
 
-    /// Given pre-sampled triangles, sample vertices.
-    /// The position of the vertex relative to the spatial area of the triangle is deterministic.
-    /// In contrast, points sampled via [`Self::sample_points`] and [`Self::set_sampled_points`] will be at a random point on a sampled triangle.
-    ///
-    /// - `sampled_mesh`: The mesh with the sampled points, triangles, and normals.
-    pub fn set_presampled_mesh(&self, sampled_mesh: &mut Mesh) {
-        // Hardcode the U, V, W parameters.
-        const U: f32 = 1. - FRAC_1_SQRT_2;
-        const V: f32 = 0.5 * FRAC_1_SQRT_2;
-        const W: f32 = 1. - U - V;
-
-        sampled_mesh
-            .vertices
-            .iter_mut()
-            .zip(
-                sampled_mesh
-                    .triangles
-                    .iter()
-                    .zip(sampled_mesh.normals.iter_mut()),
-            )
-            .for_each(|(point, (triangle, normal))| {
-                sample_point(point, U, V, W, triangle, &self.vertices);
-                sample_normal(normal, triangle, &self.normals);
-            });
-    }
-
     /// Load a .obj file.
     /// Returns the vertices, the triangles, and the normals.
     #[cfg(feature = "obj")]
@@ -227,34 +196,37 @@ impl Mesh {
     where
         P: AsRef<std::path::Path> + std::fmt::Debug,
     {
+        #[cfg(feature = "ffi")]
+        type Vector3 = Vertex;
+        #[cfg(not(feature = "ffi"))]
+        type Vector3 = Vec3A;
+
+        #[cfg(not(feature = "ffi"))]
+        fn from_slice(vertex: &[f32]) -> Vec3A {
+            Vec3A::from_slice(vertex)
+        }
+
+        #[cfg(feature = "ffi")]
+        fn from_slice(vertex: &[f32]) -> Vertex {
+            Vertex::from(vertex)
+        }
+
         let obj = &tobj::load_obj(path, &tobj::GPU_LOAD_OPTIONS).unwrap().0[0].mesh;
         let vertices = obj
             .positions
             .chunks_exact(3)
-            .map(|vertex| Vertex {
-                x: vertex[0],
-                y: vertex[1],
-                z: vertex[2],
-            })
-            .collect::<Vec<Vertex>>();
+            .map(from_slice)
+            .collect::<Vec<Vector3>>();
         let triangles = obj
             .indices
             .chunks_exact(3)
-            .map(|triangle| Triangle {
-                a: triangle[0] as usize,
-                b: triangle[1] as usize,
-                c: triangle[2] as usize,
-            })
+            .map(Triangle::from)
             .collect::<Vec<Triangle>>();
         let normals = obj
             .normals
             .chunks_exact(3)
-            .map(|normal| Vertex {
-                x: normal[0],
-                y: normal[1],
-                z: normal[2],
-            })
-            .collect::<Vec<Vertex>>();
+            .map(from_slice)
+            .collect::<Vec<Vector3>>();
         Self::new(vertices, triangles, normals)
     }
 }

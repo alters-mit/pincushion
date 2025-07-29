@@ -1,12 +1,8 @@
 pub(crate) mod point_sampler;
 pub(crate) mod triangle_sampler;
 
-#[cfg(feature = "ffi")]
-use crate::Vertex;
 use crate::{Area, Triangle};
 use fastrand::Rng;
-#[cfg(not(feature = "ffi"))]
-use glam::Vec3A;
 
 /// A trait used to sample points or triangles.
 pub(crate) trait Sampler {
@@ -66,50 +62,4 @@ pub(crate) trait Sampler {
             }
         }
     }
-}
-
-/// Get a point on a triangle.
-/// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/90714a3b61dbc731d9e8dc4c4ca93c2ba1da5156/Assets/Script/VFXMeshBakingHelper.cs#L167
-#[cfg(feature = "ffi")]
-pub(crate) fn sample_point(
-    point: &mut Vertex,
-    u: f32,
-    v: f32,
-    w: f32,
-    triangle: &Triangle,
-    vertices: &[Vertex],
-) {
-    *point = vertices[triangle.a]
-        .mul(u)
-        .add(&vertices[triangle.b].mul(v))
-        .add(&vertices[triangle.c].mul(w));
-}
-
-/// Get a point on a triangle.
-/// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/90714a3b61dbc731d9e8dc4c4ca93c2ba1da5156/Assets/Script/VFXMeshBakingHelper.cs#L167
-#[cfg(not(feature = "ffi"))]
-pub(crate) fn sample_point(
-    point: &mut Vec3A,
-    u: f32,
-    v: f32,
-    w: f32,
-    triangle: &Triangle,
-    vertices: &[Vec3A],
-) {
-    *point = u * vertices[triangle.a] + v * vertices[triangle.b] + w * vertices[triangle.c];
-}
-
-/// Set the average normal of a triangle.
-#[cfg(feature = "ffi")]
-pub(crate) fn sample_normal(normal: &mut Vertex, triangle: &Triangle, normals: &[Vertex]) {
-    *normal = normals[triangle.a]
-        .add(&normals[triangle.b])
-        .add(&normals[triangle.c])
-        .div(3.)
-}
-
-/// Set the average normal of a triangle.
-#[cfg(not(feature = "ffi"))]
-pub(crate) fn sample_normal(normal: &mut Vec3A, triangle: &Triangle, normals: &[Vec3A]) {
-    *normal = (normals[triangle.a] + normals[triangle.b] + normals[triangle.c]) / 3.;
 }
