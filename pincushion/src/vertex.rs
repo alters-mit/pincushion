@@ -32,12 +32,6 @@ impl Vertex {
         }
     }
 
-    pub fn mul_mut(&mut self, value: f32) {
-        self.x *= value;
-        self.y *= value;
-        self.z *= value;
-    }
-
     pub fn div(&self, value: f32) -> Self {
         Self {
             x: self.x / value,
@@ -60,15 +54,6 @@ impl Vertex {
 
     pub fn magnitude(&self) -> f32 {
         f32::sqrt(self.dot(self))
-    }
-
-    /// Returns the area of a triangle.
-    /// Source: <https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/90714a3b61dbc731d9e8dc4c4ca93c2ba1da5156/Assets/Script/VFXMeshBakingHelper.cs#L202>
-    pub fn get_triangle_area(p0: &Self, p1: &Self, p2: &Self) -> f32
-    where
-        Self: Sized,
-    {
-        0.5 * &p1.sub(p0).cross(&p2.sub(p0)).magnitude()
     }
 }
 
