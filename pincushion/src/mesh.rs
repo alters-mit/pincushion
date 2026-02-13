@@ -1,9 +1,8 @@
 #[cfg(feature = "ffi")]
 use crate::Vertex;
 use crate::{
-    get_num_points,
-    sampler::{point_sampler::PointSampler, triangle_sampler::TriangleSampler, Sampler},
-    Area, Triangle,
+    Area, Triangle, get_num_points,
+    sampler::{Sampler, point_sampler::PointSampler, triangle_sampler::TriangleSampler},
 };
 #[cfg(not(feature = "ffi"))]
 use glam::Vec3A;

@@ -1,12 +1,10 @@
-use safer_ffi::headers::{builder, Language::CSharp};
+use safer_ffi::headers::{Language::CSharp, builder};
 
 /// Generate native bindings.
 pub fn generate() {
     builder()
         .with_language(CSharp)
-        .to_file(&format!(
-            "../com.mit.pincushion/Runtime/PincushionNativeBindings.cs"
-        ))
+        .to_file("../com.mit.pincushion/Runtime/PincushionNativeBindings.cs")
         .unwrap()
         .generate()
         .unwrap();

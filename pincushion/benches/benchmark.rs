@@ -3,7 +3,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use pincushion::{transform_points, Mesh};
+use pincushion::{Mesh, transform_points};
 
 pub fn main() {
     let mesh = Mesh::from_obj("tests/suzanne.obj");
