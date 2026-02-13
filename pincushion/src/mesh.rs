@@ -200,21 +200,11 @@ impl Mesh {
         #[cfg(not(feature = "ffi"))]
         type Vector3 = Vec3A;
 
-        #[cfg(not(feature = "ffi"))]
-        fn from_slice(vertex: &[f32]) -> Vec3A {
-            Vec3A::from_slice(vertex)
-        }
-
-        #[cfg(feature = "ffi")]
-        fn from_slice(vertex: &[f32]) -> Vertex {
-            Vertex::from(vertex)
-        }
-
         let obj = &tobj::load_obj(path, &tobj::GPU_LOAD_OPTIONS).unwrap().0[0].mesh;
         let vertices = obj
             .positions
             .chunks_exact(3)
-            .map(from_slice)
+            .map(Vector3::from_slice)
             .collect::<Vec<Vector3>>();
         let triangles = obj
             .indices
@@ -224,7 +214,7 @@ impl Mesh {
         let normals = obj
             .normals
             .chunks_exact(3)
-            .map(from_slice)
+            .map(Vector3::from_slice)
             .collect::<Vec<Vector3>>();
         Self::new(vertices, triangles, normals)
     }
