@@ -32,6 +32,8 @@ mod vertex;
 
 #[cfg(not(feature = "ffi"))]
 pub use glam;
+#[cfg(not(feature = "ffi"))]
+use glam::{Mat4, Vec3A};
 #[cfg(feature = "ffi")]
 use safer_ffi::ffi_export;
 
@@ -50,4 +52,15 @@ pub use vertex::Vertex;
 #[cfg_attr(feature = "ffi", ffi_export)]
 pub fn get_num_points(total_area: f32, points_per_m: f32) -> usize {
     (total_area * points_per_m) as usize
+}
+
+#[cfg(not(feature = "ffi"))]
+/// Apply a transform matrix to transform sampled points (modify its position and rotation).
+///
+/// - `matrix`: A 4x4 transform matrix.
+/// - `points`: The points that will be transformed.
+pub fn transform_points(matrix: &Mat4, points: &mut [Vec3A]) {
+    points
+        .iter_mut()
+        .for_each(|p| *p = matrix.transform_point3a(*p));
 }

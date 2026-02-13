@@ -24,14 +24,16 @@ To run the example:
 cargo run --example suzanne --features obj
 ```
 
-### Benchmarks
+### Benchmark
 
-To run the benchmark:
+To benchmark:
 
 ```sh
-cargo bench benchmark --features obj
+cargo bench --features obj
 ```
 
-Results:
+This will benchmark `pincushion`  with the `ffi` flag enabled. If the `ffi` flag is disabled, `pincushion` runs slightly faster. To benchmark without the `ffi` feature:
 
-@ BENCHMARKS @
+```sh
+cargo bench --no-default-features --features obj
+```

@@ -11,7 +11,6 @@ if __name__ == '__main__':
                             Path('overview.md').read_text())
     # Create the Rust doc.
     readme_rs = Path('readme_rs_template.md').read_text()
-    readme_rs = readme_rs.replace('@ BENCHMARKS @', Path('benchmark.txt').read_text())
     Path('readme_rs.md').write_text(readme_rs)
     # Add the Rust doc to the main README.
     readme = readme.replace('@ RUST_DOC @', readme_rs)

@@ -14,6 +14,7 @@ tobj = { version = "4.0.3", optional = true }
 
 [dev-dependencies]
 macroquad = "0.4.14"
+criterion = "0.8.2"
 
 [lib]
 crate-type = ["lib", "cdylib"]
@@ -40,6 +41,6 @@ path = "examples/readme.rs"
 required-features = ["obj"]
 
 [[bench]]
-name = "benchmark"
+name = "bench"
 harness = false
 required-features = ["obj"]

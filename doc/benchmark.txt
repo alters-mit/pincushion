@@ -1,5 +1,0 @@
-Sample points: 9μs
-
-Sample triangles: 5μs
-
-Transformed points: 0.408762μs

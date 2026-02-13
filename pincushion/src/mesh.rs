@@ -9,26 +9,26 @@ use glam::Vec3A;
 
 macro_rules! sample_points_inner {
     ($self:ident, $vec:ident) => {
-            /// Sample points on a mesh, given a density of points.
-            /// Returns a vec of sampled points and a vec of the normals of those points.
-            ///
-            /// - `points_per_m`: The number of points per square meter.
-            /// - `scale`: The uniform scale of the mesh.
-            /// - `seed`: An optional random seed.
-           pub fn sample_points(
-        &$self,
-        points_per_m: f32,
-        scale: f32,
-        seed: Option<u64>,
-    ) -> (Vec<$vec>, Vec<$vec>) {
-        let area = $self.get_area(scale);
-        let num_points = get_num_points(area.total_area, points_per_m);
-        let mut sampled_points = vec![$vec::default(); num_points];
-        let mut sampled_normals = sampled_points.clone();
-        $self.set_sampled_points(&area, &mut sampled_points, &mut sampled_normals, seed);
+        /// Sample points on a mesh, given a density of points.
+        /// Returns a vec of sampled points and a vec of the normals of those points.
+        ///
+        /// - `points_per_m`: The number of points per square meter.
+        /// - `scale`: The uniform scale of the mesh.
+        /// - `seed`: An optional random seed.
+        pub fn sample_points(
+            &$self,
+            points_per_m: f32,
+            scale: f32,
+            seed: Option<u64>,
+        ) -> (Vec<$vec>, Vec<$vec>) {
+            let area = $self.get_area(scale);
+            let num_points = get_num_points(area.total_area, points_per_m);
+            let mut sampled_points = vec![$vec::default(); num_points];
+            let mut sampled_normals = sampled_points.clone();
+            $self.set_sampled_points(&area, &mut sampled_points, &mut sampled_normals, seed);
 
-        (sampled_points, sampled_normals)
-    }};
+            (sampled_points, sampled_normals)
+        }};
 }
 
 /// A mesh has vertices, triangles, and normals.

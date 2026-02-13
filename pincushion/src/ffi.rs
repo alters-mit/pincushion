@@ -86,7 +86,6 @@ pub fn set_mask(factor: f32, mask_indices: &safer_ffi::Vec<usize>, mask: &mut sa
 }
 
 /// Apply a transform matrix to transform sampled points (modify its position and rotation).
-/// Requires the `ffi` feature.
 ///
 /// Unity has two built-in ways to do the same operation, but they are slower than Pincushion:
 ///
