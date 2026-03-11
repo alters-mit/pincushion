@@ -4,73 +4,46 @@ use crate::{
     Area, Triangle, get_num_points,
     sampler::{Sampler, point_sampler::PointSampler, triangle_sampler::TriangleSampler},
 };
-#[cfg(not(feature = "ffi"))]
-use glam::Vec3A;
 
-macro_rules! sample_points_inner {
-    ($self:ident, $vec:ident) => {
-        /// Sample points on a mesh, given a density of points.
-        /// Returns a vec of sampled points and a vec of the normals of those points.
-        ///
-        /// - `points_per_m`: The number of points per square meter.
-        /// - `scale`: The uniform scale of the mesh.
-        /// - `seed`: An optional random seed.
-        pub fn sample_points(
-            &$self,
-            points_per_m: f32,
-            scale: f32,
-            seed: Option<u64>,
-        ) -> (Vec<$vec>, Vec<$vec>) {
-            let area = $self.get_area(scale);
-            let num_points = get_num_points(area.total_area, points_per_m);
-            let mut sampled_points = vec![$vec::default(); num_points];
-            let mut sampled_normals = sampled_points.clone();
-            $self.set_sampled_points(&area, &mut sampled_points, &mut sampled_normals, seed);
-
-            (sampled_points, sampled_normals)
-        }};
-}
-
-/// A mesh has vertices, triangles, and normals.
 #[cfg(feature = "ffi")]
-#[safer_ffi::derive_ReprC]
-#[repr(C)]
-pub struct Mesh {
-    /// The (x, y, z) vertices of the mesh.
-    pub vertices: safer_ffi::Vec<Vec3>,
-    /// (x, y, z) groups of indices of `vertices`, comprising triangles.
-    pub triangles: safer_ffi::Vec<Triangle>,
-    /// (x, y, z) normal directional vectors.
-    pub normals: safer_ffi::Vec<Vec3>,
-}
+type Vector3 = Vec3;
+#[cfg(not(feature = "ffi"))]
+type Vector3 = glam::Vec3A;
+
+#[cfg(feature = "ffi")]
+type Vek<T> = safer_ffi::Vec<T>;
+#[cfg(not(feature = "ffi"))]
+type Vek<T> = Vec<T>;
 
 /// A mesh has vertices, triangles, and normals.
-#[cfg(not(feature = "ffi"))]
+#[cfg_attr(feature = "ffi", safer_ffi::derive_ReprC)]
+#[cfg_attr(feature = "ffi", repr(C))]
 pub struct Mesh {
     /// The (x, y, z) vertices of the mesh.
-    pub vertices: Vec<Vec3A>,
+    pub vertices: Vek<Vector3>,
     /// (x, y, z) groups of indices of `vertices`, comprising triangles.
-    pub triangles: Vec<Triangle>,
+    pub triangles: Vek<Triangle>,
     /// (x, y, z) normal directional vectors.
-    pub normals: Vec<Vec3A>,
+    pub normals: Vek<Vector3>,
 }
 
 impl Mesh {
-    #[cfg(feature = "ffi")]
-    pub fn new(vertices: Vec<Vec3>, triangles: Vec<Triangle>, normals: Vec<Vec3>) -> Self {
-        Self {
-            vertices: vertices.into(),
-            triangles: triangles.into(),
-            normals: normals.into(),
+    pub fn new(vertices: Vec<Vector3>, triangles: Vec<Triangle>, normals: Vec<Vector3>) -> Self {
+        #[cfg(feature = "ffi")]
+        {
+            Self {
+                vertices: vertices.into(),
+                triangles: triangles.into(),
+                normals: normals.into(),
+            }
         }
-    }
-
-    #[cfg(not(feature = "ffi"))]
-    pub fn new(vertices: Vec<Vec3A>, triangles: Vec<Triangle>, normals: Vec<Vec3A>) -> Self {
-        Self {
-            vertices,
-            triangles,
-            normals,
+        #[cfg(not(feature = "ffi"))]
+        {
+            Self {
+                vertices,
+                triangles,
+                normals,
+            }
         }
     }
 
@@ -123,11 +96,26 @@ impl Mesh {
             });
     }
 
-    #[cfg(feature = "ffi")]
-    sample_points_inner!(self, Vec3);
+    /// Sample points on a mesh, given a density of points.
+    /// Returns a vec of sampled points and a vec of the normals of those points.
+    ///
+    /// - `points_per_m`: The number of points per square meter.
+    /// - `scale`: The uniform scale of the mesh.
+    /// - `seed`: An optional random seed.
+    pub fn sample_points(
+        &self,
+        points_per_m: f32,
+        scale: f32,
+        seed: Option<u64>,
+    ) -> (Vec<Vector3>, Vec<Vector3>) {
+        let area = self.get_area(scale);
+        let num_points = get_num_points(area.total_area, points_per_m);
+        let mut sampled_points = vec![Vector3::ZERO; num_points];
+        let mut sampled_normals = sampled_points.clone();
+        self.set_sampled_points(&area, &mut sampled_points, &mut sampled_normals, seed);
 
-    #[cfg(not(feature = "ffi"))]
-    sample_points_inner!(self, Vec3A);
+        (sampled_points, sampled_normals)
+    }
 
     /// Fill pre-allocated slices with sampled points and normals.
     ///
@@ -138,10 +126,8 @@ impl Mesh {
     pub fn set_sampled_points(
         &self,
         area: &Area,
-        #[cfg(feature = "ffi")] sampled_points: &mut [Vec3],
-        #[cfg(feature = "ffi")] sampled_normals: &mut [Vec3],
-        #[cfg(not(feature = "ffi"))] sampled_points: &mut [Vec3A],
-        #[cfg(not(feature = "ffi"))] sampled_normals: &mut [Vec3A],
+        sampled_points: &mut [Vector3],
+        sampled_normals: &mut [Vector3],
         seed: Option<u64>,
     ) {
         let num_points = sampled_points.len();
@@ -195,11 +181,6 @@ impl Mesh {
     where
         P: AsRef<std::path::Path> + std::fmt::Debug,
     {
-        #[cfg(feature = "ffi")]
-        type Vector3 = Vec3;
-        #[cfg(not(feature = "ffi"))]
-        type Vector3 = Vec3A;
-
         let obj = &tobj::load_obj(path, &tobj::GPU_LOAD_OPTIONS).unwrap().0[0].mesh;
         let vertices = obj
             .positions

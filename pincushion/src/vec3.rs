@@ -9,6 +9,12 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
+    pub const ZERO: Self = Self {
+        x: 0.,
+        y: 0.,
+        z: 0.,
+    };
+
     pub const fn from_slice(slice: &[f32]) -> Self {
         Self {
             x: slice[0],
