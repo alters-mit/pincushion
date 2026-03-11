@@ -45,6 +45,15 @@ pub use triangle::Triangle;
 #[cfg(feature = "ffi")]
 pub use vec3::Vec3;
 
+#[cfg(feature = "ffi")]
+type Vector3 = Vec3;
+#[cfg(not(feature = "ffi"))]
+type Vector3 = glam::Vec3A;
+#[cfg(feature = "ffi")]
+type Vek<T> = safer_ffi::Vec<T>;
+#[cfg(not(feature = "ffi"))]
+type Vek<T> = Vec<T>;
+
 /// Returns the number of points to be sampled.
 ///
 /// - `total_area`: The total area of the triangles in square meters. See: [`set_area`]

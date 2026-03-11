@@ -1,29 +1,19 @@
 use fastrand::Rng;
 
-use crate::Triangle;
 #[cfg(feature = "ffi")]
 use crate::Vec3;
+use crate::{Triangle, Vector3};
 #[cfg(not(feature = "ffi"))]
 use glam::Vec3A;
 
 use super::Sampler;
 
-macro_rules! point_sampler {
-    ($point:ident) => {
-        pub(crate) struct PointSampler<'mesh> {
-            pub vertices: &'mesh [$point],
-            pub normals: &'mesh [$point],
-            pub sampled_points: &'mesh mut [$point],
-            pub sampled_normals: &'mesh mut [$point],
-        }
-    };
+pub(crate) struct PointSampler<'mesh> {
+    pub vertices: &'mesh [Vector3],
+    pub normals: &'mesh [Vector3],
+    pub sampled_points: &'mesh mut [Vector3],
+    pub sampled_normals: &'mesh mut [Vector3],
 }
-
-#[cfg(feature = "ffi")]
-point_sampler!(Vec3);
-
-#[cfg(not(feature = "ffi"))]
-point_sampler!(Vec3A);
 
 impl PointSampler<'_> {
     /// Get a point on a triangle.

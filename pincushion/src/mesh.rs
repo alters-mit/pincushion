@@ -1,19 +1,7 @@
-#[cfg(feature = "ffi")]
-use crate::Vec3;
 use crate::{
-    Area, Triangle, get_num_points,
+    Area, Triangle, Vector3, Vek, get_num_points,
     sampler::{Sampler, point_sampler::PointSampler, triangle_sampler::TriangleSampler},
 };
-
-#[cfg(feature = "ffi")]
-type Vector3 = Vec3;
-#[cfg(not(feature = "ffi"))]
-type Vector3 = glam::Vec3A;
-
-#[cfg(feature = "ffi")]
-type Vek<T> = safer_ffi::Vec<T>;
-#[cfg(not(feature = "ffi"))]
-type Vek<T> = Vec<T>;
 
 /// A mesh has vertices, triangles, and normals.
 #[cfg_attr(feature = "ffi", safer_ffi::derive_ReprC)]
