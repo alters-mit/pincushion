@@ -14,7 +14,7 @@ To regenerate the native bindings:
 cargo run --bin cs --features cs
 ```
 
-The file will be at `../com.mit,pincushion/NativeBindings.cs`
+The file will be at `../com.mit.pincushion/NativeBindings.cs`
 
 ### Example
 
