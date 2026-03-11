@@ -33,7 +33,7 @@ Pincushion solves these problems with some unusual/novel features:
 This repo has three components:
 
 1. `pincushion` is a Rust library that sample points on a mesh. It has FFI-safe functions that can be used in C#.
-2. `com.mit.pinsushion` is a Unity package, which includes binds for the native `pincushion` library, C#-friendly classes and methods, shaders, etc.
+2. `com.mit.pincushion` is a Unity package, which includes binds for the native `pincushion` library, C#-friendly classes and methods, shaders, etc.
 3. `UnityExample` is a small Unity example of Pincushion.
 
 ## Compatability

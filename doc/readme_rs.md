@@ -6,7 +6,7 @@
 
 ### Create C# Native Bindings
 
-The `PincushionCs` code can call the native `pincushion` Rust library via auto-generated native binding methods.
+The `com.mit.pincushion` C# package calls the native `pincushion` Rust library via auto-generated native binding methods.
 
 To regenerate the native bindings:
 
@@ -14,7 +14,7 @@ To regenerate the native bindings:
 cargo run --bin cs --features cs
 ```
 
-The file will be at `../PincushionCs/NativeBindings.cs`
+The file will be at `../com.mit,pincushion/NativeBindings.cs`
 
 ### Example
 
