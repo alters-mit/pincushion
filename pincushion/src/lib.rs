@@ -48,7 +48,7 @@ pub use vec3::Vec3;
 #[cfg(feature = "ffi")]
 type Vector3 = Vec3;
 #[cfg(not(feature = "ffi"))]
-type Vector3 = glam::Vec3A;
+type Vector3 = Vec3A;
 #[cfg(feature = "ffi")]
 type Vek<T> = safer_ffi::Vec<T>;
 #[cfg(not(feature = "ffi"))]
