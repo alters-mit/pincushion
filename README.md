@@ -41,7 +41,7 @@ This repo has three components:
 
 ## Compatability
 
-I've tested Pincushion with Unity 2020.3 and Unity 6.1 and it works in both.
+I've tested Pincushion with Unity 2020.3 and Unity 6.3 and it works in both.
 
 I've tested Pincushion on Windows and Linux, but not MacOS. It's probably OK???
 
