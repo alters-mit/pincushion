@@ -16,7 +16,7 @@ impl Vertex {
         }
     }
 
-    pub const fn add(&self, other: &Self) -> Self {
+    pub const fn add(self, other: Self) -> Self {
         Self {
             x: self.x + other.x,
             y: self.y + other.y,
@@ -24,7 +24,7 @@ impl Vertex {
         }
     }
 
-    pub const fn sub(&self, other: &Self) -> Self {
+    pub const fn sub(self, other: Self) -> Self {
         Self {
             x: self.x - other.x,
             y: self.y - other.y,
@@ -32,7 +32,7 @@ impl Vertex {
         }
     }
 
-    pub const fn mul(&self, value: f32) -> Self {
+    pub const fn mul(self, value: f32) -> Self {
         Self {
             x: self.x * value,
             y: self.y * value,
@@ -40,7 +40,7 @@ impl Vertex {
         }
     }
 
-    pub const fn div(&self, value: f32) -> Self {
+    pub const fn div(self, value: f32) -> Self {
         Self {
             x: self.x / value,
             y: self.y / value,
@@ -48,7 +48,7 @@ impl Vertex {
         }
     }
 
-    pub const fn cross(&self, other: &Self) -> Self {
+    pub const fn cross(self, other: Self) -> Self {
         Self {
             x: self.y * other.z - other.y * self.z,
             y: self.z * other.x - other.z * self.x,
@@ -56,11 +56,11 @@ impl Vertex {
         }
     }
 
-    pub const fn dot(&self, other: &Self) -> f32 {
+    pub const fn dot(self, other: Self) -> f32 {
         (self.x * other.x) + (self.y * other.y) + (self.z * other.z)
     }
 
-    pub fn magnitude(&self) -> f32 {
+    pub fn magnitude(self) -> f32 {
         f32::sqrt(self.dot(self))
     }
 }

@@ -32,8 +32,8 @@ impl PointSampler<'_> {
     const fn sample_point(&self, u: f32, v: f32, w: f32, triangle: &Triangle) -> Vertex {
         self.vertices[triangle.a]
             .mul(u)
-            .add(&self.vertices[triangle.b].mul(v))
-            .add(&self.vertices[triangle.c].mul(w))
+            .add(self.vertices[triangle.b].mul(v))
+            .add(self.vertices[triangle.c].mul(w))
     }
 
     /// Get a point on a triangle.
@@ -49,8 +49,8 @@ impl PointSampler<'_> {
     #[cfg(feature = "ffi")]
     const fn sample_normal(&self, triangle: &Triangle) -> Vertex {
         self.normals[triangle.a]
-            .add(&self.normals[triangle.b])
-            .add(&self.normals[triangle.c])
+            .add(self.normals[triangle.b])
+            .add(self.normals[triangle.c])
             .div(3.)
     }
 

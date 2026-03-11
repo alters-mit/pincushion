@@ -108,8 +108,8 @@ impl Mesh {
                 #[cfg(feature = "ffi")]
                 let a = half_scale
                     * self.vertices[triangle.b]
-                        .sub(&p0)
-                        .cross(&self.vertices[triangle.c].sub(&p0))
+                        .sub(p0)
+                        .cross(self.vertices[triangle.c].sub(p0))
                         .magnitude();
                 #[cfg(not(feature = "ffi"))]
                 let a = half_scale
