@@ -31,15 +31,15 @@ namespace Pincushion
             {
                 fixed (Vector3* verticesPtr = mesh.vertices, normalsPtr = mesh.normals)
                 {
-                    Vec_Vertex_t vertices = new Vec_Vertex_t
+                    Vec_Vec3_t vertices = new Vec_Vec3_t
                     {
-                        ptr = (Vertex_t*)verticesPtr,
+                        ptr = (Vec3_t*)verticesPtr,
                         len = verticesLength,
                         cap = verticesLength
                     };
-                    Vec_Vertex_t normals = new Vec_Vertex_t
+                    Vec_Vec3_t normals = new Vec_Vec3_t
                     {
-                        ptr = (Vertex_t*)normalsPtr,
+                        ptr = (Vec3_t*)normalsPtr,
                         len = verticesLength,
                         cap = verticesLength
                     };
@@ -84,15 +84,15 @@ namespace Pincushion
                             // Sample the points.
                             fixed (Vector3* pointsPtr = sampledPoints, sampledNormalsPtr = sampledNormals) 
                             {
-                                Vec_Vertex_t pointsV = new Vec_Vertex_t
+                                Vec_Vec3_t pointsV = new Vec_Vec3_t
                                 {
-                                    ptr = (Vertex_t*)pointsPtr,
+                                    ptr = (Vec3_t*)pointsPtr,
                                     len = pointsLength,
                                     cap = pointsLength
                                 };
-                                Vec_Vertex_t sampledNormalsV = new Vec_Vertex_t
+                                Vec_Vec3_t sampledNormalsV = new Vec_Vec3_t
                                 {
-                                    ptr = (Vertex_t*)sampledNormalsPtr,
+                                    ptr = (Vec3_t*)sampledNormalsPtr,
                                     len = sampledNormalsLength,
                                     cap = sampledNormalsLength
                                 };
@@ -132,15 +132,15 @@ namespace Pincushion
             {
                 fixed (Vector3* verticesPtr = mesh.vertices, normalsPtr = mesh.normals)
                 {
-                    Vec_Vertex_t vertices = new Vec_Vertex_t
+                    Vec_Vec3_t vertices = new Vec_Vec3_t
                     {
-                        ptr = (Vertex_t*)verticesPtr,
+                        ptr = (Vec3_t*)verticesPtr,
                         len = verticesLength,
                         cap = verticesLength
                     };
-                    Vec_Vertex_t normals = new Vec_Vertex_t
+                    Vec_Vec3_t normals = new Vec_Vec3_t
                     {
-                        ptr = (Vertex_t*)normalsPtr,
+                        ptr = (Vec3_t*)normalsPtr,
                         len = verticesLength,
                         cap = verticesLength
                     };
@@ -217,9 +217,9 @@ namespace Pincushion
             {
                 fixed (Vector3* verticesPtr = mesh.vertices)
                 {
-                    Vec_Vertex_t verticesT = new Vec_Vertex_t
+                    Vec_Vec3_t verticesT = new Vec_Vec3_t
                     {
-                        ptr = (Vertex_t*)verticesPtr,
+                        ptr = (Vec3_t*)verticesPtr,
                         len = verticesLength,
                         cap = verticesLength
                     };

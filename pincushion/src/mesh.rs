@@ -1,5 +1,5 @@
 #[cfg(feature = "ffi")]
-use crate::Vertex;
+use crate::Vec3;
 use crate::{
     Area, Triangle, get_num_points,
     sampler::{Sampler, point_sampler::PointSampler, triangle_sampler::TriangleSampler},
@@ -37,11 +37,11 @@ macro_rules! sample_points_inner {
 #[repr(C)]
 pub struct Mesh {
     /// The (x, y, z) vertices of the mesh.
-    pub vertices: safer_ffi::Vec<Vertex>,
+    pub vertices: safer_ffi::Vec<Vec3>,
     /// (x, y, z) groups of indices of `vertices`, comprising triangles.
     pub triangles: safer_ffi::Vec<Triangle>,
     /// (x, y, z) normal directional vectors.
-    pub normals: safer_ffi::Vec<Vertex>,
+    pub normals: safer_ffi::Vec<Vec3>,
 }
 
 /// A mesh has vertices, triangles, and normals.
@@ -57,7 +57,7 @@ pub struct Mesh {
 
 impl Mesh {
     #[cfg(feature = "ffi")]
-    pub fn new(vertices: Vec<Vertex>, triangles: Vec<Triangle>, normals: Vec<Vertex>) -> Self {
+    pub fn new(vertices: Vec<Vec3>, triangles: Vec<Triangle>, normals: Vec<Vec3>) -> Self {
         Self {
             vertices: vertices.into(),
             triangles: triangles.into(),
@@ -124,7 +124,7 @@ impl Mesh {
     }
 
     #[cfg(feature = "ffi")]
-    sample_points_inner!(self, Vertex);
+    sample_points_inner!(self, Vec3);
 
     #[cfg(not(feature = "ffi"))]
     sample_points_inner!(self, Vec3A);
@@ -138,8 +138,8 @@ impl Mesh {
     pub fn set_sampled_points(
         &self,
         area: &Area,
-        #[cfg(feature = "ffi")] sampled_points: &mut [Vertex],
-        #[cfg(feature = "ffi")] sampled_normals: &mut [Vertex],
+        #[cfg(feature = "ffi")] sampled_points: &mut [Vec3],
+        #[cfg(feature = "ffi")] sampled_normals: &mut [Vec3],
         #[cfg(not(feature = "ffi"))] sampled_points: &mut [Vec3A],
         #[cfg(not(feature = "ffi"))] sampled_normals: &mut [Vec3A],
         seed: Option<u64>,
@@ -196,7 +196,7 @@ impl Mesh {
         P: AsRef<std::path::Path> + std::fmt::Debug,
     {
         #[cfg(feature = "ffi")]
-        type Vector3 = Vertex;
+        type Vector3 = Vec3;
         #[cfg(not(feature = "ffi"))]
         type Vector3 = Vec3A;
 

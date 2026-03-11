@@ -1,13 +1,14 @@
+/// An FFI-safe (x, y, z) vector.
 #[safer_ffi::derive_ReprC]
 #[derive(Copy, Clone, Default)]
 #[repr(C)]
-pub struct Vertex {
+pub struct Vec3 {
     pub x: f32,
     pub y: f32,
     pub z: f32,
 }
 
-impl Vertex {
+impl Vec3 {
     pub const fn from_slice(slice: &[f32]) -> Self {
         Self {
             x: slice[0],

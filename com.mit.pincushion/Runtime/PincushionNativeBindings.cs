@@ -40,8 +40,11 @@ public unsafe partial class Ffi {
         float points_per_m);
 }
 
+/// <summary>
+/// An FFI-safe (x, y, z) vector.
+/// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 12)]
-public unsafe struct Vertex_t {
+public unsafe struct Vec3_t {
     public float x;
 
     public float y;
@@ -53,8 +56,8 @@ public unsafe struct Vertex_t {
 /// Same as [<c>Vec<T></c>][<c>rust::Vec</c>], but with guaranteed <c>#[repr(C)]</c> layout
 /// </summary>
 [StructLayout(LayoutKind.Sequential, Size = 24)]
-public unsafe struct Vec_Vertex_t {
-    public Vertex_t * ptr;
+public unsafe struct Vec_Vec3_t {
+    public Vec3_t * ptr;
 
     public UIntPtr len;
 
@@ -93,7 +96,7 @@ public unsafe struct Mesh_t {
     /// <summary>
     /// The (x, y, z) vertices of the mesh.
     /// </summary>
-    public Vec_Vertex_t vertices;
+    public Vec_Vec3_t vertices;
 
     /// <summary>
     /// (x, y, z) groups of indices of <c>vertices</c>, comprising triangles.
@@ -103,7 +106,7 @@ public unsafe struct Mesh_t {
     /// <summary>
     /// (x, y, z) normal directional vectors.
     /// </summary>
-    public Vec_Vertex_t normals;
+    public Vec_Vec3_t normals;
 }
 
 /// <summary>
@@ -149,8 +152,8 @@ public unsafe partial class Ffi {
     void sample_points (
         Mesh_t /*const*/ * mesh,
         Area_t /*const*/ * area,
-        Vec_Vertex_t * sampled_points,
-        Vec_Vertex_t * sampled_normals,
+        Vec_Vec3_t * sampled_points,
+        Vec_Vec3_t * sampled_normals,
         UInt64 seed);
 }
 
@@ -252,7 +255,6 @@ public unsafe partial class Ffi {
 public unsafe partial class Ffi {
     /// <summary>
     /// Apply a transform matrix to transform sampled points (modify its position and rotation).
-    /// Requires the <c>ffi</c> feature.
     ///
     /// Unity has two built-in ways to do the same operation, but they are slower than Pincushion:
     ///
@@ -267,7 +269,7 @@ public unsafe partial class Ffi {
     [DllImport(RustLib, ExactSpelling = true)] public static unsafe extern
     void transform_points (
         Vec_float_t /*const*/ * matrix,
-        Vec_Vertex_t * points);
+        Vec_Vec3_t * points);
 }
 
 

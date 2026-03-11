@@ -2,7 +2,7 @@ use fastrand::Rng;
 
 use crate::Triangle;
 #[cfg(feature = "ffi")]
-use crate::Vertex;
+use crate::Vec3;
 #[cfg(not(feature = "ffi"))]
 use glam::Vec3A;
 
@@ -20,7 +20,7 @@ macro_rules! point_sampler {
 }
 
 #[cfg(feature = "ffi")]
-point_sampler!(Vertex);
+point_sampler!(Vec3);
 
 #[cfg(not(feature = "ffi"))]
 point_sampler!(Vec3A);
@@ -29,7 +29,7 @@ impl PointSampler<'_> {
     /// Get a point on a triangle.
     /// Source: https://github.com/PaulDemeulenaere/vfx-uniform-mesh-sampling/blob/90714a3b61dbc731d9e8dc4c4ca93c2ba1da5156/Assets/Script/VFXMeshBakingHelper.cs#L167
     #[cfg(feature = "ffi")]
-    const fn sample_point(&self, u: f32, v: f32, w: f32, triangle: &Triangle) -> Vertex {
+    const fn sample_point(&self, u: f32, v: f32, w: f32, triangle: &Triangle) -> Vec3 {
         self.vertices[triangle.a]
             .mul(u)
             .add(self.vertices[triangle.b].mul(v))
@@ -47,7 +47,7 @@ impl PointSampler<'_> {
 
     /// Set the average normal of a triangle.
     #[cfg(feature = "ffi")]
-    const fn sample_normal(&self, triangle: &Triangle) -> Vertex {
+    const fn sample_normal(&self, triangle: &Triangle) -> Vec3 {
         self.normals[triangle.a]
             .add(self.normals[triangle.b])
             .add(self.normals[triangle.c])

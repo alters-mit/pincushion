@@ -1,4 +1,4 @@
-use crate::{Area, Mesh, Triangle, Vertex};
+use crate::{Area, Mesh, Triangle, Vec3 as Vector3};
 use fastrand::Rng;
 use glam::{Mat4, Vec3};
 use safer_ffi::ffi_export;
@@ -27,8 +27,8 @@ pub fn set_area(mesh: &Mesh, scale: f32, area: &mut Area) {
 pub fn sample_points(
     mesh: &Mesh,
     area: &Area,
-    sampled_points: &mut safer_ffi::Vec<Vertex>,
-    sampled_normals: &mut safer_ffi::Vec<Vertex>,
+    sampled_points: &mut safer_ffi::Vec<Vector3>,
+    sampled_normals: &mut safer_ffi::Vec<Vector3>,
     seed: u64,
 ) {
     mesh.set_sampled_points(area, sampled_points, sampled_normals, Some(seed));
@@ -97,7 +97,7 @@ pub fn set_mask(factor: f32, mask_indices: &safer_ffi::Vec<usize>, mask: &mut sa
 /// - `matrix`: A 4x4 transform matrix. The length is assumed to always be 16.
 /// - `points`: The points that will be transformed.
 #[ffi_export]
-pub fn transform_points(matrix: &safer_ffi::Vec<f32>, points: &mut safer_ffi::Vec<Vertex>) {
+pub fn transform_points(matrix: &safer_ffi::Vec<f32>, points: &mut safer_ffi::Vec<Vector3>) {
     let matrix = Mat4::from_cols_slice(matrix);
 
     // Cast `points` as `glam::Vec3`.

@@ -28,7 +28,7 @@ mod mesh;
 mod sampler;
 mod triangle;
 #[cfg(feature = "ffi")]
-mod vertex;
+mod vec3;
 
 #[cfg(not(feature = "ffi"))]
 pub use glam;
@@ -43,7 +43,7 @@ pub use ffi::*;
 pub use mesh::Mesh;
 pub use triangle::Triangle;
 #[cfg(feature = "ffi")]
-pub use vertex::Vertex;
+pub use vec3::Vec3;
 
 /// Returns the number of points to be sampled.
 ///
