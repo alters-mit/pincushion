@@ -1,4 +1,4 @@
-//! **Uniform mesh sampler for Rust and Unity.**
+#![doc = include_str!("../doc/header.md")]
 //!
 #![cfg_attr(all(), doc = embed_doc_image::embed_image!("pincushion", "doc/pincushion.png"))]
 //!
@@ -6,12 +6,7 @@
 //!
 #![doc = include_str!("../doc/overview.md")]
 //!
-//! Pincushion can be used as a typical Rust crate or as a native library in Unity.
-//!
-//! This documentation is for the Rust crate.
-//! Documentation for Unity/C# can be found [here](https://github.com/alters-mit/pincushion).
-//!
-//! ### Usage
+#![doc = include_str!("../doc/unity.md")]
 //!
 //! ```
 #![doc = include_str!("../examples/readme.rs")]
