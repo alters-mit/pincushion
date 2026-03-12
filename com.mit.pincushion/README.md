@@ -1,6 +1,6 @@
 # Pincushion
 
-**Uniform mesh sampler in Rust and Unity.**
+**Pincushion is a uniform mesh sampler for Unity3D that is accelerated by a native Rust library.**
 
 ## Overview
 

@@ -3,7 +3,11 @@ name = "pincushion"
 version = "0.1.0"
 edition = "2024"
 authors = ["Esther Alter <alters@mit.edu>"]
-description = "Uniformly sample points on a mesh. Includes FFI-safe functions for Unity/C# bindings."
+description = "Uniform mesh sampler with Unity3D/C# bindings."
+repository = "https://github.com/alters-mit/pincushion"
+license-file = "LICENSE"
+keywords = ["gamedev", "graphics", "unity", "mesh", "point-cloud"]
+categories = ["game-development", "graphics", "rendering"]
 
 [dependencies]
 embed-doc-image = "0.1.4"
