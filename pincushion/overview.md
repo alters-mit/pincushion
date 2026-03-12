@@ -1,0 +1,4 @@
+- What if you wanted to render a little dot at every vertex of a mesh because it looks cool?
+- Hmm those dots sure are bunching up around complex geometry. Like, there are way more dots on the ears than on the legs.
+- It would look a lot better if the dots were *uniformly* (evenly) (sorta) dispersed around the mesh.
+- Within each patch of similar-sized surface area, we'll add a dot. For spice, the position within that patch of area is randomly *sampled*.

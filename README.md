@@ -2,7 +2,7 @@
 
 **Uniform mesh sampler in Rust and Unity.**
 
-![Suzanne test mesh on the left, and Suzanne as sampled points on the right.](doc/images/pincushion_banner.png)
+![Suzanne test mesh on the left, and Suzanne as sampled points on the right.](doc/images/pincushion.png)
 
 ## Overview
 
@@ -167,7 +167,7 @@ To regenerate the native bindings:
 cargo run --bin cs --features cs
 ```
 
-The file will be at `../com.mit,pincushion/NativeBindings.cs`
+The file will be at `../com.mit.pincushion/NativeBindings.cs`
 
 ### Example
 

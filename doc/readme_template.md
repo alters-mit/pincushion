@@ -2,7 +2,7 @@
 
 **Uniform mesh sampler in Rust and Unity.**
 
-![Suzanne test mesh on the left, and Suzanne as sampled points on the right.](doc/images/pincushion_banner.png)
+![Suzanne test mesh on the left, and Suzanne as sampled points on the right.](doc/images/pincushion.png)
 
 ## Overview
 

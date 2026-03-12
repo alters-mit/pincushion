@@ -1,10 +1,10 @@
 //! **Uniform mesh sampler for Rust and Unity.**
 //!
-#![cfg_attr(all(), doc = embed_doc_image::embed_image!("suzanne", "../doc/images/pincushion_banner.png"))]
+#![cfg_attr(all(), doc = embed_doc_image::embed_image!("pincushion", "pincushion.png"))]
 //!
-//! ![suzanne]
+//! ![pincushion]
 //!
-#![doc = include_str!("../../doc/overview.md")]
+#![doc = include_str!("../overview.md")]
 //!
 //! Pincushion can be used as a typical Rust crate or as a native library in Unity.
 //!
@@ -17,7 +17,7 @@
 #![doc = include_str!("../examples/readme.rs")]
 //! ```
 //!
-#![doc = include_str!("../../doc/readme_rs.md")]
+#![doc = include_str!("../README.md")]
 
 mod area;
 #[cfg(feature = "cs")]
