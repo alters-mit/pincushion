@@ -1,11 +1,12 @@
 [package]
 name = "pincushion"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 authors = ["Esther Alter <alters@mit.edu>"]
 description = "Uniform mesh sampler with Unity3D/C# bindings."
 repository = "https://github.com/alters-mit/pincushion"
 license-file = "LICENSE"
+readme = "../README.md"
 keywords = ["gamedev", "graphics", "unity", "mesh", "point-cloud"]
 categories = ["game-development", "graphics", "rendering"]
 
